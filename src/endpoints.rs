@@ -363,6 +363,7 @@ pub async fn cancel_broadcast(
     .await
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn get_broadcast_clicks(
     client: &Client,
     account_id: i32,
@@ -483,6 +484,7 @@ pub async fn get_campaign_stat(
     .await
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn find_campaigns(
     client: &Client,
     account_id: i32,
