@@ -4,8 +4,8 @@ version = "0.1.1"
 edition = "2021"
 description = "A CLI and library for the AWeber API"
 license = "MIT"
-repository = "https://github.com/andrewrabert/aweber-rs"
-homepage = "https://github.com/andrewrabert/aweber-rs"
+repository = "https://github.com/andrewrabert/aweber-cli"
+homepage = "https://github.com/andrewrabert/aweber-cli"
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }

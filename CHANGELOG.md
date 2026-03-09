@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix aarch64 cross-compilation ([#1](https://github.com/andrewrabert/aweber-rs/pull/1))
+- Fix aarch64 cross-compilation ([#1](https://github.com/andrewrabert/aweber-cli/pull/1))
 
 ## [0.1.0] - 2026-03-09
 
