@@ -8,6 +8,10 @@ A command-line interface and Rust client library for the [AWeber API](https://ap
 
 ⚠️ Under active development
 
+## Download
+
+Pre-built binaries for Linux (glibc & musl), macOS, and Windows are available on the [latest release](https://github.com/andrewrabert/aweber-rs/releases/latest) page.
+
 ## Usage
 
 ```sh
