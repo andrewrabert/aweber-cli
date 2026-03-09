@@ -10,7 +10,7 @@ homepage = "https://github.com/andrewrabert/aweber-rs"
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive", "string", "env"] }
-reqwest = { version = "0.13", default-features = false, features = ["json", "query", "form", "native-tls"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "query", "form", "rustls"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1"
