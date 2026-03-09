@@ -1,5 +1,9 @@
 # aweber-rs
 
+[![Crates.io](https://img.shields.io/crates/v/aweber)](https://crates.io/crates/aweber)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/andrewrabert/aweber-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/andrewrabert/aweber-rs/actions/workflows/ci.yml)
+
 A command-line interface and Rust client library for the [AWeber API](https://api.aweber.com/).
 
 ⚠️ Under active development
