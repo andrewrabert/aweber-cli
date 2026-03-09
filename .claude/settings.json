@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Skill(aweber-api-reference)"
+      "Skill(aweber-api-reference)",
+      "Skill(changelog)",
+      "Skill(release)"
     ]
   }
 }
