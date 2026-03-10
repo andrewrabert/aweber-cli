@@ -1046,7 +1046,7 @@ pub struct GetAccountsListsSubscribers2Response {
         skip_serializing_if = "HashMap::is_empty"
     )]
     pub custom_fields:
-        HashMap<String, String>,
+        HashMap<String, Option<String>>,
     #[doc = "The subscriber's designated market area code (USA and canada only)"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dma_code: Option<i64>,
@@ -1626,7 +1626,7 @@ pub struct Purchase {
         skip_serializing_if = "HashMap::is_empty"
     )]
     pub custom_fields:
-        HashMap<String, String>,
+        HashMap<String, Option<String>>,
     #[doc = "The subscriber's email address"]
     pub email: PurchaseEmail,
     #[doc = "A custom note associated with this specific tracked event"]
@@ -1832,7 +1832,7 @@ pub struct Subscriber {
         skip_serializing_if = "HashMap::is_empty"
     )]
     pub custom_fields:
-        HashMap<String, String>,
+        HashMap<String, Option<String>>,
     #[doc = "The subscriber's designated market area code (USA and canada only)"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dma_code: Option<i64>,
@@ -1925,7 +1925,7 @@ pub struct SubscriberFind {
         skip_serializing_if = "HashMap::is_empty"
     )]
     pub custom_fields:
-        HashMap<String, String>,
+        HashMap<String, Option<String>>,
     #[doc = "The subscriber's designated market area code (usa and canada only)"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dma_code: Option<i64>,
