@@ -384,7 +384,6 @@ impl Cli {
         clap::Command::new ("")
             .arg (clap::Arg::new ("list-id") . long ("list-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The list ID"))
             .arg (clap::Arg::new ("name") . long ("name") . value_parser (clap::value_parser! (String)) . required_unless_present ("json-body") . help ("The name of the custom field"))
-            .arg (clap::Arg::new ("ws-op") . long ("ws-op") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: PostAccountsListsCustomFieldsBodyWsOp :: Create . to_string () ,]) , | s | types :: PostAccountsListsCustomFieldsBodyWsOp :: try_from (s) . unwrap ())) . required_unless_present ("json-body") . help ("The method name - expecting \"create\""))
             .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
             .about ("Add custom field")
     }
@@ -597,7 +596,6 @@ impl Cli {
             .arg (clap::Arg::new ("list-id") . long ("list-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The list ID"))
             .arg (clap::Arg::new ("list-link") . long ("list-link") . value_parser (clap::value_parser! (String)) . required_unless_present ("json-body") . help ("The link to the destination [List](#tag/Lists/paths/~1accounts~1{accountId}~1lists~1{listId}/get)"))
             .arg (clap::Arg::new ("subscriber-id") . long ("subscriber-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The subscriber ID"))
-            .arg (clap::Arg::new ("ws-op") . long ("ws-op") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: MoveSubscriberRequestBodyWsOp :: Move . to_string () ,]) , | s | types :: MoveSubscriberRequestBodyWsOp :: try_from (s) . unwrap ())) . required_unless_present ("json-body") . help ("The method name - expecting \"move\""))
             .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
             .about ("Move subscriber")
     }
@@ -1546,9 +1544,7 @@ impl Cli {
         } else {
             let mut body = serde_json::Map::new();
             if let Some(v) = matches.get_one::<String>("name") { body.insert("name".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<types::PostAccountsListsCustomFieldsBodyWsOp>("ws-op") {
-                body.insert("ws.op".into(), serde_json::json!(v.to_string()));
-            }
+            body.insert("ws.op".into(), serde_json::json!("create"));
             serde_json::from_value::<types::PostAccountsListsCustomFieldsBody>(serde_json::Value::Object(body))?
         };
         let result = crate::endpoints::create_custom_field(
@@ -1902,7 +1898,7 @@ impl Cli {
             if let Some(v) = matches.get_one::<bool>("enforce-custom-field-mapping") { body.insert("enforce_custom_field_mapping".into(), serde_json::json!(v)); }
             if let Some(v) = matches.get_one::<i64>("last-followup-message-number-sent") { body.insert("last_followup_message_number_sent".into(), serde_json::json!(v)); }
             if let Some(v) = matches.get_one::<String>("list-link") { body.insert("list_link".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<types::MoveSubscriberRequestBodyWsOp>("ws-op") { body.insert("ws.op".into(), serde_json::json!(v.to_string())); }
+            body.insert("ws.op".into(), serde_json::json!("move"));
             serde_json::from_value::<types::MoveSubscriberRequestBody>(serde_json::Value::Object(body))?
         };
         let result = crate::endpoints::move_subscriber(
