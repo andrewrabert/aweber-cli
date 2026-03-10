@@ -20,3 +20,4 @@ sha2 = "0.10"
 base64 = "0.22"
 tokio = { version = "1", features = ["full"] }
 uuid = { version = "1.0", features = ["serde", "v4"] }
+colored_json = "5.0.0"

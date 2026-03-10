@@ -2235,9 +2235,15 @@ impl Cli {
         &self,
         result: Result<T, crate::client::ApiError>,
     ) -> anyhow::Result<()> {
+        use std::io::IsTerminal;
         match result {
             Ok(value) => {
-                println!("{}", serde_json::to_string_pretty(&value)?);
+                if std::io::stdout().is_terminal() {
+                    let json = serde_json::to_value(&value)?;
+                    println!("{}", colored_json::to_colored_json_auto(&json)?);
+                } else {
+                    println!("{}", serde_json::to_string_pretty(&value)?);
+                }
                 Ok(())
             }
             Err(e) => {
@@ -2256,7 +2262,8 @@ impl Cli {
         C: types::PaginatedCollection + serde::de::DeserializeOwned,
         C::Item: serde::Serialize,
     {
-        use std::io::Write;
+        use std::io::{IsTerminal, Write};
+        let pretty = std::io::stdout().is_terminal();
         let mut page = match first_page {
             Ok(p) => p,
             Err(e) => {
@@ -2274,8 +2281,14 @@ impl Cli {
                     eprintln!("Warning: results truncated by --limit; more results available");
                     return Ok(());
                 }
-                serde_json::to_writer(&mut out, &item)?;
-                writeln!(out)?;
+                if pretty {
+                    let json = serde_json::to_value(&item)?;
+                    let colored = colored_json::to_colored_json_auto(&json)?;
+                    writeln!(out, "{colored}")?;
+                } else {
+                    serde_json::to_writer(&mut out, &item)?;
+                    writeln!(out)?;
+                }
                 if let Some(r) = &mut remaining {
                     *r -= 1;
                 }
