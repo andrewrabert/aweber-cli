@@ -181,7 +181,6 @@ impl Cli {
             .arg (clap::Arg::new ("unsubscribed-at") . long ("unsubscribed-at") . value_parser (clap::value_parser! (chrono::NaiveDate)) . required (false) . help ("The day in which the subscriber unsubscribed"))
             .arg (clap::Arg::new ("unsubscribed-before") . long ("unsubscribed-before") . value_parser (clap::value_parser! (chrono::NaiveDate)) . required (false) . help ("The day on or before the subscriber unsubscribed"))
             .arg (clap::Arg::new ("verified-at") . long ("verified-at") . value_parser (clap::value_parser! (chrono::NaiveDate)) . required (false) . help ("The day in which the subscriber confirmed their email address"))
-            .arg (clap::Arg::new ("ws-op") . long ("ws-op") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsFindsubscribersWsOp :: FindSubscribers . to_string () ,]) , | s | types :: GetAccountsFindsubscribersWsOp :: try_from (s) . unwrap ())) . required (false))
             .arg (clap::Arg::new ("ws-show") . long ("ws-show") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsFindsubscribersWsShow :: TotalSize . to_string () ,]) , | s | types :: GetAccountsFindsubscribersWsShow :: try_from (s) . unwrap ())) . required (false) . help ("A flag to show the total size only - expecting \\\"total_size\\\", when added the response will be an integer"))
             .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
             .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
@@ -190,7 +189,6 @@ impl Cli {
     }
     pub fn cli_list_account_webform_split_tests() -> clap::Command {
         clap::Command::new ("")
-            .arg (clap::Arg::new ("ws-op") . long ("ws-op") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsGetwebformsplittestsWsOp :: GetWebFormSplitTests . to_string () ,]) , | s | types :: GetAccountsGetwebformsplittestsWsOp :: try_from (s) . unwrap ())) . required (false))
             .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
             .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
             .arg(Self::limit_arg())
@@ -198,7 +196,6 @@ impl Cli {
     }
     pub fn cli_list_account_webforms() -> clap::Command {
         clap::Command::new ("")
-            .arg (clap::Arg::new ("ws-op") . long ("ws-op") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsGetwebformsWsOp :: GetWebForms . to_string () ,]) , | s | types :: GetAccountsGetwebformsWsOp :: try_from (s) . unwrap ())) . required (false))
             .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
             .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
             .arg(Self::limit_arg())
@@ -226,7 +223,6 @@ impl Cli {
     pub fn cli_find_lists() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("name") . long ("name") . value_parser (clap::value_parser! (types :: GetAccountsListsFindName)) . required (false) . help ("Name or unique list ID of the list"))
-            .arg (clap::Arg::new ("ws-op") . long ("ws-op") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsFindWsOp :: Find . to_string () ,]) , | s | types :: GetAccountsListsFindWsOp :: try_from (s) . unwrap ())) . required (false))
             .arg (clap::Arg::new ("ws-show") . long ("ws-show") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsFindWsShow :: TotalSize . to_string () ,]) , | s | types :: GetAccountsListsFindWsShow :: try_from (s) . unwrap ())) . required (false) . help ("A flag to show the total size only - expecting \\\"total_size\\\", when added the response will be an integer"))
             .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
             .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
@@ -266,7 +262,7 @@ impl Cli {
     pub fn cli_get_broadcast_total() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("list-id") . long ("list-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The list ID"))
-            .arg (clap::Arg::new ("status") . long ("status") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsBroadcastsTotalStatus :: Draft . to_string () , types :: GetAccountsListsBroadcastsTotalStatus :: Scheduled . to_string () , types :: GetAccountsListsBroadcastsTotalStatus :: Sent . to_string () ,]) , | s | types :: GetAccountsListsBroadcastsTotalStatus :: try_from (s) . unwrap ())) . required (false) . help ("The status of the broadcasts to retrieve. **(Please be aware that `draft` only returns API created Broadcast drafts)**"))
+            .arg (clap::Arg::new ("status") . long ("status") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsBroadcastsTotalStatus :: Draft . to_string () , types :: GetAccountsListsBroadcastsTotalStatus :: Scheduled . to_string () , types :: GetAccountsListsBroadcastsTotalStatus :: Sent . to_string () ,]) , | s | types :: GetAccountsListsBroadcastsTotalStatus :: try_from (s) . unwrap ())) . required (true) . help ("The status of the broadcasts to retrieve. **(Please be aware that `draft` only returns API created Broadcast drafts)**"))
             .about ("Get total broadcasts")
     }
     pub fn cli_get_broadcast() -> clap::Command {
@@ -361,9 +357,8 @@ impl Cli {
     }
     pub fn cli_find_campaigns() -> clap::Command {
         clap::Command::new ("")
-            .arg (clap::Arg::new ("campaign-type") . long ("campaign-type") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsCampaignsFindCampaignType :: B . to_string () , types :: GetAccountsListsCampaignsFindCampaignType :: F . to_string () ,]) , | s | types :: GetAccountsListsCampaignsFindCampaignType :: try_from (s) . unwrap ())) . required (false) . help ("The campaign type (b - broadcast, f - followup)"))
+            .arg (clap::Arg::new ("campaign-type") . long ("campaign-type") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsCampaignsFindCampaignType :: B . to_string () , types :: GetAccountsListsCampaignsFindCampaignType :: F . to_string () ,]) , | s | types :: GetAccountsListsCampaignsFindCampaignType :: try_from (s) . unwrap ())) . required (true) . help ("The campaign type (b - broadcast, f - followup)"))
             .arg (clap::Arg::new ("list-id") . long ("list-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The list ID"))
-            .arg (clap::Arg::new ("ws-op") . long ("ws-op") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsCampaignsFindWsOp :: Find . to_string () ,]) , | s | types :: GetAccountsListsCampaignsFindWsOp :: try_from (s) . unwrap ())) . required (false))
             .arg (clap::Arg::new ("ws-show") . long ("ws-show") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsCampaignsFindWsShow :: TotalSize . to_string () ,]) , | s | types :: GetAccountsListsCampaignsFindWsShow :: try_from (s) . unwrap ())) . required (false) . help ("A flag to show the total size only - expecting \\\"total_size\\\", when added the response will be an integer"))
             .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
             .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
@@ -583,7 +578,6 @@ impl Cli {
             .arg (clap::Arg::new ("unsubscribed-at") . long ("unsubscribed-at") . value_parser (clap::value_parser! (chrono::NaiveDate)) . required (false) . help ("The day in which the subscriber unsubscribed"))
             .arg (clap::Arg::new ("unsubscribed-before") . long ("unsubscribed-before") . value_parser (clap::value_parser! (chrono::NaiveDate)) . required (false) . help ("The day on or before the subscriber unsubscribed"))
             .arg (clap::Arg::new ("verified-at") . long ("verified-at") . value_parser (clap::value_parser! (chrono::NaiveDate)) . required (false) . help ("The day in which the subscriber confirmed their email address"))
-            .arg (clap::Arg::new ("ws-op") . long ("ws-op") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsSubscribersFindWsOp :: Find . to_string () ,]) , | s | types :: GetAccountsListsSubscribersFindWsOp :: try_from (s) . unwrap ())) . required (false))
             .arg (clap::Arg::new ("ws-show") . long ("ws-show") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsSubscribersFindWsShow :: TotalSize . to_string () ,]) , | s | types :: GetAccountsListsSubscribersFindWsShow :: try_from (s) . unwrap ())) . required (false) . help ("A flag to show the total size only - expecting \\\"total_size\\\", when added the response will be an integer"))
             .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
             .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
@@ -631,7 +625,6 @@ impl Cli {
         clap::Command::new ("")
             .arg (clap::Arg::new ("list-id") . long ("list-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The list ID"))
             .arg (clap::Arg::new ("subscriber-id") . long ("subscriber-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The subscriber ID"))
-            .arg (clap::Arg::new ("ws-op") . long ("ws-op") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsSubscribersGetactivityWsOp :: GetActivity . to_string () ,]) , | s | types :: GetAccountsListsSubscribersGetactivityWsOp :: try_from (s) . unwrap ())) . required (false))
             .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
             .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
             .arg(Self::limit_arg())
@@ -688,11 +681,11 @@ impl Cli {
     }
     pub fn cli_get_broadcast_link_analytics() -> clap::Command {
         clap::Command::new ("")
-            .arg (clap::Arg::new ("account-id") . long ("account-id") . value_parser (clap::value_parser! (types :: GetBroadcastLinksAnalyticsAccountId)) . required (false) . help ("Account UUID. Can be found using the [Get accounts](#tag/Accounts/paths/~1accounts/get) endpoint."))
+            .arg (clap::Arg::new ("account-id") . long ("account-id") . value_parser (clap::value_parser! (types :: GetBroadcastLinksAnalyticsAccountId)) . required (true) . help ("Account UUID. Can be found using the [Get accounts](#tag/Accounts/paths/~1accounts/get) endpoint."))
             .arg (clap::Arg::new ("after") . long ("after") . value_parser (clap::value_parser! (String)) . required (false) . help ("specifies the IDs for pagination, for results from after onward"))
             .arg (clap::Arg::new ("before") . long ("before") . value_parser (clap::value_parser! (i64)) . required (false) . help ("specifies the IDs for pagination, for results from before onward"))
-            .arg (clap::Arg::new ("broadcast-id") . long ("broadcast-id") . value_parser (clap::value_parser! (types :: GetBroadcastLinksAnalyticsBroadcastId)) . required (false) . help ("Broadcast UUID. Can be found using the [Get broadcasts](#tag/Broadcasts/paths/~1accounts~1{accountId}~1lists~1{listId}~1broadcasts/get) endpoint."))
-            .arg (clap::Arg::new ("filter") . long ("filter") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetBroadcastLinksAnalyticsFilter :: Clicks . to_string () , types :: GetBroadcastLinksAnalyticsFilter :: Pageviews . to_string () ,]) , | s | types :: GetBroadcastLinksAnalyticsFilter :: try_from (s) . unwrap ())) . required (false) . help ("Type of link data to retrieve"))
+            .arg (clap::Arg::new ("broadcast-id") . long ("broadcast-id") . value_parser (clap::value_parser! (types :: GetBroadcastLinksAnalyticsBroadcastId)) . required (true) . help ("Broadcast UUID. Can be found using the [Get broadcasts](#tag/Broadcasts/paths/~1accounts~1{accountId}~1lists~1{listId}~1broadcasts/get) endpoint."))
+            .arg (clap::Arg::new ("filter") . long ("filter") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetBroadcastLinksAnalyticsFilter :: Clicks . to_string () , types :: GetBroadcastLinksAnalyticsFilter :: Pageviews . to_string () ,]) , | s | types :: GetBroadcastLinksAnalyticsFilter :: try_from (s) . unwrap ())) . required (true) . help ("Type of link data to retrieve"))
             .arg (clap::Arg::new ("max-count") . long ("max-count") . value_parser (clap::value_parser! (u64)) . required (false) . help ("Maximum count threshold for unique links"))
             .arg (clap::Arg::new ("min-count") . long ("min-count") . value_parser (clap::value_parser! (u64)) . required (false) . help ("Minimum count threshold for unique links"))
             .arg (clap::Arg::new ("page-size") . long ("page-size") . value_parser (clap::value_parser! (std::num::NonZeroU64)) . required (false) . help ("specifies the max number of items in a single page"))
@@ -1083,7 +1076,6 @@ impl Cli {
             matches.get_one::<chrono::NaiveDate>("unsubscribed-at").copied(),
             matches.get_one::<chrono::NaiveDate>("unsubscribed-before").copied(),
             matches.get_one::<chrono::NaiveDate>("verified-at").copied(),
-            matches.get_one::<types::GetAccountsFindsubscribersWsOp>("ws-op"),
             matches.get_one::<types::GetAccountsFindsubscribersWsShow>("ws-show"),
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
             matches.get_one::<i32>("ws-start").copied(),
@@ -1099,7 +1091,6 @@ impl Cli {
         let result = crate::endpoints::list_account_webform_split_tests(
             &self.client,
             self.account_id,
-            matches.get_one::<types::GetAccountsGetwebformsplittestsWsOp>("ws-op"),
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
             matches.get_one::<i32>("ws-start").copied(),
         )
@@ -1114,7 +1105,6 @@ impl Cli {
         let result = crate::endpoints::list_account_webforms(
             &self.client,
             self.account_id,
-            matches.get_one::<types::GetAccountsGetwebformsWsOp>("ws-op"),
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
             matches.get_one::<i32>("ws-start").copied(),
         )
@@ -1172,7 +1162,6 @@ impl Cli {
             &self.client,
             self.account_id,
             matches.get_one::<types::GetAccountsListsFindName>("name").map(|v| v.as_str()),
-            matches.get_one::<types::GetAccountsListsFindWsOp>("ws-op"),
             matches.get_one::<types::GetAccountsListsFindWsShow>("ws-show"),
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
             matches.get_one::<i32>("ws-start").copied(),
@@ -1250,7 +1239,7 @@ impl Cli {
             &self.client,
             self.account_id,
             list_id,
-            matches.get_one::<types::GetAccountsListsBroadcastsTotalStatus>("status"),
+            matches.get_one::<types::GetAccountsListsBroadcastsTotalStatus>("status").unwrap(),
         )
         .await;
         self.print_result(result)
@@ -1495,8 +1484,7 @@ impl Cli {
             &self.client,
             self.account_id,
             list_id,
-            matches.get_one::<types::GetAccountsListsCampaignsFindCampaignType>("campaign-type"),
-            matches.get_one::<types::GetAccountsListsCampaignsFindWsOp>("ws-op"),
+            matches.get_one::<types::GetAccountsListsCampaignsFindCampaignType>("campaign-type").unwrap(),
             matches.get_one::<types::GetAccountsListsCampaignsFindWsShow>("ws-show"),
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
             matches.get_one::<i32>("ws-start").copied(),
@@ -1870,7 +1858,6 @@ impl Cli {
             matches.get_one::<chrono::NaiveDate>("unsubscribed-at").copied(),
             matches.get_one::<chrono::NaiveDate>("unsubscribed-before").copied(),
             matches.get_one::<chrono::NaiveDate>("verified-at").copied(),
-            matches.get_one::<types::GetAccountsListsSubscribersFindWsOp>("ws-op"),
             matches.get_one::<types::GetAccountsListsSubscribersFindWsShow>("ws-show"),
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
             matches.get_one::<i32>("ws-start").copied(),
@@ -1984,7 +1971,6 @@ impl Cli {
             self.account_id,
             list_id,
             subscriber_id,
-            matches.get_one::<types::GetAccountsListsSubscribersGetactivityWsOp>("ws-op"),
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
             matches.get_one::<i32>("ws-start").copied(),
         )
@@ -2117,15 +2103,18 @@ impl Cli {
         // Convert from the rich wrapper types to the simpler endpoint types.
         let account_id = matches
             .get_one::<types::GetBroadcastLinksAnalyticsAccountId>("account-id")
-            .and_then(|v| v.parse::<i32>().ok());
+            .and_then(|v| v.parse::<i32>().ok())
+            .expect("--account-id is required");
         let after = matches.get_one::<String>("after").map(|s| s.as_str());
         let before_str = matches.get_one::<i64>("before").map(|v| v.to_string());
         let broadcast_id = matches
             .get_one::<types::GetBroadcastLinksAnalyticsBroadcastId>("broadcast-id")
-            .and_then(|v| v.parse::<i32>().ok());
+            .and_then(|v| v.parse::<i32>().ok())
+            .expect("--broadcast-id is required");
         let filter = matches
             .get_one::<types::GetBroadcastLinksAnalyticsFilter>("filter")
-            .map(|v| v.to_string());
+            .unwrap()
+            .to_string();
         let max_count = matches.get_one::<u64>("max-count").map(|v| *v as i32);
         let min_count = matches.get_one::<u64>("min-count").map(|v| *v as i32);
         let page_size = matches.get_one::<std::num::NonZeroU64>("page-size").copied();
@@ -2139,7 +2128,7 @@ impl Cli {
             after,
             before_str.as_deref(),
             broadcast_id,
-            filter.as_deref(),
+            &filter,
             max_count,
             min_count,
             page_size,

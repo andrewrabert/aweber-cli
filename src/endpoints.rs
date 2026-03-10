@@ -59,7 +59,6 @@ pub async fn find_account_subscribers(
     unsubscribed_at: Option<chrono::NaiveDate>,
     unsubscribed_before: Option<chrono::NaiveDate>,
     verified_at: Option<chrono::NaiveDate>,
-    ws_op: Option<&types::GetAccountsFindsubscribersWsOp>,
     ws_show: Option<&types::GetAccountsFindsubscribersWsShow>,
     ws_size: Option<std::num::NonZeroU32>,
     ws_start: Option<i32>,
@@ -69,6 +68,7 @@ pub async fn find_account_subscribers(
         Method::GET,
         format!("/accounts/{account_id}/findSubscribers"),
     )
+    .query("ws.op", "findSubscribers")
     .query_opt("ad_tracking", ad_tracking)
     .query_opt("area_code", area_code)
     .query_opt("city", city)
@@ -102,7 +102,6 @@ pub async fn find_account_subscribers(
     .query_opt("unsubscribed_at", unsubscribed_at)
     .query_opt("unsubscribed_before", unsubscribed_before)
     .query_opt("verified_at", verified_at)
-    .query_opt("ws.op", ws_op)
     .query_opt("ws.show", ws_show)
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
@@ -117,7 +116,6 @@ pub async fn find_account_subscribers(
 pub async fn list_account_webform_split_tests(
     client: &Client,
     account_id: i32,
-    ws_op: Option<&types::GetAccountsGetwebformsplittestsWsOp>,
     ws_size: Option<std::num::NonZeroU32>,
     ws_start: Option<i32>,
 ) -> Result<types::WebFormSplitTests, ApiError> {
@@ -126,7 +124,7 @@ pub async fn list_account_webform_split_tests(
         Method::GET,
         format!("/accounts/{account_id}/getWebFormSplitTests"),
     )
-    .query_opt("ws.op", ws_op)
+    .query("ws.op", "getWebFormSplitTests")
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
     .send()
@@ -136,7 +134,6 @@ pub async fn list_account_webform_split_tests(
 pub async fn list_account_webforms(
     client: &Client,
     account_id: i32,
-    ws_op: Option<&types::GetAccountsGetwebformsWsOp>,
     ws_size: Option<std::num::NonZeroU32>,
     ws_start: Option<i32>,
 ) -> Result<types::Webforms, ApiError> {
@@ -145,7 +142,7 @@ pub async fn list_account_webforms(
         Method::GET,
         format!("/accounts/{account_id}/getWebForms"),
     )
-    .query_opt("ws.op", ws_op)
+    .query("ws.op", "getWebForms")
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
     .send()
@@ -212,7 +209,6 @@ pub async fn find_lists(
     client: &Client,
     account_id: i32,
     name: Option<&str>,
-    ws_op: Option<&types::GetAccountsListsFindWsOp>,
     ws_show: Option<&types::GetAccountsListsFindWsShow>,
     ws_size: Option<std::num::NonZeroU32>,
     ws_start: Option<i32>,
@@ -222,8 +218,8 @@ pub async fn find_lists(
         Method::GET,
         format!("/accounts/{account_id}/lists/find"),
     )
+    .query("ws.op", "find")
     .query_opt("name", name)
-    .query_opt("ws.op", ws_op)
     .query_opt("ws.show", ws_show)
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
@@ -289,14 +285,14 @@ pub async fn get_broadcast_total(
     client: &Client,
     account_id: i32,
     list_id: i32,
-    status: Option<&types::GetAccountsListsBroadcastsTotalStatus>,
+    status: &types::GetAccountsListsBroadcastsTotalStatus,
 ) -> Result<types::GetAccountsListsBroadcastsTotalResponse, ApiError> {
     ApiRequest::new(
         client,
         Method::GET,
         format!("/accounts/{account_id}/lists/{list_id}/broadcasts/total"),
     )
-    .query_opt("status", status)
+    .query("status", status)
     .send()
     .await
 }
@@ -489,8 +485,7 @@ pub async fn find_campaigns(
     client: &Client,
     account_id: i32,
     list_id: i32,
-    campaign_type: Option<&types::GetAccountsListsCampaignsFindCampaignType>,
-    ws_op: Option<&types::GetAccountsListsCampaignsFindWsOp>,
+    campaign_type: &types::GetAccountsListsCampaignsFindCampaignType,
     ws_show: Option<&types::GetAccountsListsCampaignsFindWsShow>,
     ws_size: Option<std::num::NonZeroU32>,
     ws_start: Option<i32>,
@@ -500,8 +495,8 @@ pub async fn find_campaigns(
         Method::GET,
         format!("/accounts/{account_id}/lists/{list_id}/campaigns/find"),
     )
-    .query_opt("campaign_type", campaign_type)
-    .query_opt("ws.op", ws_op)
+    .query("ws.op", "find")
+    .query("campaign_type", campaign_type)
     .query_opt("ws.show", ws_show)
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
@@ -818,7 +813,6 @@ pub async fn find_subscribers(
     unsubscribed_at: Option<chrono::NaiveDate>,
     unsubscribed_before: Option<chrono::NaiveDate>,
     verified_at: Option<chrono::NaiveDate>,
-    ws_op: Option<&types::GetAccountsListsSubscribersFindWsOp>,
     ws_show: Option<&types::GetAccountsListsSubscribersFindWsShow>,
     ws_size: Option<std::num::NonZeroU32>,
     ws_start: Option<i32>,
@@ -828,6 +822,7 @@ pub async fn find_subscribers(
         Method::GET,
         format!("/accounts/{account_id}/lists/{list_id}/subscribers/find"),
     )
+    .query("ws.op", "find")
     .query_opt("ad_tracking", ad_tracking)
     .query_opt("area_code", area_code)
     .query_opt("city", city)
@@ -863,7 +858,6 @@ pub async fn find_subscribers(
     .query_opt("unsubscribed_at", unsubscribed_at)
     .query_opt("unsubscribed_before", unsubscribed_before)
     .query_opt("verified_at", verified_at)
-    .query_opt("ws.op", ws_op)
     .query_opt("ws.show", ws_show)
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
@@ -948,7 +942,6 @@ pub async fn get_subscriber_activity(
     account_id: i32,
     list_id: i32,
     subscriber_id: i32,
-    ws_op: Option<&types::GetAccountsListsSubscribersGetactivityWsOp>,
     ws_size: Option<std::num::NonZeroU32>,
     ws_start: Option<i32>,
 ) -> Result<types::SubscriberGetActivity, ApiError> {
@@ -959,7 +952,7 @@ pub async fn get_subscriber_activity(
             "/accounts/{account_id}/lists/{list_id}/subscribers/{subscriber_id}/getActivity"
         ),
     )
-    .query_opt("ws.op", ws_op)
+    .query("ws.op", "getActivity")
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
     .send()
@@ -1104,11 +1097,11 @@ pub async fn get_web_form(
 #[allow(clippy::too_many_arguments)]
 pub async fn get_broadcast_link_analytics(
     client: &Client,
-    account_id: Option<i32>,
+    account_id: i32,
     after: Option<&str>,
     before: Option<&str>,
-    broadcast_id: Option<i32>,
-    filter: Option<&str>,
+    broadcast_id: i32,
+    filter: &str,
     max_count: Option<i32>,
     min_count: Option<i32>,
     page_size: Option<std::num::NonZeroU64>,
@@ -1120,11 +1113,11 @@ pub async fn get_broadcast_link_analytics(
         Method::GET,
         "/analytics/reports/broadcasts-links".into(),
     )
-    .query_opt("account_id", account_id)
+    .query("account_id", account_id)
     .query_opt("after", after)
     .query_opt("before", before)
-    .query_opt("broadcast_id", broadcast_id)
-    .query_opt("filter", filter)
+    .query("broadcast_id", broadcast_id)
+    .query("filter", filter)
     .query_opt("max_count", max_count)
     .query_opt("min_count", min_count)
     .query_opt("page_size", page_size)

@@ -100,6 +100,12 @@ impl<'a> ApiRequest<'a> {
         }
     }
 
+    /// Add a required query parameter.
+    pub fn query<V: std::fmt::Display>(mut self, key: &'static str, value: V) -> Self {
+        self.query.push((key, value.to_string()));
+        self
+    }
+
     /// Add an optional query parameter (skipped if None).
     pub fn query_opt<V: std::fmt::Display>(
         mut self,
