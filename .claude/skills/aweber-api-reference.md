@@ -1,6 +1,6 @@
 ---
 name: aweber-api-reference
-description: Use when working with AWeber API endpoints, adding or modifying API calls, checking parameter names, response schemas, or verifying endpoint paths and HTTP methods
+description: Use when fetching, reading, or referencing the AWeber API spec/docs, working with AWeber API endpoints, adding or modifying API calls, checking parameter names, response schemas, or verifying endpoint paths and HTTP methods
 ---
 
 # AWeber API Reference
