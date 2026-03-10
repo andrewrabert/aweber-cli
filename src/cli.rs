@@ -1809,7 +1809,10 @@ impl Cli {
             if let Some(vals) = matches.get_many::<String>("custom-field") {
                 let cf: serde_json::Map<String, serde_json::Value> = vals
                     .filter_map(|s| s.split_once('='))
-                    .map(|(k, v)| (k.to_string(), serde_json::json!(v)))
+                    .map(|(k, v)| {
+                        let val = if v.is_empty() { serde_json::Value::Null } else { serde_json::json!(v) };
+                        (k.to_string(), val)
+                    })
                     .collect();
                 body.insert("custom_fields".into(), serde_json::Value::Object(cf));
             }
@@ -1960,7 +1963,10 @@ impl Cli {
             if let Some(vals) = matches.get_many::<String>("custom-field") {
                 let cf: serde_json::Map<String, serde_json::Value> = vals
                     .filter_map(|s| s.split_once('='))
-                    .map(|(k, v)| (k.to_string(), serde_json::json!(v)))
+                    .map(|(k, v)| {
+                        let val = if v.is_empty() { serde_json::Value::Null } else { serde_json::json!(v) };
+                        (k.to_string(), val)
+                    })
                     .collect();
                 body.insert("custom_fields".into(), serde_json::Value::Object(cf));
             }
