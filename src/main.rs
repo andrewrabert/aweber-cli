@@ -9,7 +9,10 @@ async fn main() -> anyhow::Result<()> {
     let args: Vec<String> = std::env::args().collect();
 
     // Let clap handle --help / -h / missing subcommand directly (no credentials needed)
-    let needs_early_parse = args.len() <= 1 || args.iter().any(|a| a == "--help" || a == "-h");
+    let needs_early_parse = args.len() <= 1
+        || args
+            .iter()
+            .any(|a| a == "--help" || a == "-h" || a == "--version" || a == "-V");
     if needs_early_parse {
         let app = commands::build_command_tree();
         let _matches = app.get_matches(); // will print help and exit

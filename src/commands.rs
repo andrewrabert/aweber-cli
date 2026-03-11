@@ -317,8 +317,10 @@ pub fn build_command_tree() -> clap::Command {
         .subcommand(clap::Command::new("logout").about("Log out and remove stored credentials"))
         .subcommand(clap::Command::new("status").about("Show authentication status"));
 
-    let mut app = clap::Command::new("aweber")
+    let mut app = clap::Command::new("aweber-cli")
+        .bin_name("aweber")
         .about("AWeber API CLI")
+        .version(env!("AWEBER_VERSION"))
         .arg(
             clap::Arg::new("base-url")
                 .long("base-url")
