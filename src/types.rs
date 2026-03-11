@@ -2484,3 +2484,54 @@ impl_paginated_collection!(Subscribers, Subscriber);
 impl_paginated_collection!(WebFormSplitTests, WebformSplitTest);
 impl_paginated_collection!(WebformSplitTestComponents, WebformSplitTestComponent);
 impl_paginated_collection!(Webforms, Webform);
+
+// ---------------------------------------------------------------------------
+// Message Editor API types
+// ---------------------------------------------------------------------------
+
+/// Response wrapper for the MEAPI list endpoint.
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+pub struct MessageList {
+    pub content: Vec<serde_json::Value>,
+}
+
+/// Request body for creating a message via the MEAPI.
+#[derive(Debug, serde::Serialize)]
+pub struct CreateMessage {
+    pub account_id: i32,
+    pub list_id: i32,
+    pub subject: String,
+    pub body_html: String,
+    pub body_json: serde_json::Value,
+    pub body_text: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub body_amp: Option<String>,
+    pub attachment_ids: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub has_customized_body_text: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub binding: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bound_resource_id: Option<String>,
+}
+
+/// Request body for updating a message via the MEAPI (PATCH).
+#[derive(Debug, serde::Serialize)]
+pub struct UpdateMessage {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subject: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub body_html: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub body_json: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub body_text: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub body_amp: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub has_customized_body_text: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub binding: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bound_resource_id: Option<String>,
+}

@@ -1,14 +1,81 @@
 use crate::types;
 use anyhow::Context as _;
+use std::io::Read as _;
+
+/// Read content from a file path (@file), stdin (-), or use as literal value.
+pub fn read_content(value: &str) -> anyhow::Result<String> {
+    if value == "-" {
+        let mut buf = String::new();
+        std::io::stdin().read_to_string(&mut buf)?;
+        Ok(buf)
+    } else if let Some(path) = value.strip_prefix('@') {
+        std::fs::read_to_string(path)
+            .with_context(|| format!("reading file: {path}"))
+    } else {
+        Ok(value.to_string())
+    }
+}
+
+fn validate_subject_len(subject: &str) -> anyhow::Result<()> {
+    if subject.len() > 120 {
+        anyhow::bail!("subject exceeds 120 characters ({} chars)", subject.len());
+    }
+    Ok(())
+}
+
+fn check_body_json(value: &serde_json::Value) -> anyhow::Result<()> {
+    if let Err(errs) = crate::validate::validate_body_json(value) {
+        for err in &errs {
+            eprintln!("{err}");
+        }
+        anyhow::bail!("body_json validation failed ({} error(s))", errs.len());
+    }
+    Ok(())
+}
+
+/// Check that at most one flag uses stdin ("-").
+fn check_single_stdin(values: &[Option<&String>]) -> anyhow::Result<()> {
+    let count = values.iter().filter(|v| v.map(|s| s.as_str()) == Some("-")).count();
+    if count > 1 {
+        anyhow::bail!("only one flag may read from stdin (-) at a time");
+    }
+    Ok(())
+}
+
+/// Cookie-auth context for message editor commands.
+struct SessionContext {
+    client: crate::client::Client,
+    token: String,
+}
 
 pub struct Cli {
     pub client: crate::client::Client,
     pub account_id: i32,
+    session: Option<SessionContext>,
 }
 
 impl Cli {
     pub fn new(client: crate::client::Client, account_id: i32) -> Self {
-        Self { client, account_id }
+        Self {
+            client,
+            account_id,
+            session: None,
+        }
+    }
+
+    pub fn with_session(mut self, session_client: crate::client::Client, session_token: String) -> Self {
+        self.session = Some(SessionContext { client: session_client, token: session_token });
+        self
+    }
+
+    fn require_session(&self) -> anyhow::Result<(&crate::client::Client, &str)> {
+        let ctx = self.session.as_ref().ok_or_else(|| {
+            anyhow::anyhow!(
+                "message commands require a session cookie — pass --session <AUTORESPSID> \
+                 (grab it from browser dev tools: Application → Cookies → AUTORESPSID)"
+            )
+        })?;
+        Ok((&ctx.client, &ctx.token))
     }
 
     pub fn get_command(cmd: CliCommand) -> clap::Command {
@@ -124,6 +191,12 @@ impl Cli {
             CliCommand::ListWebForms => Self::cli_list_web_forms(),
             CliCommand::GetWebForm => Self::cli_get_web_form(),
             CliCommand::GetBroadcastLinkAnalytics => Self::cli_get_broadcast_link_analytics(),
+            CliCommand::ListMessages => Self::cli_list_messages(),
+            CliCommand::GetMessage => Self::cli_get_message(),
+            CliCommand::CreateMessage => Self::cli_create_message(),
+            CliCommand::UpdateMessage => Self::cli_update_message(),
+            CliCommand::DeleteMessage => Self::cli_delete_message(),
+            CliCommand::ValidateMessage => Self::cli_validate_message(),
             CliCommand::OauthGetAccessToken => Self::cli_oauth_get_access_token(),
             CliCommand::OauthGetRequestToken => Self::cli_oauth_get_request_token(),
             CliCommand::OauthRevoke => Self::cli_oauth_revoke(),
@@ -693,6 +766,67 @@ impl Cli {
             .arg (clap::Arg::new ("sort-by") . long ("sort-by") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetBroadcastLinksAnalyticsSortBy :: Unique . to_string () , types :: GetBroadcastLinksAnalyticsSortBy :: Total . to_string () ,]) , | s | types :: GetBroadcastLinksAnalyticsSortBy :: try_from (s) . unwrap ())) . required (false) . help ("Field to sort the results by"))
             .about ("Broadcast Links Analytics")
     }
+    fn cli_list_messages() -> clap::Command {
+        clap::Command::new("")
+            .arg(clap::Arg::new("list-id").long("list-id").value_parser(clap::value_parser!(i32)).required(true).help("List ID"))
+            .arg(clap::Arg::new("binding").long("binding").required(false).help("Filter by binding: unbound, broadcast, followup, campaign, webfeed"))
+            .arg(clap::Arg::new("subject").long("subject").required(false).help("Filter by subject (case-insensitive)"))
+            .arg(clap::Arg::new("limit").long("limit").value_parser(clap::value_parser!(i32)).required(false).help("Max results"))
+            .arg(clap::Arg::new("offset").long("offset").value_parser(clap::value_parser!(i32)).required(false).help("Pagination offset"))
+            .about("List messages for a list")
+    }
+
+    fn cli_get_message() -> clap::Command {
+        clap::Command::new("")
+            .arg(clap::Arg::new("list-id").long("list-id").value_parser(clap::value_parser!(i32)).required(true).help("List ID"))
+            .arg(clap::Arg::new("message-id").long("message-id").required(true).help("Message ID (24-char hex)"))
+            .about("Get a message")
+    }
+
+    fn cli_create_message() -> clap::Command {
+        clap::Command::new("")
+            .arg(clap::Arg::new("list-id").long("list-id").value_parser(clap::value_parser!(i32)).required(true).help("List ID"))
+            .arg(clap::Arg::new("subject").long("subject").required(true).help("Email subject (max 120 chars)"))
+            .arg(clap::Arg::new("body-json").long("body-json").required(true).help("body_json: @file.json or - for stdin"))
+            .arg(clap::Arg::new("body-html").long("body-html").required(true).help("body_html: @file.html or - for stdin"))
+            .arg(clap::Arg::new("body-text").long("body-text").required(true).help("body_text: @file.txt or - for stdin"))
+            .arg(clap::Arg::new("body-amp").long("body-amp").required(false).help("body_amp: @file.html or - for stdin"))
+            .arg(clap::Arg::new("has-customized-body-text").long("has-customized-body-text").action(clap::ArgAction::SetTrue).help("Mark body_text as manually edited"))
+            .arg(clap::Arg::new("binding").long("binding").required(false).help("Message binding (default: unbound)"))
+            .arg(clap::Arg::new("bound-resource-id").long("bound-resource-id").required(false).help("UUID of bound resource"))
+            .arg(clap::Arg::new("skip-validation").long("skip-validation").action(clap::ArgAction::SetTrue).help("Skip client-side body_json validation"))
+            .about("Create a message")
+    }
+
+    fn cli_update_message() -> clap::Command {
+        clap::Command::new("")
+            .arg(clap::Arg::new("list-id").long("list-id").value_parser(clap::value_parser!(i32)).required(true).help("List ID"))
+            .arg(clap::Arg::new("message-id").long("message-id").required(true).help("Message ID (24-char hex)"))
+            .arg(clap::Arg::new("subject").long("subject").required(false).help("New subject"))
+            .arg(clap::Arg::new("body-json").long("body-json").required(false).help("body_json: @file.json or - for stdin"))
+            .arg(clap::Arg::new("body-html").long("body-html").required(false).help("body_html: @file.html or - for stdin"))
+            .arg(clap::Arg::new("body-text").long("body-text").required(false).help("body_text: @file.txt or - for stdin"))
+            .arg(clap::Arg::new("body-amp").long("body-amp").required(false).help("body_amp: @file.html or - for stdin"))
+            .arg(clap::Arg::new("has-customized-body-text").long("has-customized-body-text").action(clap::ArgAction::SetTrue).help("Mark body_text as manually edited"))
+            .arg(clap::Arg::new("binding").long("binding").required(false).help("New binding"))
+            .arg(clap::Arg::new("bound-resource-id").long("bound-resource-id").required(false).help("UUID of bound resource"))
+            .arg(clap::Arg::new("skip-validation").long("skip-validation").action(clap::ArgAction::SetTrue).help("Skip client-side body_json validation"))
+            .about("Update a message (PATCH)")
+    }
+
+    fn cli_delete_message() -> clap::Command {
+        clap::Command::new("")
+            .arg(clap::Arg::new("list-id").long("list-id").value_parser(clap::value_parser!(i32)).required(true).help("List ID"))
+            .arg(clap::Arg::new("message-id").long("message-id").required(true).help("Message ID (24-char hex)"))
+            .about("Delete a message")
+    }
+
+    fn cli_validate_message() -> clap::Command {
+        clap::Command::new("")
+            .arg(clap::Arg::new("body-json").long("body-json").required(true).help("body_json: @file.json or - for stdin"))
+            .about("Validate a body_json file for drag-and-drop editor compatibility")
+    }
+
     pub fn cli_oauth_get_access_token() -> clap::Command {
         clap::Command::new("")
             .arg(
@@ -1017,6 +1151,12 @@ impl Cli {
             CliCommand::GetBroadcastLinkAnalytics => {
                 self.execute_get_broadcast_link_analytics(matches).await
             }
+            CliCommand::ListMessages => self.execute_list_messages(matches).await,
+            CliCommand::GetMessage => self.execute_get_message(matches).await,
+            CliCommand::CreateMessage => self.execute_create_message(matches).await,
+            CliCommand::UpdateMessage => self.execute_update_message(matches).await,
+            CliCommand::DeleteMessage => self.execute_delete_message(matches).await,
+            CliCommand::ValidateMessage => self.execute_validate_message(matches).await,
             CliCommand::OauthGetAccessToken => self.execute_oauth_get_access_token(matches).await,
             CliCommand::OauthGetRequestToken => {
                 self.execute_oauth_get_request_token(matches).await
@@ -2165,6 +2305,222 @@ impl Cli {
         .await;
         self.print_result(result)
     }
+    fn print_message_list(
+        &self,
+        result: Result<types::MessageList, crate::client::ApiError>,
+    ) -> anyhow::Result<()> {
+        use std::io::{IsTerminal, Write};
+        let list = match result {
+            Ok(l) => l,
+            Err(e) => return Err(anyhow::anyhow!("{e}")),
+        };
+        let stdout = std::io::stdout();
+        let pretty = stdout.is_terminal();
+        let mut out = std::io::BufWriter::new(stdout.lock());
+        for item in &list.content {
+            if pretty {
+                let colored = colored_json::to_colored_json_auto(item)?;
+                writeln!(out, "{colored}")?;
+            } else {
+                serde_json::to_writer(&mut out, item)?;
+                writeln!(out)?;
+            }
+        }
+        out.flush()?;
+        Ok(())
+    }
+
+    async fn execute_list_messages(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+        let (sc, session) = self.require_session()?;
+        let list_id = *matches.get_one::<i32>("list-id").unwrap();
+        let binding = matches.get_one::<String>("binding").map(|s| s.as_str());
+        let subject = matches.get_one::<String>("subject").map(|s| s.as_str());
+        let limit = matches.get_one::<i32>("limit").copied();
+        let offset = matches.get_one::<i32>("offset").copied();
+        let result = crate::endpoints::list_messages(
+            sc,
+            session,
+            self.account_id,
+            list_id,
+            binding,
+            subject,
+            limit,
+            offset,
+        )
+        .await;
+        self.print_message_list(result)
+    }
+
+    async fn execute_get_message(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+        let (sc, session) = self.require_session()?;
+        let list_id = *matches.get_one::<i32>("list-id").unwrap();
+        let message_id = matches.get_one::<String>("message-id").unwrap();
+        let result = crate::endpoints::get_message(
+            sc,
+            session,
+            self.account_id,
+            list_id,
+            message_id,
+        )
+        .await;
+        self.print_result(result)
+    }
+
+    async fn execute_create_message(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+        let (sc, session) = self.require_session()?;
+        let list_id = *matches.get_one::<i32>("list-id").unwrap();
+        let subject = matches.get_one::<String>("subject").unwrap().clone();
+        validate_subject_len(&subject)?;
+        let skip_validation = matches.get_flag("skip-validation");
+
+        check_single_stdin(&[
+            matches.get_one::<String>("body-json"),
+            matches.get_one::<String>("body-html"),
+            matches.get_one::<String>("body-text"),
+            matches.get_one::<String>("body-amp"),
+        ])?;
+
+        let body_json_str = read_content(matches.get_one::<String>("body-json").unwrap())
+            .context("reading --body-json")?;
+        let body_json: serde_json::Value = serde_json::from_str(&body_json_str)
+            .context("parsing --body-json as JSON")?;
+
+        if !skip_validation {
+            check_body_json(&body_json)?;
+        }
+
+        let body_html = read_content(matches.get_one::<String>("body-html").unwrap())
+            .context("reading --body-html")?;
+        let body_text = read_content(matches.get_one::<String>("body-text").unwrap())
+            .context("reading --body-text")?;
+        let body_amp = matches
+            .get_one::<String>("body-amp")
+            .map(|v| read_content(v))
+            .transpose()
+            .context("reading --body-amp")?;
+
+        let body = types::CreateMessage {
+            account_id: self.account_id,
+            list_id,
+            subject,
+            body_html,
+            body_json,
+            body_text,
+            body_amp,
+            attachment_ids: vec![],
+            has_customized_body_text: matches.get_flag("has-customized-body-text").then_some(true),
+            binding: matches.get_one::<String>("binding").cloned(),
+            bound_resource_id: matches.get_one::<String>("bound-resource-id").cloned(),
+        };
+
+        let result = crate::endpoints::create_message(
+            sc,
+            session,
+            self.account_id,
+            list_id,
+            &body,
+        )
+        .await;
+        self.print_result(result)
+    }
+
+    async fn execute_update_message(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+        let (sc, session) = self.require_session()?;
+        let list_id = *matches.get_one::<i32>("list-id").unwrap();
+        let message_id = matches.get_one::<String>("message-id").unwrap();
+        let skip_validation = matches.get_flag("skip-validation");
+
+        check_single_stdin(&[
+            matches.get_one::<String>("body-json"),
+            matches.get_one::<String>("body-html"),
+            matches.get_one::<String>("body-text"),
+            matches.get_one::<String>("body-amp"),
+        ])?;
+
+        let body_json = matches
+            .get_one::<String>("body-json")
+            .map(|v| -> anyhow::Result<serde_json::Value> {
+                let s = read_content(v).context("reading --body-json")?;
+                serde_json::from_str(&s).context("parsing --body-json as JSON")
+            })
+            .transpose()?;
+
+        if !skip_validation {
+            if let Some(ref bj) = body_json {
+                check_body_json(bj)?;
+            }
+        }
+
+        let body_html = matches
+            .get_one::<String>("body-html")
+            .map(|v| read_content(v))
+            .transpose()
+            .context("reading --body-html")?;
+        let body_text = matches
+            .get_one::<String>("body-text")
+            .map(|v| read_content(v))
+            .transpose()
+            .context("reading --body-text")?;
+        let body_amp = matches
+            .get_one::<String>("body-amp")
+            .map(|v| read_content(v))
+            .transpose()
+            .context("reading --body-amp")?;
+
+        let subject = matches.get_one::<String>("subject").cloned();
+        if let Some(ref s) = subject {
+            validate_subject_len(s)?;
+        }
+
+        let body = types::UpdateMessage {
+            subject,
+            body_html,
+            body_json,
+            body_text,
+            body_amp,
+            has_customized_body_text: matches.get_flag("has-customized-body-text").then_some(true),
+            binding: matches.get_one::<String>("binding").cloned(),
+            bound_resource_id: matches.get_one::<String>("bound-resource-id").cloned(),
+        };
+
+        let result = crate::endpoints::update_message(
+            sc,
+            session,
+            self.account_id,
+            list_id,
+            message_id,
+            &body,
+        )
+        .await;
+        self.print_result(result)
+    }
+
+    async fn execute_delete_message(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+        let (sc, session) = self.require_session()?;
+        let list_id = *matches.get_one::<i32>("list-id").unwrap();
+        let message_id = matches.get_one::<String>("message-id").unwrap();
+        let result = crate::endpoints::delete_message(
+            sc,
+            session,
+            self.account_id,
+            list_id,
+            message_id,
+        )
+        .await;
+        self.print_void(result)
+    }
+
+    async fn execute_validate_message(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+        let body_json_str = read_content(matches.get_one::<String>("body-json").unwrap())
+            .context("reading --body-json")?;
+        let body_json: serde_json::Value = serde_json::from_str(&body_json_str)
+            .context("parsing --body-json as JSON")?;
+
+        check_body_json(&body_json)?;
+        println!("body_json is valid");
+        Ok(())
+    }
+
     pub async fn execute_oauth_get_access_token(
         &self,
         matches: &clap::ArgMatches,
@@ -2387,6 +2743,12 @@ pub enum CliCommand {
     ListWebForms,
     GetWebForm,
     GetBroadcastLinkAnalytics,
+    ListMessages,
+    GetMessage,
+    CreateMessage,
+    UpdateMessage,
+    DeleteMessage,
+    ValidateMessage,
     OauthGetAccessToken,
     OauthGetRequestToken,
     OauthRevoke,
@@ -2448,6 +2810,12 @@ impl CliCommand {
             CliCommand::ListWebForms,
             CliCommand::GetWebForm,
             CliCommand::GetBroadcastLinkAnalytics,
+            CliCommand::ListMessages,
+            CliCommand::GetMessage,
+            CliCommand::CreateMessage,
+            CliCommand::UpdateMessage,
+            CliCommand::DeleteMessage,
+            CliCommand::ValidateMessage,
             CliCommand::OauthGetAccessToken,
             CliCommand::OauthGetRequestToken,
             CliCommand::OauthRevoke,

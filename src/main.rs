@@ -19,6 +19,32 @@ async fn main() -> anyhow::Result<()> {
         unreachable!();
     }
 
+    // Handle `messages validate` without credentials (client-side only)
+    if args.len() >= 3 && args[1] == "messages" && args[2] == "validate" {
+        let app = commands::build_command_tree();
+        let matches = app.get_matches_from(&args);
+        let (_, group_matches) = matches.subcommand().expect("subcommand is required");
+        let (_, action_matches) = group_matches.subcommand().expect("action is required");
+        let body_json_raw = action_matches
+            .get_one::<String>("body-json")
+            .expect("body-json is required");
+        let content = aweber::cli::read_content(body_json_raw)?;
+        let value: serde_json::Value =
+            serde_json::from_str(&content).context("invalid JSON in body-json")?;
+        return match aweber::validate::validate_body_json(&value) {
+            Ok(()) => {
+                println!("body_json is valid");
+                Ok(())
+            }
+            Err(errors) => {
+                for e in &errors {
+                    eprintln!("validation error: {e}");
+                }
+                anyhow::bail!("{} validation error(s)", errors.len());
+            }
+        };
+    }
+
     if args[1] == "auth" {
         let app = commands::build_command_tree();
         let matches = app.get_matches();
@@ -77,7 +103,16 @@ async fn main() -> anyhow::Result<()> {
 
     let verbose = matches.get_flag("verbose");
     let client = client.with_verbose(verbose);
-    let cli = aweber::cli::Cli::new(client, account_id);
+    let mut cli = aweber::cli::Cli::new(client, account_id);
+
+    // Set up cookie-auth client for message editor commands if --session is provided.
+    if let Some(session) = matches.get_one::<String>("session") {
+        let cp_url = matches
+            .get_one::<String>("cp-url")
+            .expect("cp-url has default");
+        let session_client = aweber::client::Client::new(cp_url).with_verbose(verbose);
+        cli = cli.with_session(session_client, session.clone());
+    }
 
     let (group_name, group_matches) = matches.subcommand().expect("subcommand is required");
     let (action_name, action_matches) = group_matches

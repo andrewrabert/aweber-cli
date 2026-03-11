@@ -131,6 +131,36 @@ static GROUPS: &[Group] = &[
         ],
     },
     Group {
+        name: "messages",
+        about: "Manage drag-and-drop editor messages",
+        routes: &[
+            Route {
+                action: "list",
+                command: CliCommand::ListMessages,
+            },
+            Route {
+                action: "get",
+                command: CliCommand::GetMessage,
+            },
+            Route {
+                action: "create",
+                command: CliCommand::CreateMessage,
+            },
+            Route {
+                action: "update",
+                command: CliCommand::UpdateMessage,
+            },
+            Route {
+                action: "delete",
+                command: CliCommand::DeleteMessage,
+            },
+            Route {
+                action: "validate",
+                command: CliCommand::ValidateMessage,
+            },
+        ],
+    },
+    Group {
         name: "campaigns",
         about: "Manage campaigns",
         routes: &[
@@ -325,7 +355,7 @@ pub fn build_command_tree() -> clap::Command {
             clap::Arg::new("base-url")
                 .long("base-url")
                 .env("AWEBER_API_URL")
-                .default_value("https://api.aweber.com/1.0")
+                .default_value("https://api.aweber.com")
                 .help("AWeber API base URL"),
         )
         .arg(
@@ -333,6 +363,19 @@ pub fn build_command_tree() -> clap::Command {
                 .long("token")
                 .env("AWEBER_TOKEN")
                 .help("OAuth2 access token (overrides stored credentials)"),
+        )
+        .arg(
+            clap::Arg::new("session")
+                .long("session")
+                .env("AWEBER_SESSION")
+                .help("CP session cookie (AUTORESPSID) for message editor commands"),
+        )
+        .arg(
+            clap::Arg::new("cp-url")
+                .long("cp-url")
+                .env("AWEBER_CP_URL")
+                .default_value("https://www.aweber.com")
+                .help("Control panel base URL for message editor requests"),
         )
         .arg(
             clap::Arg::new("verbose")
@@ -405,8 +448,8 @@ mod tests {
             "route table contains duplicate commands"
         );
 
-        // Verify count is exactly 53.
-        assert_eq!(routed.len(), 53, "expected 53 routed commands");
+        // Verify count is exactly 59.
+        assert_eq!(routed.len(), 59, "expected 59 routed commands");
 
         // Verify every non-OAuth CliCommand variant is present.
         let hidden_set: HashSet<String> =
