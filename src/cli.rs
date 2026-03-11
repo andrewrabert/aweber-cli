@@ -1757,14 +1757,21 @@ impl Cli {
             if let Some(v) = matches.get_one::<types::AddSubscriberRequestBodyUpdateExisting>("update-existing") { body.insert("update_existing".into(), serde_json::json!(v.to_string())); }
             serde_json::from_value::<types::AddSubscriberRequestBody>(serde_json::Value::Object(body))?
         };
-        let result = crate::endpoints::create_subscriber(
+        match crate::endpoints::create_subscriber(
             &self.client,
             self.account_id,
             list_id,
             &body,
         )
-        .await;
-        self.print_void(result)
+        .await
+        {
+            Err(crate::client::ApiError::Http { body, .. })
+                if body.contains("already subscribed") =>
+            {
+                Err(anyhow::anyhow!("subscriber already on list"))
+            }
+            other => self.print_void(other),
+        }
     }
 
     pub async fn execute_delete_subscriber_by_email(
@@ -2255,10 +2262,7 @@ impl Cli {
                 }
                 Ok(())
             }
-            Err(e) => {
-                eprintln!("Error: {e}");
-                Err(anyhow::anyhow!("{e}"))
-            }
+            Err(e) => Err(anyhow::anyhow!("{e}")),
         }
     }
 
@@ -2275,10 +2279,7 @@ impl Cli {
         let pretty = std::io::stdout().is_terminal();
         let mut page = match first_page {
             Ok(p) => p,
-            Err(e) => {
-                eprintln!("Error: {e}");
-                return Err(anyhow::anyhow!("{e}"));
-            }
+            Err(e) => return Err(anyhow::anyhow!("{e}")),
         };
         let stdout = std::io::stdout();
         let mut out = std::io::BufWriter::new(stdout.lock());
@@ -2311,8 +2312,7 @@ impl Cli {
                 Some(url) => {
                     let url = url.to_string();
                     page = self.client.get_url(&url).await.map_err(|e| {
-                        eprintln!("Error fetching next page: {e}");
-                        anyhow::anyhow!("{e}")
+                        anyhow::anyhow!("fetching next page: {e}")
                     })?;
                 }
                 None => break,
@@ -2327,10 +2327,7 @@ impl Cli {
     ) -> anyhow::Result<()> {
         match result {
             Ok(()) => Ok(()),
-            Err(e) => {
-                eprintln!("Error: {e}");
-                Err(anyhow::anyhow!("{e}"))
-            }
+            Err(e) => Err(anyhow::anyhow!("{e}")),
         }
     }
 }
