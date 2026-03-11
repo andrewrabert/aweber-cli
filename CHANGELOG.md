@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-03-10
+
+### Added
+
+- Add `--custom-field` flag to subscriber update commands
+- Add colored pretty-printed JSON output for TTY
+- Add NDJSON output, `--limit`, and `--verbose` to all paginated endpoints
+
+### Changed
+
+- Rename project from aweber-rs to aweber-cli
+- Make `--status` required for broadcasts list
+- Suppress API link attributes from CLI output
+
+### Fixed
+
+- Fix `ws.op` endpoint paths to use base path with query params
+- Fix custom field values to support empty strings and null values
+- Fix `--tags` and `--tags-not-in` to wrap values in JSON array internally
+- Align CLI required params with API spec
+
 ## [0.1.1] - 2026-03-09
 
 ### Changed
