@@ -36,13 +36,13 @@ Create an annotated tag with release notes as the message. Inspect `git log <las
 ```
 v<version>
 
-### Added
+## Added
 - Description of new feature
 
-### Changed
+## Changed
 - Description of change
 
-### Fixed
+## Fixed
 - Description of fix
 ```
 
@@ -50,7 +50,15 @@ Use only the categories that have entries. Order: Added, Changed, Deprecated, Re
 
 ### Creating the Tag
 
-Use `git tag -a v<version> -F -` with a heredoc to pass the message.
+Pipe the message via `printf` to avoid a trailing newline (heredocs add one, and `--cleanup=verbatim` preserves it):
+
+```sh
+printf '...' | git tag -a v<version> --cleanup=verbatim -F -
+```
+
+The `--cleanup=verbatim` flag prevents git from stripping lines starting with `#` (which it otherwise treats as comments).
+
+After creating the tag, always verify the annotation with `git tag -n999 v<version>` to confirm nothing was stripped.
 
 ## 5. Push
 

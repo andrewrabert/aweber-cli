@@ -13,7 +13,7 @@ This project has custom skills in `.claude/skills/`. You MUST use them:
 
 NEVER manually tag, bump versions, or create releases without invoking the `release` skill first. The skill defines the exact steps, commit message format, and tag format. Skipping it will produce incorrect releases.
 
-Release notes go in annotated tag messages, not in a changelog file.
+Release notes go in annotated tag messages, not in a changelog file. Use `--cleanup=verbatim` when creating tags to preserve `#` markdown headers. Always verify annotations with `git tag -n999` after creating.
 
 ## Build & Test
 
