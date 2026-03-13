@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use anyhow::Context as _;
 
 mod auth;
@@ -8,46 +10,46 @@ async fn main() -> anyhow::Result<()> {
     rustls::crypto::ring::default_provider()
         .install_default()
         .expect("failed to install rustls crypto provider");
-    // First pass: handle cases that don't need credentials
-    let args: Vec<String> = std::env::args().collect();
 
-    // Let clap handle --help / -h / missing subcommand directly (no credentials needed)
-    let needs_early_parse = args.len() <= 1
-        || args
-            .iter()
-            .any(|a| a == "--help" || a == "-h" || a == "--version" || a == "-V");
-    if needs_early_parse {
-        let app = commands::build_command_tree();
-        let _matches = app.get_matches(); // will print help and exit
-        unreachable!();
-    }
+    let app = commands::build_command_tree();
+    let matches = app.get_matches();
 
-    if args[1] == "auth" {
-        let app = commands::build_command_tree();
-        let matches = app.get_matches();
-        if let Some(("auth", auth_matches)) = matches.subcommand() {
-            match auth_matches.subcommand() {
-                Some(("login", _)) => return auth::login().await,
-                Some(("logout", _)) => return auth::logout(),
-                Some(("status", _)) => return auth::status(),
-                _ => unreachable!(),
+    let creds_file = matches
+        .get_one::<String>("credentials-file")
+        .map(|s| Path::new(s.as_str()));
+
+    // Handle auth commands (no credentials needed)
+    if let Some(("auth", auth_matches)) = matches.subcommand() {
+        match auth_matches.subcommand() {
+            Some(("login", login_matches)) => {
+                let client_id = login_matches
+                    .get_one::<String>("client-id")
+                    .expect("client-id has default");
+                let api_url = login_matches
+                    .get_one::<String>("api-url")
+                    .expect("api-url has default");
+                let auth_url = login_matches
+                    .get_one::<String>("auth-url")
+                    .expect("auth-url has default");
+
+                return auth::login(creds_file, api_url, auth_url, client_id).await;
             }
+            Some(("logout", _)) => return auth::logout(creds_file),
+            Some(("status", _)) => return auth::status(creds_file),
+            _ => unreachable!(),
         }
     }
 
-    // Resolve token and account_id from the same auth context
-    let (token, account_id) = match std::env::var("AWEBER_TOKEN").ok().or_else(|| {
-        args.iter()
-            .position(|a| a == "--token")
-            .and_then(|i| args.get(i + 1).cloned())
-    }) {
-        Some(t) => (t, None),
+    // Resolve token and account_id
+    let (token, account_id, api_url) = match matches.get_one::<String>("token").cloned() {
+        Some(t) => (t, None, auth::DEFAULT_API_URL.to_string()),
         None => {
-            let (t, id) = auth::load_session().await?;
-            let parsed: i32 = id
+            let session = auth::load_session(creds_file).await?;
+            let parsed: i32 = session
+                .account_id
                 .parse()
                 .context("invalid account_id in stored credentials")?;
-            (t, Some(parsed))
+            (session.access_token, Some(parsed), session.api_url)
         }
     };
 
@@ -57,15 +59,9 @@ async fn main() -> anyhow::Result<()> {
         )
     })?;
 
-    let app = commands::build_command_tree();
-    let matches = app.get_matches_from(args);
-
-    let base_url = matches
-        .get_one::<String>("base-url")
-        .expect("base-url has default");
-
+    let base_url = format!("{api_url}/1.0");
     let client = aweber::client::Client::new_with_client(
-        base_url,
+        &base_url,
         reqwest::Client::builder()
             .default_headers({
                 let mut headers = reqwest::header::HeaderMap::new();

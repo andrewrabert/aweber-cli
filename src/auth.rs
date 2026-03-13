@@ -3,14 +3,15 @@ use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-const CLIENT_ID: &str = "lZ68iB3i3ZKdCI4q9Uwkqx1c4ykiFe3c";
+pub const DEFAULT_CLIENT_ID: &str = "lZ68iB3i3ZKdCI4q9Uwkqx1c4ykiFe3c";
 const REDIRECT_URI: &str = "urn:ietf:wg:oauth:2.0:oob";
-const AUTH_URL: &str = "https://auth.aweber.com/oauth2/authorize";
-const TOKEN_URL: &str = "https://auth.aweber.com/oauth2/token";
 const SCOPES: &str = "account.read list.read list.write subscriber.read subscriber.write subscriber.read-extended email.read email.write landing-page.read";
+
+pub const DEFAULT_API_URL: &str = "https://api.aweber.com";
+pub const DEFAULT_AUTH_URL: &str = "https://auth.aweber.com";
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Credentials {
@@ -18,6 +19,26 @@ struct Credentials {
     refresh_token: String,
     expires_at: u64,
     account_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    client_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    api_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    auth_url: Option<String>,
+}
+
+impl Credentials {
+    fn client_id(&self) -> &str {
+        self.client_id.as_deref().unwrap_or(DEFAULT_CLIENT_ID)
+    }
+
+    fn api_url(&self) -> &str {
+        self.api_url.as_deref().unwrap_or(DEFAULT_API_URL)
+    }
+
+    fn auth_url(&self) -> &str {
+        self.auth_url.as_deref().unwrap_or(DEFAULT_AUTH_URL)
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -27,9 +48,15 @@ struct TokenResponse {
     expires_in: u64,
 }
 
-fn credentials_path() -> Result<PathBuf> {
-    let config_dir = dirs::config_dir().context("could not determine config directory")?;
-    Ok(config_dir.join("aweber").join("credentials.json"))
+fn credentials_path(override_path: Option<&Path>) -> Result<PathBuf> {
+    match override_path {
+        Some(path) => Ok(path.to_path_buf()),
+        None => {
+            let config_dir =
+                dirs::config_dir().context("could not determine config directory")?;
+            Ok(config_dir.join("aweber").join("credentials.json"))
+        }
+    }
 }
 
 fn now_secs() -> u64 {
@@ -39,8 +66,8 @@ fn now_secs() -> u64 {
         .as_secs()
 }
 
-fn save_credentials(creds: &Credentials) -> Result<()> {
-    let path = credentials_path()?;
+fn save_credentials(creds: &Credentials, override_path: Option<&Path>) -> Result<()> {
+    let path = credentials_path(override_path)?;
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent).context("could not create config directory")?;
     }
@@ -57,8 +84,8 @@ fn save_credentials(creds: &Credentials) -> Result<()> {
     Ok(())
 }
 
-fn load_credentials() -> Result<Credentials> {
-    let path = credentials_path()?;
+fn load_credentials(override_path: Option<&Path>) -> Result<Credentials> {
+    let path = credentials_path(override_path)?;
     let json = std::fs::read_to_string(&path).context("could not read credentials file")?;
     let creds: Credentials = serde_json::from_str(&json)?;
     Ok(creds)
@@ -80,15 +107,22 @@ fn generate_code_challenge(verifier: &str) -> String {
     URL_SAFE_NO_PAD.encode(digest)
 }
 
-async fn exchange_code(code: &str, code_verifier: &str) -> Result<Credentials> {
+async fn exchange_code(
+    code: &str,
+    code_verifier: &str,
+    api_url: &str,
+    auth_url: &str,
+    client_id: &str,
+) -> Result<Credentials> {
+    let url = format!("{auth_url}/oauth2/token");
     let client = reqwest::Client::new();
     let resp = client
-        .post(TOKEN_URL)
+        .post(&url)
         .form(&[
             ("grant_type", "authorization_code"),
             ("code", code),
             ("redirect_uri", REDIRECT_URI),
-            ("client_id", CLIENT_ID),
+            ("client_id", client_id),
             ("code_verifier", code_verifier),
         ])
         .send()
@@ -109,11 +143,14 @@ async fn exchange_code(code: &str, code_verifier: &str) -> Result<Credentials> {
         access_token: token_resp.access_token,
         refresh_token: token_resp.refresh_token,
         expires_at: now_secs() + token_resp.expires_in,
-        account_id: String::new(), // populated after fetching accounts
+        account_id: String::new(),
+        client_id: (client_id != DEFAULT_CLIENT_ID).then(|| client_id.to_string()),
+        api_url: (api_url != DEFAULT_API_URL).then(|| api_url.to_string()),
+        auth_url: (auth_url != DEFAULT_AUTH_URL).then(|| auth_url.to_string()),
     })
 }
 
-async fn fetch_account_id(access_token: &str) -> Result<String> {
+async fn fetch_account_id(access_token: &str, api_url: &str) -> Result<String> {
     #[derive(Deserialize)]
     struct Account {
         id: i64,
@@ -123,9 +160,10 @@ async fn fetch_account_id(access_token: &str) -> Result<String> {
         entries: Vec<Account>,
     }
 
+    let url = format!("{api_url}/1.0/accounts");
     let client = reqwest::Client::new();
     let resp = client
-        .get("https://api.aweber.com/1.0/accounts")
+        .get(&url)
         .bearer_auth(access_token)
         .send()
         .await
@@ -149,13 +187,14 @@ async fn fetch_account_id(access_token: &str) -> Result<String> {
 }
 
 async fn refresh(creds: &Credentials) -> Result<Credentials> {
+    let url = format!("{}/oauth2/token", creds.auth_url());
     let client = reqwest::Client::new();
     let resp = client
-        .post(TOKEN_URL)
+        .post(&url)
         .form(&[
             ("grant_type", "refresh_token"),
             ("refresh_token", &creds.refresh_token),
-            ("client_id", CLIENT_ID),
+            ("client_id", creds.client_id()),
         ])
         .send()
         .await
@@ -176,21 +215,29 @@ async fn refresh(creds: &Credentials) -> Result<Credentials> {
         refresh_token: token_resp.refresh_token,
         expires_at: now_secs() + token_resp.expires_in,
         account_id: creds.account_id.clone(),
+        client_id: creds.client_id.clone(),
+        api_url: creds.api_url.clone(),
+        auth_url: creds.auth_url.clone(),
     })
 }
 
-pub async fn login() -> Result<()> {
+pub async fn login(
+    creds_path: Option<&Path>,
+    api_url: &str,
+    auth_url: &str,
+    client_id: &str,
+) -> Result<()> {
     let code_verifier = generate_code_verifier();
     let code_challenge = generate_code_challenge(&code_verifier);
     let scope_encoded = SCOPES.replace(' ', "%20");
-    let url = format!(
-        "{AUTH_URL}?response_type=code&client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope={scope_encoded}&code_challenge={code_challenge}&code_challenge_method=S256"
+    let authorize_url = format!(
+        "{auth_url}/oauth2/authorize?response_type=code&client_id={client_id}&redirect_uri={REDIRECT_URI}&scope={scope_encoded}&code_challenge={code_challenge}&code_challenge_method=S256"
     );
 
     println!("Open this URL in your browser to authorize:\n");
-    println!("  {url}\n");
+    println!("  {authorize_url}\n");
 
-    if open::that(&url).is_err() {
+    if open::that(&authorize_url).is_err() {
         println!("(Could not open browser automatically. Copy the URL above.)");
     }
 
@@ -211,9 +258,9 @@ pub async fn login() -> Result<()> {
         anyhow::bail!("no authorization code provided");
     }
 
-    let mut creds = exchange_code(code, &code_verifier).await?;
-    creds.account_id = fetch_account_id(&creds.access_token).await?;
-    save_credentials(&creds)?;
+    let mut creds = exchange_code(code, &code_verifier, api_url, auth_url, client_id).await?;
+    creds.account_id = fetch_account_id(&creds.access_token, api_url).await?;
+    save_credentials(&creds, creds_path)?;
 
     println!(
         "\nLogged in successfully (account {}). Token expires in 2 hours and will auto-refresh.",
@@ -222,19 +269,18 @@ pub async fn login() -> Result<()> {
     Ok(())
 }
 
-pub fn logout() -> Result<()> {
-    let path = credentials_path()?;
-    if path.exists() {
-        std::fs::remove_file(&path).context("could not delete credentials file")?;
-        println!("Logged out.");
-    } else {
-        println!("Not logged in.");
+pub fn logout(creds_path: Option<&Path>) -> Result<()> {
+    let path = credentials_path(creds_path)?;
+    match std::fs::remove_file(&path) {
+        Ok(()) => println!("Logged out."),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => println!("Not logged in."),
+        Err(e) => return Err(anyhow::Error::new(e).context("could not delete credentials file")),
     }
     Ok(())
 }
 
-pub fn status() -> Result<()> {
-    match load_credentials() {
+pub fn status(creds_path: Option<&Path>) -> Result<()> {
+    match load_credentials(creds_path) {
         Ok(creds) => {
             let now = now_secs();
             if creds.expires_at > now {
@@ -258,16 +304,31 @@ pub fn status() -> Result<()> {
     Ok(())
 }
 
-/// Load a valid access token and account ID from stored credentials, refreshing if expired.
-pub async fn load_session() -> Result<(String, String)> {
-    let creds = load_credentials().context("not logged in — run `aweber auth login` first")?;
+pub struct Session {
+    pub access_token: String,
+    pub account_id: String,
+    pub api_url: String,
+}
+
+/// Load a valid session from stored credentials, refreshing if expired.
+pub async fn load_session(creds_path: Option<&Path>) -> Result<Session> {
+    let creds =
+        load_credentials(creds_path).context("not logged in — run `aweber auth login` first")?;
 
     const EXPIRY_BUFFER_SECS: u64 = 60;
     if creds.expires_at > now_secs() + EXPIRY_BUFFER_SECS {
-        return Ok((creds.access_token, creds.account_id));
+        return Ok(Session {
+            api_url: creds.api_url().to_string(),
+            access_token: creds.access_token,
+            account_id: creds.account_id,
+        });
     }
 
     let new_creds = refresh(&creds).await?;
-    save_credentials(&new_creds)?;
-    Ok((new_creds.access_token, new_creds.account_id))
+    save_credentials(&new_creds, creds_path)?;
+    Ok(Session {
+        api_url: new_creds.api_url().to_string(),
+        access_token: new_creds.access_token,
+        account_id: new_creds.account_id,
+    })
 }

@@ -1,3 +1,4 @@
+use crate::auth;
 use aweber::cli::{Cli, CliCommand};
 
 /// A single route: an action name within a group, mapped to a CliCommand variant.
@@ -314,10 +315,34 @@ static GROUPS: &[Group] = &[
 /// Returns a `clap::Command` where each resource group is a top-level subcommand
 /// containing action subcommands. The auth subcommand is also included.
 pub fn build_command_tree() -> clap::Command {
+    let login_cmd = clap::Command::new("login")
+        .about("Log in to AWeber")
+        .arg(
+            clap::Arg::new("client-id")
+                .long("client-id")
+                .env("AWEBER_CLIENT_ID")
+                .default_value(auth::DEFAULT_CLIENT_ID)
+                .help("OAuth2 client ID"),
+        )
+        .arg(
+            clap::Arg::new("api-url")
+                .long("api-url")
+                .env("AWEBER_API_URL")
+                .default_value(auth::DEFAULT_API_URL)
+                .help("AWeber API base URL"),
+        )
+        .arg(
+            clap::Arg::new("auth-url")
+                .long("auth-url")
+                .env("AWEBER_AUTH_URL")
+                .default_value(auth::DEFAULT_AUTH_URL)
+                .help("AWeber auth base URL"),
+        );
+
     let auth_cmd = clap::Command::new("auth")
         .about("Manage authentication")
         .subcommand_required(true)
-        .subcommand(clap::Command::new("login").about("Log in to AWeber"))
+        .subcommand(login_cmd)
         .subcommand(clap::Command::new("logout").about("Log out and remove stored credentials"))
         .subcommand(clap::Command::new("status").about("Show authentication status"));
 
@@ -326,11 +351,11 @@ pub fn build_command_tree() -> clap::Command {
         .about("AWeber API CLI")
         .version(env!("AWEBER_VERSION"))
         .arg(
-            clap::Arg::new("base-url")
-                .long("base-url")
-                .env("AWEBER_API_URL")
-                .default_value("https://api.aweber.com/1.0")
-                .help("AWeber API base URL"),
+            clap::Arg::new("credentials-file")
+                .short('c')
+                .long("credentials-file")
+                .env("AWEBER_CREDENTIALS_FILE")
+                .help("Path to the credentials JSON file"),
         )
         .arg(
             clap::Arg::new("token")
