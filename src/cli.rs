@@ -153,6 +153,17 @@ impl Cli {
         clap::ArgGroup::new("list-identifier").args(["list-id", "list-name"]).required(true)
     }
 
+    fn subscriber_id_args() -> [clap::Arg; 2] {
+        [
+            clap::Arg::new("subscriber-id").long("subscriber-id").value_parser(clap::value_parser!(i32)).help("The subscriber ID"),
+            clap::Arg::new("email").long("email").value_parser(clap::value_parser!(String)).help("The subscriber's email address (looked up via the API)"),
+        ]
+    }
+
+    fn subscriber_id_group() -> clap::ArgGroup {
+        clap::ArgGroup::new("subscriber-identifier").args(["subscriber-id", "email"]).required(true)
+    }
+
     pub fn cli_list_accounts() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
@@ -636,7 +647,8 @@ impl Cli {
         clap::Command::new ("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("subscriber-id") . long ("subscriber-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The subscriber ID"))
+            .args(Self::subscriber_id_args())
+            .group(Self::subscriber_id_group())
             .about ("Get subscriber")
     }
     pub fn cli_move_subscriber() -> clap::Command {
@@ -646,7 +658,8 @@ impl Cli {
             .args(Self::list_id_args())
             .group(Self::list_id_group())
             .arg (clap::Arg::new ("list-link") . long ("list-link") . value_parser (clap::value_parser! (String)) . required_unless_present ("json-body") . help ("The link to the destination [List](#tag/Lists/paths/~1accounts~1{accountId}~1lists~1{listId}/get)"))
-            .arg (clap::Arg::new ("subscriber-id") . long ("subscriber-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The subscriber ID"))
+            .args(Self::subscriber_id_args())
+            .group(Self::subscriber_id_group())
             .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
             .about ("Move subscriber")
     }
@@ -654,14 +667,15 @@ impl Cli {
         clap::Command::new ("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("subscriber-id") . long ("subscriber-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The subscriber ID"))
+            .args(Self::subscriber_id_args())
+            .group(Self::subscriber_id_group())
             .about ("Delete subscriber by ID")
     }
     pub fn cli_update_subscriber() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("ad-tracking") . long ("ad-tracking") . value_parser (clap::value_parser! (types :: UpdateSubscriberRequestBodyAdTracking)) . required (false) . help ("The customer ad tracking field"))
             .arg (clap::Arg::new ("custom-field") . long ("custom-field") . value_parser (clap::value_parser! (String)) . required (false) . action (clap::ArgAction::Append) . value_name ("KEY[=VALUE]") . help ("Set a custom field (KEY=VALUE, KEY= for empty string, KEY for null)"))
-            .arg (clap::Arg::new ("email") . long ("email") . value_parser (clap::value_parser! (String)) . required (false) . help ("The subscriber's email address"))
+            .arg (clap::Arg::new ("new-email") . long ("new-email") . value_parser (clap::value_parser! (String)) . required (false) . help ("Set the subscriber's email address"))
             .arg (clap::Arg::new ("last-followup-message-number-sent") . long ("last-followup-message-number-sent") . value_parser (clap::value_parser! (i64)) . required (false) . help ("The sequence number of the last followup message sent to the subscriber.  This field determines the next followup message to be sent to the Subscriber.  When set to 0, the Subscriber will receive the 1st (autoresponse) Followup message.  Set the value of this field to 1001 if you do not want any Followups to be sent to this Subscriber."))
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -669,7 +683,8 @@ impl Cli {
             .arg (clap::Arg::new ("name") . long ("name") . value_parser (clap::value_parser! (types :: UpdateSubscriberRequestBodyName)) . required (false) . help ("The subscriber's name"))
             .arg (clap::Arg::new ("status") . long ("status") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: UpdateSubscriberRequestBodyStatus :: Subscribed . to_string () , types :: UpdateSubscriberRequestBodyStatus :: Unsubscribed . to_string () ,]) , | s | types :: UpdateSubscriberRequestBodyStatus :: try_from (s) . unwrap ())) . required (false) . help ("The subscriber's status. **Note** you cannot set a subscriber's status to \"unconfirmed\"."))
             .arg (clap::Arg::new ("strict-custom-fields") . long ("strict-custom-fields") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: UpdateSubscriberRequestBodyStrictCustomFields :: True . to_string () , types :: UpdateSubscriberRequestBodyStrictCustomFields :: False . to_string () ,]) , | s | types :: UpdateSubscriberRequestBodyStrictCustomFields :: try_from (s) . unwrap ())) . required (false) . help ("If this parameter is present and set to `true`, then custom field names are matched case sensitively.  Enabling this option also causes the operation to fail if a custom field is included that is not defined for the list."))
-            .arg (clap::Arg::new ("subscriber-id") . long ("subscriber-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The subscriber ID"))
+            .args(Self::subscriber_id_args())
+            .group(Self::subscriber_id_group())
             .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
             .about ("Update subscriber by ID")
     }
@@ -677,7 +692,8 @@ impl Cli {
         clap::Command::new ("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("subscriber-id") . long ("subscriber-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The subscriber ID"))
+            .args(Self::subscriber_id_args())
+            .group(Self::subscriber_id_group())
             .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
             .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
             .arg(Self::limit_arg())
@@ -1120,6 +1136,46 @@ impl Cli {
         list.id
             .map(|id| id as i32)
             .ok_or_else(|| anyhow::anyhow!("list '{name}' found but has no ID"))
+    }
+
+    async fn resolve_subscriber_id(
+        &self,
+        matches: &clap::ArgMatches,
+        list_id: i32,
+    ) -> anyhow::Result<i32> {
+        if let Some(&id) = matches.get_one::<i32>("subscriber-id") {
+            return Ok(id);
+        }
+        let email = matches.get_one::<String>("email").unwrap();
+        let result = crate::endpoints::find_subscribers(
+            &self.client,
+            self.account_id,
+            list_id,
+            None, None, None, None, None, None,
+            Some(email),
+            None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None,
+            None, None, None,
+        )
+        .await
+        .context("failed to look up subscriber by email")?;
+        let mut matches_iter = result
+            .entries
+            .iter()
+            .filter(|s| s.email.as_deref() == Some(email));
+        let subscriber = matches_iter
+            .next()
+            .ok_or_else(|| anyhow::anyhow!("no subscriber found with email '{email}'"))?;
+        if matches_iter.next().is_some() {
+            anyhow::bail!(
+                "multiple subscribers found with email '{email}', use --subscriber-id instead"
+            );
+        }
+        subscriber
+            .id
+            .map(|id| id as i32)
+            .ok_or_else(|| anyhow::anyhow!("subscriber '{email}' found but has no ID"))
     }
 
     pub async fn execute_list_accounts(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
@@ -2028,7 +2084,7 @@ impl Cli {
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let subscriber_id = *matches.get_one::<i32>("subscriber-id").unwrap();
+        let subscriber_id = self.resolve_subscriber_id(matches, list_id).await?;
         let result = crate::endpoints::get_subscriber(
             &self.client,
             self.account_id,
@@ -2044,7 +2100,7 @@ impl Cli {
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let subscriber_id = *matches.get_one::<i32>("subscriber-id").unwrap();
+        let subscriber_id = self.resolve_subscriber_id(matches, list_id).await?;
         let body = if let Some(path) = matches.get_one::<std::path::PathBuf>("json-body") {
             let txt = std::fs::read_to_string(path)
                 .with_context(|| format!("failed to read {}", path.display()))?;
@@ -2074,7 +2130,7 @@ impl Cli {
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let subscriber_id = *matches.get_one::<i32>("subscriber-id").unwrap();
+        let subscriber_id = self.resolve_subscriber_id(matches, list_id).await?;
         let result = crate::endpoints::delete_subscriber(
             &self.client,
             self.account_id,
@@ -2090,7 +2146,7 @@ impl Cli {
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let subscriber_id = *matches.get_one::<i32>("subscriber-id").unwrap();
+        let subscriber_id = self.resolve_subscriber_id(matches, list_id).await?;
         let body = if let Some(path) = matches.get_one::<std::path::PathBuf>("json-body") {
             let txt = std::fs::read_to_string(path)
                 .with_context(|| format!("failed to read {}", path.display()))?;
@@ -2099,7 +2155,7 @@ impl Cli {
         } else {
             let mut body = serde_json::Map::new();
             if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyAdTracking>("ad-tracking") { body.insert("ad_tracking".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<String>("email") { body.insert("email".into(), serde_json::json!(v)); }
+            if let Some(v) = matches.get_one::<String>("new-email") { body.insert("email".into(), serde_json::json!(v)); }
             if let Some(v) = matches.get_one::<i64>("last-followup-message-number-sent") { body.insert("last_followup_message_number_sent".into(), serde_json::json!(v)); }
             if let Some(v) = matches.get_one::<String>("misc-notes") { body.insert("misc_notes".into(), serde_json::json!(v)); }
             if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyName>("name") { body.insert("name".into(), serde_json::json!(v.to_string())); }
@@ -2131,7 +2187,7 @@ impl Cli {
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let subscriber_id = *matches.get_one::<i32>("subscriber-id").unwrap();
+        let subscriber_id = self.resolve_subscriber_id(matches, list_id).await?;
         let result = crate::endpoints::get_subscriber_activity(
             &self.client,
             self.account_id,
