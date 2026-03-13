@@ -56,3 +56,56 @@ Check auth status:
 ```sh
 aweber auth status
 ```
+
+### Examples
+
+List all subscriber lists:
+
+```
+$ aweber lists list
+{
+  "id": 1,
+  "name": "Curated Tech News",
+  "total_subscribed_subscribers": 0,
+  "total_subscribers": 205,
+  "total_subscribers_subscribed_today": 4,
+  "total_subscribers_subscribed_yesterday": 0,
+  "total_unconfirmed_subscribers": 3,
+  "total_unsubscribed_subscribers": 0,
+  "unique_list_id": "awlist1",
+  "uuid": "e7a69cec-851e-4418-acd5-04ccc312c91c"
+}
+{
+  "id": 2,
+  "name": "Personal Newsletter",
+  "total_subscribed_subscribers": 1,
+  "total_subscribers": 40,
+  "total_subscribers_subscribed_today": 1,
+  "total_subscribers_subscribed_yesterday": 0,
+  "total_unconfirmed_subscribers": 0,
+  "total_unsubscribed_subscribers": 0,
+  "unique_list_id": "awlist2",
+  "uuid": "9ef78f93-648b-48db-898f-54a090fc5a58"
+}
+```
+
+Get a subscriber by list name and email:
+
+```
+$ aweber subscribers get --list 'Curated Tech News' --email user@example.com
+{
+  "custom_fields": {
+    "a": "b",
+    "z": "y"
+  },
+  "email": "user@example.com",
+  "id": 789,
+  "is_verified": true,
+  "last_followup_message_number_sent": 1001,
+  "status": "subscribed",
+  "subscribed_at": "2026-03-12T23:42:55.877144+00:00",
+  "subscription_method": "api",
+  "uuid": "4a743845-8d6e-4876-9099-87d3d0bcb899",
+  "verified_at": "2026-03-12T19:43:16+00:00"
+}
+```
