@@ -90,5 +90,11 @@ async fn main() -> anyhow::Result<()> {
     let cli_cmd = commands::resolve_command(group_name, action_name)
         .ok_or_else(|| anyhow::anyhow!("unknown command: {group_name} {action_name}"))?;
 
-    cli.execute(cli_cmd, action_matches).await
+    match cli.execute(cli_cmd, action_matches).await {
+        Ok(()) => Ok(()),
+        Err(e) => {
+            eprintln!("Error: {e}");
+            std::process::exit(1);
+        }
+    }
 }

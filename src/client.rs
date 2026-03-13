@@ -57,6 +57,19 @@ impl fmt::Display for ApiError {
     }
 }
 
+impl ApiError {
+    /// Check if the AWeber API error message matches the given string.
+    pub fn api_message_is(&self, expected: &str) -> bool {
+        let ApiError::Http { body, .. } = self else {
+            return false;
+        };
+        let Ok(json) = serde_json::from_str::<serde_json::Value>(body) else {
+            return false;
+        };
+        json.pointer("/error/message").and_then(|v| v.as_str()) == Some(expected)
+    }
+}
+
 impl std::error::Error for ApiError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {

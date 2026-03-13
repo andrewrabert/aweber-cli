@@ -1801,7 +1801,13 @@ impl Cli {
             &body,
         )
         .await;
-        self.print_void(result)
+        match result {
+            Err(e) if e.api_message_is("name: Must be unique") => {
+                let name = matches.get_one::<String>("name").map(|s| s.as_str()).unwrap_or("unknown");
+                Err(e).context(format!("custom field '{name}' already exists"))
+            }
+            other => self.print_void(other),
+        }
     }
 
     pub async fn execute_get_custom_field(
@@ -2010,10 +2016,8 @@ impl Cli {
         )
         .await
         {
-            Err(crate::client::ApiError::Http { body, .. })
-                if body.contains("already subscribed") =>
-            {
-                Err(anyhow::anyhow!("subscriber already on list"))
+            Err(e) if e.api_message_is("email: Subscriber already subscribed.") => {
+                Err(e).context("subscriber already on list")
             }
             other => self.print_void(other),
         }
