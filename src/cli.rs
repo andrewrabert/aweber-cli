@@ -145,12 +145,12 @@ impl Cli {
     fn list_id_args() -> [clap::Arg; 2] {
         [
             clap::Arg::new("list-id").long("list-id").value_parser(clap::value_parser!(i32)).help("The list ID"),
-            clap::Arg::new("list-name").long("list-name").value_parser(clap::value_parser!(String)).help("The list name (looked up via the API)"),
+            clap::Arg::new("list").long("list").value_parser(clap::value_parser!(String)).help("The list name (looked up via the API)"),
         ]
     }
 
     fn list_id_group() -> clap::ArgGroup {
-        clap::ArgGroup::new("list-identifier").args(["list-id", "list-name"]).required(true)
+        clap::ArgGroup::new("list-identifier").args(["list-id", "list"]).required(true)
     }
 
     fn subscriber_id_args() -> [clap::Arg; 2] {
@@ -1112,7 +1112,7 @@ impl Cli {
         if let Some(&id) = matches.get_one::<i32>("list-id") {
             return Ok(id);
         }
-        let name = matches.get_one::<String>("list-name").unwrap();
+        let name = matches.get_one::<String>("list").unwrap();
         let result = crate::endpoints::find_lists(
             &self.client,
             self.account_id,
