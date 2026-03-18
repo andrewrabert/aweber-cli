@@ -22,6 +22,7 @@ Usage: aweber [OPTIONS] <COMMAND>
 
 Commands:
   auth                 Manage authentication
+  api                  Make an authenticated API request
   lists                Manage subscriber lists
   subscribers          Manage subscribers
   broadcasts           Manage broadcasts (email campaigns)
@@ -38,9 +39,20 @@ Commands:
   help                 Print this message or the help of the given subcommand(s)
 
 Options:
-      --base-url <base-url>  AWeber API base URL [env: AWEBER_API_URL=] [default: https://api.aweber.com/1.0]
-      --token <token>        OAuth2 access token (overrides stored credentials) [env: AWEBER_TOKEN=]
-  -h, --help                 Print help
+  -c, --credentials-file <credentials-file>
+          Path to the credentials JSON file [env: AWEBER_CREDENTIALS_FILE=]
+      --token <token>
+          OAuth2 access token (overrides stored credentials) [env: AWEBER_TOKEN=]
+      --api-url <api-url>
+          AWeber API base URL [env: AWEBER_API_URL=] [default: https://api.aweber.com]
+      --auth-url <auth-url>
+          AWeber auth base URL [env: AWEBER_AUTH_URL=] [default: https://auth.aweber.com]
+  -v, --verbose
+          Print request and response details to stderr
+  -h, --help
+          Print help
+  -V, --version
+          Print version
 ```
 
 ### Authentication
@@ -86,6 +98,34 @@ $ aweber lists list
   "total_unsubscribed_subscribers": 0,
   "unique_list_id": "awlist2",
   "uuid": "9ef78f93-648b-48db-898f-54a090fc5a58"
+}
+```
+
+Make a raw API request:
+
+```
+$ aweber api /1.0/accounts
+HTTP/1.1 200
+date: Wed, 18 Mar 2026 21:43:24 GMT
+content-type: application/json; charset="utf-8"
+content-length: 514
+
+{
+  "entries": [
+    {
+      "analytics_src": "//analytics.aweber.com/js/awt_analytics.js?id=",
+      "id": 123,
+      "resource_type_link": "https://api.aweber.com/1.0/#account",
+      "self_link": "https://api.aweber.com/1.0/accounts/123",
+      "lists_collection_link": "https://api.aweber.com/1.0/accounts/123/lists",
+      "integrations_collection_link": "https://api.aweber.com/1.0/accounts/123/integrations",
+      "uuid": "21821d44-7d33-4e3a-8475-eb74e48f0c63",
+      "company": "My Company"
+    }
+  ],
+  "start": 0,
+  "total_size": 1,
+  "resource_type_link": "https://api.aweber.com/1.0/#accounts"
 }
 ```
 
