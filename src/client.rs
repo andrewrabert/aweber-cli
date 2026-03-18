@@ -210,6 +210,14 @@ impl<'a> ApiRequest<'a> {
     }
 }
 
+/// Response from a raw API request.
+pub struct RawResponse {
+    pub status: u16,
+    pub http_version: &'static str,
+    pub headers: Vec<(String, String)>,
+    pub body: Vec<u8>,
+}
+
 impl Client {
     /// GET an absolute URL and deserialize the response.
     pub async fn get_url<T: serde::de::DeserializeOwned>(&self, url: &str) -> Result<T, ApiError> {
@@ -224,6 +232,58 @@ impl Client {
             .await?;
         let body = handle_response(response, self.verbose).await?;
         serde_json::from_str(&body).map_err(|e| ApiError::Deserialize { source: e, body })
+    }
+
+    /// Send a raw API request, returning the full response.
+    pub async fn raw_request(
+        &self,
+        method: reqwest::Method,
+        path: &str,
+        headers: &[(reqwest::header::HeaderName, String)],
+        body: Option<&[u8]>,
+    ) -> Result<RawResponse, ApiError> {
+        let url = format!("{}{}", self.baseurl, path);
+        if self.verbose {
+            eprintln!("{} {url}", method);
+        }
+        let mut req = self.client.request(method, &url);
+        for (name, value) in headers {
+            req = req.header(name, value);
+        }
+        if let Some(body) = body {
+            if self.verbose {
+                eprintln!("{}", String::from_utf8_lossy(body));
+            }
+            req = req.body(body.to_vec());
+        }
+        let response = req.send().await?;
+        let status = response.status().as_u16();
+        let http_version = match response.version() {
+            reqwest::Version::HTTP_09 => "HTTP/0.9",
+            reqwest::Version::HTTP_10 => "HTTP/1.0",
+            reqwest::Version::HTTP_11 => "HTTP/1.1",
+            reqwest::Version::HTTP_2 => "HTTP/2",
+            reqwest::Version::HTTP_3 => "HTTP/3",
+            _ => "HTTP/?",
+        };
+        let resp_headers = response
+            .headers()
+            .iter()
+            .map(|(k, v)| (k.to_string(), v.to_str().unwrap_or("<binary>").to_string()))
+            .collect();
+        if self.verbose {
+            eprintln!("< {status}");
+        }
+        let bytes = response.bytes().await?.to_vec();
+        if self.verbose && !bytes.is_empty() {
+            eprintln!("{}", String::from_utf8_lossy(&bytes));
+        }
+        Ok(RawResponse {
+            status,
+            http_version,
+            headers: resp_headers,
+            body: bytes,
+        })
     }
 }
 

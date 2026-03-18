@@ -332,6 +332,33 @@ pub fn build_command_tree() -> clap::Command {
         .subcommand(clap::Command::new("logout").about("Log out and remove stored credentials"))
         .subcommand(clap::Command::new("status").about("Show authentication status"));
 
+    let api_cmd = clap::Command::new("api")
+        .about("Make an authenticated API request")
+        .arg(
+            clap::Arg::new("path")
+                .required(true)
+                .help("API path (e.g., /1.0/accounts/12345/lists)"),
+        )
+        .arg(
+            clap::Arg::new("method")
+                .short('X')
+                .long("method")
+                .default_value("GET")
+                .help("HTTP method"),
+        )
+        .arg(
+            clap::Arg::new("input")
+                .long("input")
+                .help("Request body file (use - for stdin)"),
+        )
+        .arg(
+            clap::Arg::new("header")
+                .short('H')
+                .long("header")
+                .action(clap::ArgAction::Append)
+                .help("Extra header (key:value, repeatable)"),
+        );
+
     let mut app = clap::Command::new("aweber-cli")
         .bin_name("aweber")
         .about("AWeber API CLI")
@@ -372,7 +399,8 @@ pub fn build_command_tree() -> clap::Command {
                 .help("Print request and response details to stderr"),
         )
         .subcommand_required(true)
-        .subcommand(auth_cmd);
+        .subcommand(auth_cmd)
+        .subcommand(api_cmd);
 
     for group in GROUPS {
         let mut group_cmd = clap::Command::new(group.name)

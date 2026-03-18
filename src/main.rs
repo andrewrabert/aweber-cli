@@ -1,3 +1,4 @@
+use std::io::{IsTerminal, Read, Write};
 use std::path::Path;
 
 use anyhow::Context as _;
@@ -75,6 +76,11 @@ async fn main() -> anyhow::Result<()> {
     let verbose = matches.get_flag("verbose");
     let client = client.with_verbose(verbose);
 
+    // Handle api command (needs auth but not account_id)
+    if let Some(("api", api_matches)) = matches.subcommand() {
+        return handle_api_command(&client, api_matches).await;
+    }
+
     let account_id = match account_id {
         Some(id) => id,
         None => {
@@ -109,4 +115,85 @@ async fn main() -> anyhow::Result<()> {
             std::process::exit(1);
         }
     }
+}
+
+async fn handle_api_command(
+    client: &aweber::client::Client,
+    matches: &clap::ArgMatches,
+) -> anyhow::Result<()> {
+    let path = matches
+        .get_one::<String>("path")
+        .expect("path is required");
+    let method: reqwest::Method = matches
+        .get_one::<String>("method")
+        .expect("method has default")
+        .parse()
+        .context("invalid HTTP method")?;
+
+    let body = match matches.get_one::<String>("input") {
+        Some(input) if input == "-" => {
+            let mut buf = Vec::new();
+            std::io::stdin().read_to_end(&mut buf)?;
+            Some(buf)
+        }
+        Some(file) => Some(std::fs::read(file).context("failed to read input file")?),
+        None => None,
+    };
+
+    let headers: Vec<(reqwest::header::HeaderName, String)> = matches
+        .get_many::<String>("header")
+        .unwrap_or_default()
+        .map(|h| {
+            let (key, value) = h
+                .split_once(':')
+                .context("header must be key:value")?;
+            let name = key
+                .parse::<reqwest::header::HeaderName>()
+                .map_err(|e| anyhow::anyhow!("invalid header name '{key}': {e}"))?;
+            Ok((name, value.trim_start().to_string()))
+        })
+        .collect::<anyhow::Result<Vec<_>>>()?;
+
+    let resp = client
+        .raw_request(method, path, &headers, body.as_deref())
+        .await?;
+
+    let color = std::io::stderr().is_terminal();
+    let pretty = std::io::stdout().is_terminal();
+
+    print_response_headers(&resp, color);
+
+    if pretty {
+        if let Ok(json) = serde_json::from_slice::<serde_json::Value>(&resp.body) {
+            let formatted = colored_json::to_colored_json_auto(&json)?;
+            println!("{formatted}");
+        } else {
+            std::io::stdout().write_all(&resp.body)?;
+        }
+    } else {
+        std::io::stdout().write_all(&resp.body)?;
+    }
+
+    if !(200..300).contains(&resp.status) {
+        std::process::exit(1);
+    }
+    Ok(())
+}
+
+fn print_response_headers(resp: &aweber::client::RawResponse, color: bool) {
+    if color {
+        eprintln!(
+            "\x1b[34m{}\x1b[0m \x1b[36m{}\x1b[0m",
+            resp.http_version, resp.status
+        );
+        for (key, value) in &resp.headers {
+            eprintln!("\x1b[37m{key}:\x1b[0m \x1b[36m{value}\x1b[0m");
+        }
+    } else {
+        eprintln!("{} {}", resp.http_version, resp.status);
+        for (key, value) in &resp.headers {
+            eprintln!("{key}: {value}");
+        }
+    }
+    eprintln!();
 }
