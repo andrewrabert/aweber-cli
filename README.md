@@ -71,7 +71,7 @@ aweber auth status
 
 ### Examples
 
-List all subscriber lists:
+#### List all subscriber lists:
 
 ```
 $ aweber lists list
@@ -101,7 +101,29 @@ $ aweber lists list
 }
 ```
 
-Make a raw API request:
+
+#### Get a subscriber by list name and email:
+
+```
+$ aweber subscribers get --list 'Curated Tech News' --email user@example.com
+{
+  "custom_fields": {
+    "a": "b",
+    "z": "y"
+  },
+  "email": "user@example.com",
+  "id": 789,
+  "is_verified": true,
+  "last_followup_message_number_sent": 1001,
+  "status": "subscribed",
+  "subscribed_at": "2026-03-12T23:42:55.877144+00:00",
+  "subscription_method": "api",
+  "uuid": "4a743845-8d6e-4876-9099-87d3d0bcb899",
+  "verified_at": "2026-03-12T19:43:16+00:00"
+}
+```
+
+#### Make a raw API request:
 
 ```
 $ aweber api /1.0/accounts
@@ -126,26 +148,5 @@ content-length: 514
   "start": 0,
   "total_size": 1,
   "resource_type_link": "https://api.aweber.com/1.0/#accounts"
-}
-```
-
-Get a subscriber by list name and email:
-
-```
-$ aweber subscribers get --list 'Curated Tech News' --email user@example.com
-{
-  "custom_fields": {
-    "a": "b",
-    "z": "y"
-  },
-  "email": "user@example.com",
-  "id": 789,
-  "is_verified": true,
-  "last_followup_message_number_sent": 1001,
-  "status": "subscribed",
-  "subscribed_at": "2026-03-12T23:42:55.877144+00:00",
-  "subscription_method": "api",
-  "uuid": "4a743845-8d6e-4876-9099-87d3d0bcb899",
-  "verified_at": "2026-03-12T19:43:16+00:00"
 }
 ```
