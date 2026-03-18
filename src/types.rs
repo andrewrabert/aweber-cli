@@ -282,8 +282,8 @@ pub struct Activity {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub event_time: Option<String>,
     #[doc = "Identifier for this subscriber activity.  This is set to the type if no reasonable identifier exists."]
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub id: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "crate::serde_helpers::deserialize_string_or_int")]
+    pub id: Option<String>,
     #[doc = "The link to the event type"]
     #[serde(default, skip_serializing)]
     pub resource_type_link: Option<String>,
