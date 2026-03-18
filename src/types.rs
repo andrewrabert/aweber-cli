@@ -1089,8 +1089,7 @@ pub struct GetAccountsListsSubscribers2Response {
     pub region: Option<String>,
     #[doc = "A link that identifies the type of resource that this collection represents"]
     #[serde(default, skip_serializing)]
-    pub resource_type_link:
-        Option<GetAccountsListsSubscribers2ResponseResourceTypeLink>,
+    pub resource_type_link: Option<String>,
     #[doc = "The link to this resource"]
     #[serde(default, skip_serializing)]
     pub self_link: Option<String>,
@@ -1124,7 +1123,6 @@ pub struct GetAccountsListsSubscribers2Response {
     #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
     pub verified_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
-string_enum! { pub enum GetAccountsListsSubscribers2ResponseResourceTypeLink { HttpsApiAweberCom10Subscriber => "https://api.aweber.com/1.0/#subscriber" } }
 string_enum! { pub enum GetAccountsListsSubscribers2ResponseStatus { Subscribed => "subscribed", Unsubscribed => "unsubscribed", Unconfirmed => "unconfirmed" } }
 string_enum! { pub enum GetAccountsListsSubscribers2ResponseSubscriptionMethod { Api => "api", Email => "email", Import => "import", Webform => "webform" } }
 string_enum! { pub enum GetAccountsListsSubscribers2ResponseUnsubscribeMethod { UnsubscribeLink => "unsubscribe link", CustomerCp => "customer cp", Undeliverable => "undeliverable", ApiUnsubscribe => "api: unsubscribe", ApiMove => "api: move" } }
@@ -1875,7 +1873,7 @@ pub struct Subscriber {
     pub region: Option<String>,
     #[doc = "A link that identifies the type of resource that this collection represents"]
     #[serde(default, skip_serializing)]
-    pub resource_type_link: Option<SubscriberResourceTypeLink>,
+    pub resource_type_link: Option<String>,
     #[doc = "The link to this resource"]
     #[serde(default, skip_serializing)]
     pub self_link: Option<String>,
@@ -2036,7 +2034,6 @@ pub struct SubscriberGetActivity {
     #[serde(default, skip_serializing)]
     pub total_size_link: Option<String>,
 }
-string_enum! { pub enum SubscriberResourceTypeLink { HttpsApiAweberCom10Subscriber => "https://api.aweber.com/1.0/#subscriber" } }
 string_enum! { pub enum SubscriberStatus { Subscribed => "subscribed", Unsubscribed => "unsubscribed", Unconfirmed => "unconfirmed" } }
 string_enum! { pub enum SubscriberSubscriptionMethod { Api => "api", Email => "email", Import => "import", Webform => "webform" } }
 string_enum! { pub enum SubscriberUnsubscribeMethod { UnsubscribeLink => "unsubscribe link", CustomerCp => "customer cp", Undeliverable => "undeliverable", ApiUnsubscribe => "api: unsubscribe", ApiMove => "api: move" } }
