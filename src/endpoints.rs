@@ -11,7 +11,7 @@ pub async fn get_accounts(
     ws_size: Option<std::num::NonZeroU32>,
     ws_start: Option<i32>,
 ) -> Result<types::Accounts, ApiError> {
-    ApiRequest::new(client, Method::GET, "/accounts".into())
+    ApiRequest::new(client, Method::GET, "/1.0/accounts".into())
         .query_opt("ws.size", ws_size)
         .query_opt("ws.start", ws_start)
         .send()
@@ -19,7 +19,7 @@ pub async fn get_accounts(
 }
 
 pub async fn get_account(client: &Client, account_id: i32) -> Result<types::Account, ApiError> {
-    ApiRequest::new(client, Method::GET, format!("/accounts/{account_id}"))
+    ApiRequest::new(client, Method::GET, format!("/1.0/accounts/{account_id}"))
         .send()
         .await
 }
@@ -66,7 +66,7 @@ pub async fn find_account_subscribers(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}"),
+        format!("/1.0/accounts/{account_id}"),
     )
     .query("ws.op", "findSubscribers")
     .query_opt("ad_tracking", ad_tracking)
@@ -122,7 +122,7 @@ pub async fn list_account_webform_split_tests(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}"),
+        format!("/1.0/accounts/{account_id}"),
     )
     .query("ws.op", "getWebFormSplitTests")
     .query_opt("ws.size", ws_size)
@@ -140,7 +140,7 @@ pub async fn list_account_webforms(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}"),
+        format!("/1.0/accounts/{account_id}"),
     )
     .query("ws.op", "getWebForms")
     .query_opt("ws.size", ws_size)
@@ -162,7 +162,7 @@ pub async fn list_integrations(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/integrations"),
+        format!("/1.0/accounts/{account_id}/integrations"),
     )
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
@@ -178,7 +178,7 @@ pub async fn get_integration(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/integrations/{integration_id}"),
+        format!("/1.0/accounts/{account_id}/integrations/{integration_id}"),
     )
     .send()
     .await
@@ -197,7 +197,7 @@ pub async fn list_lists(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists"),
+        format!("/1.0/accounts/{account_id}/lists"),
     )
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
@@ -216,7 +216,7 @@ pub async fn find_lists(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists"),
+        format!("/1.0/accounts/{account_id}/lists"),
     )
     .query("ws.op", "find")
     .query_opt("name", name)
@@ -235,7 +235,7 @@ pub async fn get_list(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}"),
     )
     .send()
     .await
@@ -256,7 +256,7 @@ pub async fn list_broadcasts(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/broadcasts"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/broadcasts"),
     )
     .query_opt("status", status)
     .query_opt("ws.size", ws_size)
@@ -274,7 +274,7 @@ pub async fn create_broadcast(
     ApiRequest::new(
         client,
         Method::POST,
-        format!("/accounts/{account_id}/lists/{list_id}/broadcasts"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/broadcasts"),
     )
     .form_body(body)
     .send()
@@ -290,7 +290,7 @@ pub async fn get_broadcast_total(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/broadcasts/total"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/broadcasts/total"),
     )
     .query("status", status)
     .send()
@@ -306,7 +306,7 @@ pub async fn get_broadcast(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}"),
     )
     .send()
     .await
@@ -322,7 +322,7 @@ pub async fn update_broadcast(
     ApiRequest::new(
         client,
         Method::PUT,
-        format!("/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}"),
     )
     .form_body(body)
     .send()
@@ -338,7 +338,7 @@ pub async fn delete_broadcast(
     ApiRequest::new(
         client,
         Method::DELETE,
-        format!("/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}"),
     )
     .send_no_body()
     .await
@@ -353,7 +353,7 @@ pub async fn cancel_broadcast(
     ApiRequest::new(
         client,
         Method::POST,
-        format!("/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}/cancel"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}/cancel"),
     )
     .send()
     .await
@@ -373,7 +373,7 @@ pub async fn get_broadcast_clicks(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}/clicks"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}/clicks"),
     )
     .query_opt("after", after)
     .query_opt("before", before)
@@ -395,7 +395,7 @@ pub async fn get_broadcast_opens(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}/opens"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}/opens"),
     )
     .query_opt("after", after)
     .query_opt("before", before)
@@ -414,7 +414,7 @@ pub async fn schedule_broadcast(
     ApiRequest::new(
         client,
         Method::POST,
-        format!("/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}/schedule"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/broadcasts/{broadcast_id}/schedule"),
     )
     .form_body(body)
     .send()
@@ -435,7 +435,7 @@ pub async fn list_campaigns(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/campaigns"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/campaigns"),
     )
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
@@ -454,7 +454,7 @@ pub async fn list_campaign_stats(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/campaigns/b{campaign_id}/stats"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/campaigns/b{campaign_id}/stats"),
     )
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
@@ -493,7 +493,7 @@ pub async fn find_campaigns(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/campaigns"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/campaigns"),
     )
     .query("ws.op", "find")
     .query("campaign_type", campaign_type)
@@ -536,7 +536,7 @@ pub async fn list_custom_fields(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/custom_fields"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/custom_fields"),
     )
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
@@ -553,7 +553,7 @@ pub async fn create_custom_field(
     ApiRequest::new(
         client,
         Method::POST,
-        format!("/accounts/{account_id}/lists/{list_id}/custom_fields"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/custom_fields"),
     )
     .json_body(body)
     .send_no_body()
@@ -569,7 +569,7 @@ pub async fn get_custom_field(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/custom_fields/{custom_field_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/custom_fields/{custom_field_id}"),
     )
     .send()
     .await
@@ -584,7 +584,7 @@ pub async fn delete_custom_field(
     ApiRequest::new(
         client,
         Method::DELETE,
-        format!("/accounts/{account_id}/lists/{list_id}/custom_fields/{custom_field_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/custom_fields/{custom_field_id}"),
     )
     .send_no_body()
     .await
@@ -600,7 +600,7 @@ pub async fn update_custom_field(
     ApiRequest::new(
         client,
         Method::PATCH,
-        format!("/accounts/{account_id}/lists/{list_id}/custom_fields/{custom_field_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/custom_fields/{custom_field_id}"),
     )
     .json_body(body)
     .send()
@@ -621,7 +621,7 @@ pub async fn list_landing_pages(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/landing_pages"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/landing_pages"),
     )
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
@@ -638,7 +638,7 @@ pub async fn get_landing_page(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/landing_pages/{landing_page_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/landing_pages/{landing_page_id}"),
     )
     .send()
     .await
@@ -657,7 +657,7 @@ pub async fn create_purchase(
     ApiRequest::new(
         client,
         Method::POST,
-        format!("/accounts/{account_id}/lists/{list_id}/purchases"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/purchases"),
     )
     .json_body(body)
     .send_no_body()
@@ -678,7 +678,7 @@ pub async fn list_segments(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/segments"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/segments"),
     )
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
@@ -695,7 +695,7 @@ pub async fn get_segment(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/segments/{segment_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/segments/{segment_id}"),
     )
     .send()
     .await
@@ -716,7 +716,7 @@ pub async fn list_subscribers(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/subscribers"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/subscribers"),
     )
     .query_opt("sort_order", sort_order)
     .query_opt("ws.size", ws_size)
@@ -734,7 +734,7 @@ pub async fn create_subscriber(
     ApiRequest::new(
         client,
         Method::POST,
-        format!("/accounts/{account_id}/lists/{list_id}/subscribers"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/subscribers"),
     )
     .json_body(body)
     .send_no_body()
@@ -750,7 +750,7 @@ pub async fn delete_subscriber_by_email(
     ApiRequest::new(
         client,
         Method::DELETE,
-        format!("/accounts/{account_id}/lists/{list_id}/subscribers"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/subscribers"),
     )
     .query_opt("subscriber_email", Some(subscriber_email))
     .send_no_body()
@@ -767,7 +767,7 @@ pub async fn update_subscriber_by_email(
     ApiRequest::new(
         client,
         Method::PATCH,
-        format!("/accounts/{account_id}/lists/{list_id}/subscribers"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/subscribers"),
     )
     .query_opt("subscriber_email", Some(subscriber_email))
     .json_body(body)
@@ -820,7 +820,7 @@ pub async fn find_subscribers(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/subscribers"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/subscribers"),
     )
     .query("ws.op", "find")
     .query_opt("ad_tracking", ad_tracking)
@@ -878,7 +878,7 @@ pub async fn get_subscriber(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/subscribers/{subscriber_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/subscribers/{subscriber_id}"),
     )
     .send()
     .await
@@ -894,7 +894,7 @@ pub async fn move_subscriber(
     ApiRequest::new(
         client,
         Method::POST,
-        format!("/accounts/{account_id}/lists/{list_id}/subscribers/{subscriber_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/subscribers/{subscriber_id}"),
     )
     .form_body(body)
     .send_no_body()
@@ -910,7 +910,7 @@ pub async fn delete_subscriber(
     ApiRequest::new(
         client,
         Method::DELETE,
-        format!("/accounts/{account_id}/lists/{list_id}/subscribers/{subscriber_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/subscribers/{subscriber_id}"),
     )
     .send_no_body()
     .await
@@ -926,7 +926,7 @@ pub async fn update_subscriber(
     ApiRequest::new(
         client,
         Method::PATCH,
-        format!("/accounts/{account_id}/lists/{list_id}/subscribers/{subscriber_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/subscribers/{subscriber_id}"),
     )
     .json_body(body)
     .send()
@@ -971,7 +971,7 @@ pub async fn list_tags(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/tags"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/tags"),
     )
     .send()
     .await
@@ -991,7 +991,7 @@ pub async fn list_web_form_split_tests(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/web_form_split_tests"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/web_form_split_tests"),
     )
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
@@ -1008,7 +1008,7 @@ pub async fn get_web_form_split_test(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/web_form_split_tests/{split_test_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/web_form_split_tests/{split_test_id}"),
     )
     .send()
     .await
@@ -1067,7 +1067,7 @@ pub async fn list_web_forms(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/web_forms"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/web_forms"),
     )
     .query_opt("ws.size", ws_size)
     .query_opt("ws.start", ws_start)
@@ -1084,7 +1084,7 @@ pub async fn get_web_form(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/web_forms/{webform_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/web_forms/{webform_id}"),
     )
     .send()
     .await

@@ -1712,7 +1712,7 @@ impl Cli {
             &self.client,
             Method::GET,
             format!(
-                "/accounts/{}/lists/{}/campaigns/b{}/stats/{}",
+                "/1.0/accounts/{}/lists/{}/campaigns/b{}/stats/{}",
                 self.account_id, list_id, campaign_id, stats_id
             ),
         )

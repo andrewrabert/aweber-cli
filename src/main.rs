@@ -58,9 +58,8 @@ async fn main() -> anyhow::Result<()> {
             }
         };
 
-    let base_url = format!("{api_url}/1.0");
     let client = aweber::client::Client::new_with_client(
-        &base_url,
+        &api_url,
         reqwest::Client::builder()
             .default_headers({
                 let mut headers = reqwest::header::HeaderMap::new();
