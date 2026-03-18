@@ -18,6 +18,13 @@ async fn main() -> anyhow::Result<()> {
         .get_one::<String>("credentials-file")
         .map(|s| Path::new(s.as_str()));
 
+    let api_url = matches
+        .get_one::<String>("api-url")
+        .expect("api-url has default");
+    let auth_url = matches
+        .get_one::<String>("auth-url")
+        .expect("auth-url has default");
+
     // Handle auth commands (no credentials needed)
     if let Some(("auth", auth_matches)) = matches.subcommand() {
         match auth_matches.subcommand() {
@@ -25,12 +32,6 @@ async fn main() -> anyhow::Result<()> {
                 let client_id = login_matches
                     .get_one::<String>("client-id")
                     .expect("client-id has default");
-                let api_url = login_matches
-                    .get_one::<String>("api-url")
-                    .expect("api-url has default");
-                let auth_url = login_matches
-                    .get_one::<String>("auth-url")
-                    .expect("auth-url has default");
 
                 return auth::login(creds_file, api_url, auth_url, client_id).await;
             }
@@ -40,24 +41,22 @@ async fn main() -> anyhow::Result<()> {
         }
     }
 
-    // Resolve token and account_id
-    let (token, account_id, api_url) = match matches.get_one::<String>("token").cloned() {
-        Some(t) => (t, None, auth::DEFAULT_API_URL.to_string()),
-        None => {
-            let session = auth::load_session(creds_file).await?;
-            let parsed: i32 = session
-                .account_id
-                .parse()
-                .context("invalid account_id in stored credentials")?;
-            (session.access_token, Some(parsed), session.api_url)
-        }
-    };
-
-    let account_id = account_id.ok_or_else(|| {
-        anyhow::anyhow!(
-            "account ID not available — log in with `aweber auth login` or use a stored session"
-        )
-    })?;
+    // Resolve token and session fallbacks
+    let (token, account_id, api_url, _auth_url) =
+        match matches.get_one::<String>("token").cloned() {
+            Some(t) => (t, None, api_url.clone(), auth_url.clone()),
+            None => {
+                let session = auth::load_session(creds_file).await?;
+                let parsed: i32 = session
+                    .account_id
+                    .parse()
+                    .context("invalid account_id in stored credentials")?;
+                // Stored URLs from credentials take effect when CLI arg is the default
+                let api_url = session.api_url.unwrap_or_else(|| api_url.clone());
+                let auth_url = session.auth_url.unwrap_or_else(|| auth_url.clone());
+                (session.access_token, Some(parsed), api_url, auth_url)
+            }
+        };
 
     let base_url = format!("{api_url}/1.0");
     let client = aweber::client::Client::new_with_client(
@@ -76,6 +75,24 @@ async fn main() -> anyhow::Result<()> {
 
     let verbose = matches.get_flag("verbose");
     let client = client.with_verbose(verbose);
+
+    let account_id = match account_id {
+        Some(id) => id,
+        None => {
+            let accounts: aweber::types::Accounts =
+                aweber::endpoints::get_accounts(&client, None, None)
+                    .await
+                    .context("failed to fetch accounts")?;
+            let account = accounts
+                .entries
+                .first()
+                .context("no accounts found for this token")?;
+            account
+                .id
+                .context("account missing id field")? as i32
+        }
+    };
+
     let cli = aweber::cli::Cli::new(client, account_id);
 
     let (group_name, group_matches) = matches.subcommand().expect("subcommand is required");

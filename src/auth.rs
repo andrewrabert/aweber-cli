@@ -32,10 +32,6 @@ impl Credentials {
         self.client_id.as_deref().unwrap_or(DEFAULT_CLIENT_ID)
     }
 
-    fn api_url(&self) -> &str {
-        self.api_url.as_deref().unwrap_or(DEFAULT_API_URL)
-    }
-
     fn auth_url(&self) -> &str {
         self.auth_url.as_deref().unwrap_or(DEFAULT_AUTH_URL)
     }
@@ -307,7 +303,8 @@ pub fn status(creds_path: Option<&Path>) -> Result<()> {
 pub struct Session {
     pub access_token: String,
     pub account_id: String,
-    pub api_url: String,
+    pub api_url: Option<String>,
+    pub auth_url: Option<String>,
 }
 
 /// Load a valid session from stored credentials, refreshing if expired.
@@ -318,17 +315,19 @@ pub async fn load_session(creds_path: Option<&Path>) -> Result<Session> {
     const EXPIRY_BUFFER_SECS: u64 = 60;
     if creds.expires_at > now_secs() + EXPIRY_BUFFER_SECS {
         return Ok(Session {
-            api_url: creds.api_url().to_string(),
             access_token: creds.access_token,
             account_id: creds.account_id,
+            api_url: creds.api_url,
+            auth_url: creds.auth_url,
         });
     }
 
     let new_creds = refresh(&creds).await?;
     save_credentials(&new_creds, creds_path)?;
     Ok(Session {
-        api_url: new_creds.api_url().to_string(),
         access_token: new_creds.access_token,
         account_id: new_creds.account_id,
+        api_url: new_creds.api_url,
+        auth_url: new_creds.auth_url,
     })
 }

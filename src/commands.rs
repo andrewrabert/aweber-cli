@@ -323,20 +323,6 @@ pub fn build_command_tree() -> clap::Command {
                 .env("AWEBER_CLIENT_ID")
                 .default_value(auth::DEFAULT_CLIENT_ID)
                 .help("OAuth2 client ID"),
-        )
-        .arg(
-            clap::Arg::new("api-url")
-                .long("api-url")
-                .env("AWEBER_API_URL")
-                .default_value(auth::DEFAULT_API_URL)
-                .help("AWeber API base URL"),
-        )
-        .arg(
-            clap::Arg::new("auth-url")
-                .long("auth-url")
-                .env("AWEBER_AUTH_URL")
-                .default_value(auth::DEFAULT_AUTH_URL)
-                .help("AWeber auth base URL"),
         );
 
     let auth_cmd = clap::Command::new("auth")
@@ -362,6 +348,20 @@ pub fn build_command_tree() -> clap::Command {
                 .long("token")
                 .env("AWEBER_TOKEN")
                 .help("OAuth2 access token (overrides stored credentials)"),
+        )
+        .arg(
+            clap::Arg::new("api-url")
+                .long("api-url")
+                .env("AWEBER_API_URL")
+                .default_value(auth::DEFAULT_API_URL)
+                .help("AWeber API base URL"),
+        )
+        .arg(
+            clap::Arg::new("auth-url")
+                .long("auth-url")
+                .env("AWEBER_AUTH_URL")
+                .default_value(auth::DEFAULT_AUTH_URL)
+                .help("AWeber auth base URL"),
         )
         .arg(
             clap::Arg::new("verbose")
