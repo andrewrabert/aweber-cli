@@ -89,6 +89,7 @@ dependencies = [
  "clap",
  "colored_json",
  "dirs",
+ "indexmap",
  "open",
  "reqwest",
  "rustls",

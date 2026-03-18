@@ -357,6 +357,12 @@ pub fn build_command_tree() -> clap::Command {
                 .long("header")
                 .action(clap::ArgAction::Append)
                 .help("Extra header (key:value, repeatable)"),
+        )
+        .arg(
+            clap::Arg::new("json")
+                .long("json")
+                .action(clap::ArgAction::SetTrue)
+                .help("Output JSON object with status, headers, and body"),
         );
 
     let mut app = clap::Command::new("aweber-cli")
