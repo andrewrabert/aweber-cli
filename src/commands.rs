@@ -369,7 +369,7 @@ pub fn build_command_tree() -> clap::Command {
                 .long("verbose")
                 .action(clap::ArgAction::SetTrue)
                 .global(true)
-                .help("Print request URLs to stderr"),
+                .help("Print request and response details to stderr"),
         )
         .subcommand_required(true)
         .subcommand(auth_cmd);

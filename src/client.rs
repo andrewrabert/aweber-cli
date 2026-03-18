@@ -91,6 +91,14 @@ enum Body {
     Form(serde_json::Value),
 }
 
+impl Body {
+    fn value(&self) -> &serde_json::Value {
+        match self {
+            Body::Json(v) | Body::Form(v) => v,
+        }
+    }
+}
+
 /// A builder for API requests that handles path, query params, and body.
 pub struct ApiRequest<'a> {
     client: &'a Client,
@@ -153,9 +161,10 @@ impl<'a> ApiRequest<'a> {
         self
     }
 
-    fn build_request(self) -> reqwest::RequestBuilder {
+    fn build_request(self) -> (reqwest::RequestBuilder, bool) {
+        let verbose = self.client.verbose;
         let url = format!("{}{}", self.client.baseurl, self.path);
-        if self.client.verbose {
+        if verbose {
             if self.query.is_empty() {
                 eprintln!("{} {url}", self.method);
             } else {
@@ -171,40 +180,33 @@ impl<'a> ApiRequest<'a> {
         for (name, value) in &self.extra_headers {
             req = req.header(name, value);
         }
-        match self.body {
-            Some(Body::Json(v)) => req = req.json(&v),
-            Some(Body::Form(v)) => req = req.form(&v),
-            None => {}
+        if let Some(body) = self.body {
+            if verbose {
+                eprintln!("{}", serde_json::to_string_pretty(body.value()).unwrap());
+            }
+            req = match body {
+                Body::Json(v) => req.json(&v),
+                Body::Form(v) => req.form(&v),
+            };
         }
-        req
+        (req, verbose)
     }
 
     /// Send the request and deserialize the response.
     pub async fn send<T: serde::de::DeserializeOwned>(self) -> Result<T, ApiError> {
-        let response = self.build_request().send().await?;
-        let status = response.status().as_u16();
-        if (200..300).contains(&status) {
-            let body = response.text().await?;
-            serde_json::from_str(&body).map_err(|e| ApiError::Deserialize {
-                source: e,
-                body,
-            })
-        } else {
-            let body = response.text().await.unwrap_or_default();
-            Err(ApiError::Http { status, body })
-        }
+        let (req, verbose) = self.build_request();
+        let body = handle_response(req.send().await?, verbose).await?;
+        serde_json::from_str(&body).map_err(|e| ApiError::Deserialize {
+            source: e,
+            body,
+        })
     }
 
     /// Send the request, ignoring the response body (for DELETE, etc.).
     pub async fn send_no_body(self) -> Result<(), ApiError> {
-        let response = self.build_request().send().await?;
-        let status = response.status().as_u16();
-        if (200..300).contains(&status) {
-            Ok(())
-        } else {
-            let body = response.text().await.unwrap_or_default();
-            Err(ApiError::Http { status, body })
-        }
+        let (req, verbose) = self.build_request();
+        handle_response(req.send().await?, verbose).await?;
+        Ok(())
     }
 }
 
@@ -220,14 +222,37 @@ impl Client {
             .header(reqwest::header::ACCEPT, "application/json")
             .send()
             .await?;
-        let status = response.status().as_u16();
-        if (200..300).contains(&status) {
-            let body = response.text().await?;
-            serde_json::from_str(&body).map_err(|e| ApiError::Deserialize { source: e, body })
-        } else {
-            let body = response.text().await.unwrap_or_default();
-            Err(ApiError::Http { status, body })
+        let body = handle_response(response, self.verbose).await?;
+        serde_json::from_str(&body).map_err(|e| ApiError::Deserialize { source: e, body })
+    }
+}
+
+/// Read the response body, log it if verbose, and return it on success or an error on failure.
+async fn handle_response(
+    response: reqwest::Response,
+    verbose: bool,
+) -> Result<String, ApiError> {
+    let status = response.status().as_u16();
+    let is_success = (200..300).contains(&status);
+    let body = if is_success {
+        response.text().await?
+    } else {
+        response.text().await.unwrap_or_default()
+    };
+    if verbose {
+        eprintln!("< {status}");
+        if !body.is_empty() {
+            if let Ok(json) = serde_json::from_str::<serde_json::Value>(&body) {
+                eprintln!("{}", serde_json::to_string_pretty(&json).unwrap());
+            } else {
+                eprintln!("{body}");
+            }
         }
+    }
+    if is_success {
+        Ok(body)
+    } else {
+        Err(ApiError::Http { status, body })
     }
 }
 
