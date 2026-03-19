@@ -123,7 +123,9 @@ $ aweber subscribers get --list 'Curated Tech News' --email user@example.com
 }
 ```
 
-#### Make a raw API request:
+#### Making raw API requests:
+
+##### GET
 
 ```
 $ aweber api /1.0/accounts
@@ -149,4 +151,13 @@ content-length: 514
   "total_size": 1,
   "resource_type_link": "https://api.aweber.com/1.0/#accounts"
 }
+```
+
+##### POST
+
+```
+$ echo '{"email": "user@example.com"}' | aweber api -H 'Content-Type: application/json' -X POST --input - /1.0/accounts/123/lists/456/subscribers
+HTTP/1.1 201
+date: Thu, 19 Mar 2026 15:11:34 GMT
+location: https://api.aweber.com/1.0/accounts/123/lists/456/subscribers/789
 ```
