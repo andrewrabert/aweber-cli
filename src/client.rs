@@ -242,7 +242,11 @@ impl Client {
         headers: &[(reqwest::header::HeaderName, String)],
         body: Option<&[u8]>,
     ) -> Result<RawResponse, ApiError> {
-        let url = format!("{}{}", self.baseurl, path);
+        let url = if path.starts_with(&self.baseurl) {
+            path.to_string()
+        } else {
+            format!("{}{}", self.baseurl, path)
+        };
         if self.verbose {
             eprintln!("{} {url}", method);
         }
