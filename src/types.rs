@@ -1048,7 +1048,7 @@ pub struct GetAccountsListsSubscribers2Response {
     pub custom_fields:
         HashMap<String, Option<String>>,
     #[doc = "The subscriber's designated market area code (USA and canada only)"]
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_i64::option")]
     pub dma_code: Option<i64>,
     #[doc = "The subscriber's email address."]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1832,7 +1832,7 @@ pub struct Subscriber {
     pub custom_fields:
         HashMap<String, Option<String>>,
     #[doc = "The subscriber's designated market area code (USA and canada only)"]
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_i64::option")]
     pub dma_code: Option<i64>,
     #[doc = "The subscriber's email address."]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1925,7 +1925,7 @@ pub struct SubscriberFind {
     pub custom_fields:
         HashMap<String, Option<String>>,
     #[doc = "The subscriber's designated market area code (usa and canada only)"]
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_i64::option")]
     pub dma_code: Option<i64>,
     #[doc = "The subscriber's email address"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -2440,6 +2440,42 @@ mod flexible_datetime {
                         .map_err(serde::de::Error::custom)
                 }
                 None => Ok(None),
+            }
+        }
+    }
+}
+
+/// Deserialize an i64 that may arrive as either a JSON number or a JSON string.
+mod flexible_i64 {
+    pub mod option {
+        use serde::{self, Deserialize, Deserializer, Serializer};
+
+        pub fn serialize<S>(opt: &Option<i64>, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            match opt {
+                Some(v) => serializer.serialize_i64(*v),
+                None => serializer.serialize_none(),
+            }
+        }
+
+        pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            let opt: Option<serde_json::Value> = Option::deserialize(deserializer)?;
+            match opt {
+                Some(serde_json::Value::Number(n)) => n
+                    .as_i64()
+                    .map(Some)
+                    .ok_or_else(|| serde::de::Error::custom("number out of i64 range")),
+                Some(serde_json::Value::String(s)) => s
+                    .parse::<i64>()
+                    .map(Some)
+                    .map_err(serde::de::Error::custom),
+                Some(serde_json::Value::Null) | None => Ok(None),
+                _ => Err(serde::de::Error::custom("expected number or string")),
             }
         }
     }
