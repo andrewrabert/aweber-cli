@@ -27,95 +27,43 @@ impl Cli {
             CliCommand::GetList => Self::cli_get_list(),
             CliCommand::ListBroadcasts => Self::cli_list_broadcasts(),
             CliCommand::CreateBroadcast => Self::cli_create_broadcast(),
-            CliCommand::GetBroadcastTotal => {
-                Self::cli_get_broadcast_total()
-            }
+            CliCommand::GetBroadcastTotal => Self::cli_get_broadcast_total(),
             CliCommand::GetBroadcast => Self::cli_get_broadcast(),
             CliCommand::UpdateBroadcast => Self::cli_update_broadcast(),
-            CliCommand::DeleteBroadcast => {
-                Self::cli_delete_broadcast()
-            }
-            CliCommand::CancelBroadcast => {
-                Self::cli_cancel_broadcast()
-            }
-            CliCommand::GetBroadcastClicks => {
-                Self::cli_get_broadcast_clicks()
-            }
-            CliCommand::GetBroadcastOpens => {
-                Self::cli_get_broadcast_opens()
-            }
-            CliCommand::ScheduleBroadcast => {
-                Self::cli_schedule_broadcast()
-            }
+            CliCommand::DeleteBroadcast => Self::cli_delete_broadcast(),
+            CliCommand::CancelBroadcast => Self::cli_cancel_broadcast(),
+            CliCommand::GetBroadcastClicks => Self::cli_get_broadcast_clicks(),
+            CliCommand::GetBroadcastOpens => Self::cli_get_broadcast_opens(),
+            CliCommand::ScheduleBroadcast => Self::cli_schedule_broadcast(),
             CliCommand::WaitBroadcast => Self::cli_wait_broadcast(),
             CliCommand::ListCampaigns => Self::cli_list_campaigns(),
-            CliCommand::ListCampaignStats => {
-                Self::cli_list_campaign_stats()
-            }
-            CliCommand::GetCampaignStat => {
-                Self::cli_get_campaign_stat()
-            }
-            CliCommand::FindCampaigns => {
-                Self::cli_find_campaigns()
-            }
-            CliCommand::GetCampaign => {
-                Self::cli_get_campaign()
-            }
-            CliCommand::ListCustomFields => {
-                Self::cli_list_custom_fields()
-            }
-            CliCommand::CreateCustomField => {
-                Self::cli_create_custom_field()
-            }
-            CliCommand::GetCustomField => {
-                Self::cli_get_custom_field()
-            }
-            CliCommand::DeleteCustomField => {
-                Self::cli_delete_custom_field()
-            }
-            CliCommand::UpdateCustomField => {
-                Self::cli_update_custom_field()
-            }
-            CliCommand::ListLandingPages => {
-                Self::cli_list_landing_pages()
-            }
-            CliCommand::GetLandingPage => {
-                Self::cli_get_landing_page()
-            }
+            CliCommand::ListCampaignStats => Self::cli_list_campaign_stats(),
+            CliCommand::GetCampaignStat => Self::cli_get_campaign_stat(),
+            CliCommand::FindCampaigns => Self::cli_find_campaigns(),
+            CliCommand::GetCampaign => Self::cli_get_campaign(),
+            CliCommand::ListCustomFields => Self::cli_list_custom_fields(),
+            CliCommand::CreateCustomField => Self::cli_create_custom_field(),
+            CliCommand::GetCustomField => Self::cli_get_custom_field(),
+            CliCommand::DeleteCustomField => Self::cli_delete_custom_field(),
+            CliCommand::UpdateCustomField => Self::cli_update_custom_field(),
+            CliCommand::ListLandingPages => Self::cli_list_landing_pages(),
+            CliCommand::GetLandingPage => Self::cli_get_landing_page(),
             CliCommand::CreatePurchase => Self::cli_create_purchase(),
             CliCommand::ListSegments => Self::cli_list_segments(),
             CliCommand::GetSegment => Self::cli_get_segment(),
             CliCommand::ListSubscribers => Self::cli_list_subscribers(),
             CliCommand::CreateSubscriber => Self::cli_create_subscriber(),
-            CliCommand::DeleteSubscriberByEmail => {
-                Self::cli_delete_subscriber_by_email()
-            }
-            CliCommand::UpdateSubscriberByEmail => {
-                Self::cli_update_subscriber_by_email()
-            }
-            CliCommand::FindSubscribers => {
-                Self::cli_find_subscribers()
-            }
+            CliCommand::DeleteSubscriberByEmail => Self::cli_delete_subscriber_by_email(),
+            CliCommand::UpdateSubscriberByEmail => Self::cli_update_subscriber_by_email(),
+            CliCommand::FindSubscribers => Self::cli_find_subscribers(),
             CliCommand::GetSubscriber => Self::cli_get_subscriber(),
-            CliCommand::MoveSubscriber => {
-                Self::cli_move_subscriber()
-            }
-            CliCommand::DeleteSubscriber => {
-                Self::cli_delete_subscriber()
-            }
-            CliCommand::UpdateSubscriber => {
-                Self::cli_update_subscriber()
-            }
-            CliCommand::GetSubscriberActivity => {
-                Self::cli_get_subscriber_activity()
-            }
+            CliCommand::MoveSubscriber => Self::cli_move_subscriber(),
+            CliCommand::DeleteSubscriber => Self::cli_delete_subscriber(),
+            CliCommand::UpdateSubscriber => Self::cli_update_subscriber(),
+            CliCommand::GetSubscriberActivity => Self::cli_get_subscriber_activity(),
             CliCommand::ListTags => Self::cli_list_tags(),
-            CliCommand::ListWebFormSplitTests => {
-                Self::cli_list_web_form_split_tests()
-            }
-            CliCommand::GetWebFormSplitTest => {
-                Self::cli_get_web_form_split_test()
-            }
+            CliCommand::ListWebFormSplitTests => Self::cli_list_web_form_split_tests(),
+            CliCommand::GetWebFormSplitTest => Self::cli_get_web_form_split_test(),
             CliCommand::ListWebFormSplitTestComponents => {
                 Self::cli_list_web_form_split_test_components()
             }
@@ -144,47 +92,82 @@ impl Cli {
 
     fn list_id_args() -> [clap::Arg; 2] {
         [
-            clap::Arg::new("list-id").long("list-id").value_parser(clap::value_parser!(i32)).help("The list ID"),
-            clap::Arg::new("list").long("list").value_parser(clap::value_parser!(String)).help("The list name (looked up via the API)"),
+            clap::Arg::new("list-id")
+                .long("list-id")
+                .value_parser(clap::value_parser!(i32))
+                .help("The list ID"),
+            clap::Arg::new("list")
+                .long("list")
+                .value_parser(clap::value_parser!(String))
+                .help("The list name (looked up via the API)"),
         ]
     }
 
     fn list_id_group() -> clap::ArgGroup {
-        clap::ArgGroup::new("list-identifier").args(["list-id", "list"]).required(true)
+        clap::ArgGroup::new("list-identifier")
+            .args(["list-id", "list"])
+            .required(true)
     }
 
     fn subscriber_id_args() -> [clap::Arg; 2] {
         [
-            clap::Arg::new("subscriber-id").long("subscriber-id").value_parser(clap::value_parser!(i32)).help("The subscriber ID"),
-            clap::Arg::new("email").long("email").value_parser(clap::value_parser!(String)).help("The subscriber's email address (looked up via the API)"),
+            clap::Arg::new("subscriber-id")
+                .long("subscriber-id")
+                .value_parser(clap::value_parser!(i32))
+                .help("The subscriber ID"),
+            clap::Arg::new("email")
+                .long("email")
+                .value_parser(clap::value_parser!(String))
+                .help("The subscriber's email address (looked up via the API)"),
         ]
     }
 
     fn subscriber_id_group() -> clap::ArgGroup {
-        clap::ArgGroup::new("subscriber-identifier").args(["subscriber-id", "email"]).required(true)
+        clap::ArgGroup::new("subscriber-identifier")
+            .args(["subscriber-id", "email"])
+            .required(true)
     }
 
     fn custom_field_id_args() -> [clap::Arg; 2] {
         [
-            clap::Arg::new("custom-field-id").long("custom-field-id").value_parser(clap::value_parser!(i32)).help("The custom field ID"),
-            clap::Arg::new("custom-field").long("custom-field").value_parser(clap::value_parser!(String)).help("The custom field name (looked up via the API)"),
+            clap::Arg::new("custom-field-id")
+                .long("custom-field-id")
+                .value_parser(clap::value_parser!(i32))
+                .help("The custom field ID"),
+            clap::Arg::new("custom-field")
+                .long("custom-field")
+                .value_parser(clap::value_parser!(String))
+                .help("The custom field name (looked up via the API)"),
         ]
     }
 
     fn custom_field_id_group() -> clap::ArgGroup {
-        clap::ArgGroup::new("custom-field-identifier").args(["custom-field-id", "custom-field"]).required(true)
+        clap::ArgGroup::new("custom-field-identifier")
+            .args(["custom-field-id", "custom-field"])
+            .required(true)
     }
 
     pub fn cli_list_accounts() -> clap::Command {
-        clap::Command::new ("")
-            .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
-            .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("ws-size")
+                    .long("ws-size")
+                    .value_parser(clap::value_parser!(std::num::NonZeroU32))
+                    .required(false)
+                    .help("The pagination total entries to retrieve"),
+            )
+            .arg(
+                clap::Arg::new("ws-start")
+                    .long("ws-start")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(false)
+                    .help("The pagination starting offset"),
+            )
             .arg(Self::limit_arg())
-            .about ("Get accounts")
+            .about("Get accounts")
     }
     pub fn cli_get_account() -> clap::Command {
-        clap::Command::new ("")
-            .about ("Get account")
+        clap::Command::new("").about("Get account")
     }
     pub fn cli_find_account_subscribers() -> clap::Command {
         clap::Command::new ("")
@@ -222,37 +205,91 @@ impl Cli {
             .about ("Find subscribers for account")
     }
     pub fn cli_list_account_webform_split_tests() -> clap::Command {
-        clap::Command::new ("")
-            .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
-            .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("ws-size")
+                    .long("ws-size")
+                    .value_parser(clap::value_parser!(std::num::NonZeroU32))
+                    .required(false)
+                    .help("The pagination total entries to retrieve"),
+            )
+            .arg(
+                clap::Arg::new("ws-start")
+                    .long("ws-start")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(false)
+                    .help("The pagination starting offset"),
+            )
             .arg(Self::limit_arg())
-            .about ("Get split tests for account")
+            .about("Get split tests for account")
     }
     pub fn cli_list_account_webforms() -> clap::Command {
-        clap::Command::new ("")
-            .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
-            .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("ws-size")
+                    .long("ws-size")
+                    .value_parser(clap::value_parser!(std::num::NonZeroU32))
+                    .required(false)
+                    .help("The pagination total entries to retrieve"),
+            )
+            .arg(
+                clap::Arg::new("ws-start")
+                    .long("ws-start")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(false)
+                    .help("The pagination starting offset"),
+            )
             .arg(Self::limit_arg())
-            .about ("Get webforms for account")
+            .about("Get webforms for account")
     }
     pub fn cli_list_integrations() -> clap::Command {
-        clap::Command::new ("")
-            .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
-            .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("ws-size")
+                    .long("ws-size")
+                    .value_parser(clap::value_parser!(std::num::NonZeroU32))
+                    .required(false)
+                    .help("The pagination total entries to retrieve"),
+            )
+            .arg(
+                clap::Arg::new("ws-start")
+                    .long("ws-start")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(false)
+                    .help("The pagination starting offset"),
+            )
             .arg(Self::limit_arg())
-            .about ("Get integrations")
+            .about("Get integrations")
     }
     pub fn cli_get_integration() -> clap::Command {
-        clap::Command::new ("")
-            .arg (clap::Arg::new ("integration-id") . long ("integration-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The integration ID"))
-            .about ("Get integration")
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("integration-id")
+                    .long("integration-id")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(true)
+                    .help("The integration ID"),
+            )
+            .about("Get integration")
     }
     pub fn cli_list_lists() -> clap::Command {
-        clap::Command::new ("")
-            .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
-            .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("ws-size")
+                    .long("ws-size")
+                    .value_parser(clap::value_parser!(std::num::NonZeroU32))
+                    .required(false)
+                    .help("The pagination total entries to retrieve"),
+            )
+            .arg(
+                clap::Arg::new("ws-start")
+                    .long("ws-start")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(false)
+                    .help("The pagination starting offset"),
+            )
             .arg(Self::limit_arg())
-            .about ("Get lists")
+            .about("Get lists")
     }
     pub fn cli_find_lists() -> clap::Command {
         clap::Command::new ("")
@@ -263,10 +300,10 @@ impl Cli {
             .about ("Find lists")
     }
     pub fn cli_get_list() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .about ("Get list")
+            .about("Get list")
     }
     pub fn cli_list_broadcasts() -> clap::Command {
         clap::Command::new ("")
@@ -304,11 +341,17 @@ impl Cli {
             .about ("Get total broadcasts")
     }
     pub fn cli_get_broadcast() -> clap::Command {
-        clap::Command::new ("")
-            .arg (clap::Arg::new ("broadcast-id") . long ("broadcast-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The broadcast ID"))
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("broadcast-id")
+                    .long("broadcast-id")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(true)
+                    .help("The broadcast ID"),
+            )
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .about ("Get broadcast")
+            .about("Get broadcast")
     }
     pub fn cli_update_broadcast() -> clap::Command {
         clap::Command::new ("")
@@ -331,18 +374,30 @@ impl Cli {
             .about ("Update broadcast")
     }
     pub fn cli_delete_broadcast() -> clap::Command {
-        clap::Command::new ("")
-            .arg (clap::Arg::new ("broadcast-id") . long ("broadcast-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The broadcast ID"))
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("broadcast-id")
+                    .long("broadcast-id")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(true)
+                    .help("The broadcast ID"),
+            )
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .about ("Delete broadcast")
+            .about("Delete broadcast")
     }
     pub fn cli_cancel_broadcast() -> clap::Command {
-        clap::Command::new ("")
-            .arg (clap::Arg::new ("broadcast-id") . long ("broadcast-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The broadcast ID"))
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("broadcast-id")
+                    .long("broadcast-id")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(true)
+                    .help("The broadcast ID"),
+            )
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .about ("Cancel scheduled broadcast")
+            .about("Cancel scheduled broadcast")
     }
     pub fn cli_get_broadcast_clicks() -> clap::Command {
         clap::Command::new ("")
@@ -368,40 +423,101 @@ impl Cli {
             .about ("Get broadcast opens")
     }
     pub fn cli_schedule_broadcast() -> clap::Command {
-        clap::Command::new ("")
-            .arg (clap::Arg::new ("broadcast-id") . long ("broadcast-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The broadcast ID"))
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("broadcast-id")
+                    .long("broadcast-id")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(true)
+                    .help("The broadcast ID"),
+            )
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("scheduled-for") . long ("scheduled-for") . value_parser (clap::value_parser! (chrono::DateTime<chrono::Utc>)) . required_unless_present ("json-body") . help ("Scheduled time for sending broadcast message, ISO-8601 formatted."))
-            .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
-            .about ("Schedule broadcast")
+            .arg(
+                clap::Arg::new("scheduled-for")
+                    .long("scheduled-for")
+                    .value_parser(clap::value_parser!(chrono::DateTime<chrono::Utc>))
+                    .required_unless_present("json-body")
+                    .help("Scheduled time for sending broadcast message, ISO-8601 formatted."),
+            )
+            .arg(
+                clap::Arg::new("json-body")
+                    .long("json-body")
+                    .value_name("JSON-FILE")
+                    .required(false)
+                    .value_parser(clap::value_parser!(std::path::PathBuf))
+                    .help("Path to a file that contains the full json body."),
+            )
+            .about("Schedule broadcast")
     }
     pub fn cli_wait_broadcast() -> clap::Command {
         clap::Command::new("")
-            .arg(clap::Arg::new("broadcast-id").long("broadcast-id").value_parser(clap::value_parser!(i32)).required(true).help("The broadcast ID"))
+            .arg(
+                clap::Arg::new("broadcast-id")
+                    .long("broadcast-id")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(true)
+                    .help("The broadcast ID"),
+            )
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg(clap::Arg::new("interval").long("interval").value_parser(clap::value_parser!(u64)).default_value("30").help("Polling interval in seconds"))
+            .arg(
+                clap::Arg::new("interval")
+                    .long("interval")
+                    .value_parser(clap::value_parser!(u64))
+                    .default_value("30")
+                    .help("Polling interval in seconds"),
+            )
             .about("Wait for a broadcast to finish sending")
     }
     pub fn cli_list_campaigns() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
-            .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
+            .arg(
+                clap::Arg::new("ws-size")
+                    .long("ws-size")
+                    .value_parser(clap::value_parser!(std::num::NonZeroU32))
+                    .required(false)
+                    .help("The pagination total entries to retrieve"),
+            )
+            .arg(
+                clap::Arg::new("ws-start")
+                    .long("ws-start")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(false)
+                    .help("The pagination starting offset"),
+            )
             .arg(Self::limit_arg())
-            .about ("Get campaigns")
+            .about("Get campaigns")
     }
     pub fn cli_list_campaign_stats() -> clap::Command {
-        clap::Command::new ("")
-            .arg (clap::Arg::new ("campaign-id") . long ("campaign-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The campaign ID"))
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("campaign-id")
+                    .long("campaign-id")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(true)
+                    .help("The campaign ID"),
+            )
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
-            .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
+            .arg(
+                clap::Arg::new("ws-size")
+                    .long("ws-size")
+                    .value_parser(clap::value_parser!(std::num::NonZeroU32))
+                    .required(false)
+                    .help("The pagination total entries to retrieve"),
+            )
+            .arg(
+                clap::Arg::new("ws-start")
+                    .long("ws-start")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(false)
+                    .help("The pagination starting offset"),
+            )
             .arg(Self::limit_arg())
-            .about ("Get broadcast statistics")
+            .about("Get broadcast statistics")
     }
     pub fn cli_get_campaign_stat() -> clap::Command {
         clap::Command::new ("")
@@ -431,48 +547,92 @@ impl Cli {
             .about ("Get campaign")
     }
     pub fn cli_list_custom_fields() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
-            .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
+            .arg(
+                clap::Arg::new("ws-size")
+                    .long("ws-size")
+                    .value_parser(clap::value_parser!(std::num::NonZeroU32))
+                    .required(false)
+                    .help("The pagination total entries to retrieve"),
+            )
+            .arg(
+                clap::Arg::new("ws-start")
+                    .long("ws-start")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(false)
+                    .help("The pagination starting offset"),
+            )
             .arg(Self::limit_arg())
-            .about ("Get custom fields")
+            .about("Get custom fields")
     }
     pub fn cli_create_custom_field() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("name") . long ("name") . value_parser (clap::value_parser! (String)) . required_unless_present ("json-body") . help ("The name of the custom field"))
-            .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
-            .about ("Add custom field")
+            .arg(
+                clap::Arg::new("name")
+                    .long("name")
+                    .value_parser(clap::value_parser!(String))
+                    .required_unless_present("json-body")
+                    .help("The name of the custom field"),
+            )
+            .arg(
+                clap::Arg::new("json-body")
+                    .long("json-body")
+                    .value_name("JSON-FILE")
+                    .required(false)
+                    .value_parser(clap::value_parser!(std::path::PathBuf))
+                    .help("Path to a file that contains the full json body."),
+            )
+            .about("Add custom field")
     }
     pub fn cli_get_custom_field() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::custom_field_id_args())
             .group(Self::custom_field_id_group())
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .about ("Get custom field")
+            .about("Get custom field")
     }
     pub fn cli_delete_custom_field() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::custom_field_id_args())
             .group(Self::custom_field_id_group())
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .about ("Delete custom field")
+            .about("Delete custom field")
     }
     pub fn cli_update_custom_field() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::custom_field_id_args())
             .group(Self::custom_field_id_group())
-            .arg (clap::Arg::new ("is-subscriber-updateable") . long ("is-subscriber-updateable") . value_parser (clap::value_parser! (bool)) . required (false) . help ("Whether the subscriber is allowed to update the custom field"))
+            .arg(
+                clap::Arg::new("is-subscriber-updateable")
+                    .long("is-subscriber-updateable")
+                    .value_parser(clap::value_parser!(bool))
+                    .required(false)
+                    .help("Whether the subscriber is allowed to update the custom field"),
+            )
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("name") . long ("name") . value_parser (clap::value_parser! (String)) . required (false) . help ("The name of the custom field"))
-            .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
-            .about ("Update custom field")
+            .arg(
+                clap::Arg::new("name")
+                    .long("name")
+                    .value_parser(clap::value_parser!(String))
+                    .required(false)
+                    .help("The name of the custom field"),
+            )
+            .arg(
+                clap::Arg::new("json-body")
+                    .long("json-body")
+                    .value_name("JSON-FILE")
+                    .required(false)
+                    .value_parser(clap::value_parser!(std::path::PathBuf))
+                    .help("Path to a file that contains the full json body."),
+            )
+            .about("Update custom field")
     }
     pub fn cli_list_landing_pages() -> clap::Command {
         clap::Command::new("")
@@ -501,11 +661,17 @@ impl Cli {
             .about("Get landing pages")
     }
     pub fn cli_get_landing_page() -> clap::Command {
-        clap::Command::new ("")
-            .arg (clap::Arg::new ("landing-page-id") . long ("landing-page-id") . value_parser (clap::value_parser! (:: uuid :: Uuid)) . required (true) . help ("The landing page ID"))
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("landing-page-id")
+                    .long("landing-page-id")
+                    .value_parser(clap::value_parser!(::uuid::Uuid))
+                    .required(true)
+                    .help("The landing page ID"),
+            )
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .about ("Get landing page")
+            .about("Get landing page")
     }
     pub fn cli_create_purchase() -> clap::Command {
         clap::Command::new ("")
@@ -596,11 +762,19 @@ impl Cli {
             .about ("Add subscriber")
     }
     pub fn cli_delete_subscriber_by_email() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("email") . long ("email") . value_parser (clap::value_parser! (types :: DeleteAccountsListsSubscribersSubscriberEmail)) . required (true) . help ("The subscriber's email address"))
-            .about ("Delete subscriber by email")
+            .arg(
+                clap::Arg::new("email")
+                    .long("email")
+                    .value_parser(clap::value_parser!(
+                        types::DeleteAccountsListsSubscribersSubscriberEmail
+                    ))
+                    .required(true)
+                    .help("The subscriber's email address"),
+            )
+            .about("Delete subscriber by email")
     }
     pub fn cli_update_subscriber_by_email() -> clap::Command {
         clap::Command::new ("")
@@ -658,12 +832,12 @@ impl Cli {
             .about ("Find subscribers for list")
     }
     pub fn cli_get_subscriber() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
             .args(Self::subscriber_id_args())
             .group(Self::subscriber_id_group())
-            .about ("Get subscriber")
+            .about("Get subscriber")
     }
     pub fn cli_move_subscriber() -> clap::Command {
         clap::Command::new ("")
@@ -678,12 +852,12 @@ impl Cli {
             .about ("Move subscriber")
     }
     pub fn cli_delete_subscriber() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
             .args(Self::subscriber_id_args())
             .group(Self::subscriber_id_group())
-            .about ("Delete subscriber by ID")
+            .about("Delete subscriber by ID")
     }
     pub fn cli_update_subscriber() -> clap::Command {
         clap::Command::new ("")
@@ -703,71 +877,149 @@ impl Cli {
             .about ("Update subscriber by ID")
     }
     pub fn cli_get_subscriber_activity() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
             .args(Self::subscriber_id_args())
             .group(Self::subscriber_id_group())
-            .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
-            .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
+            .arg(
+                clap::Arg::new("ws-size")
+                    .long("ws-size")
+                    .value_parser(clap::value_parser!(std::num::NonZeroU32))
+                    .required(false)
+                    .help("The pagination total entries to retrieve"),
+            )
+            .arg(
+                clap::Arg::new("ws-start")
+                    .long("ws-start")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(false)
+                    .help("The pagination starting offset"),
+            )
             .arg(Self::limit_arg())
-            .about ("Get subscriber activity")
+            .about("Get subscriber activity")
     }
     pub fn cli_list_tags() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .about ("Get tags for list")
+            .about("Get tags for list")
     }
     pub fn cli_list_web_form_split_tests() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
-            .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
+            .arg(
+                clap::Arg::new("ws-size")
+                    .long("ws-size")
+                    .value_parser(clap::value_parser!(std::num::NonZeroU32))
+                    .required(false)
+                    .help("The pagination total entries to retrieve"),
+            )
+            .arg(
+                clap::Arg::new("ws-start")
+                    .long("ws-start")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(false)
+                    .help("The pagination starting offset"),
+            )
             .arg(Self::limit_arg())
-            .about ("Get split tests for list")
+            .about("Get split tests for list")
     }
     pub fn cli_get_web_form_split_test() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("split-test-id") . long ("split-test-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The webform split test ID"))
-            .about ("Get split test for list")
+            .arg(
+                clap::Arg::new("split-test-id")
+                    .long("split-test-id")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(true)
+                    .help("The webform split test ID"),
+            )
+            .about("Get split test for list")
     }
     pub fn cli_list_web_form_split_test_components() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("split-test-id") . long ("split-test-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The webform split test ID"))
-            .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
-            .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
+            .arg(
+                clap::Arg::new("split-test-id")
+                    .long("split-test-id")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(true)
+                    .help("The webform split test ID"),
+            )
+            .arg(
+                clap::Arg::new("ws-size")
+                    .long("ws-size")
+                    .value_parser(clap::value_parser!(std::num::NonZeroU32))
+                    .required(false)
+                    .help("The pagination total entries to retrieve"),
+            )
+            .arg(
+                clap::Arg::new("ws-start")
+                    .long("ws-start")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(false)
+                    .help("The pagination starting offset"),
+            )
             .arg(Self::limit_arg())
-            .about ("Get split test components")
+            .about("Get split test components")
     }
     pub fn cli_get_web_form_split_test_component() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("split-test-component-id") . long ("split-test-component-id") . value_parser (clap::value_parser! (String)) . required (true) . help ("The webform split test component ID"))
-            .arg (clap::Arg::new ("split-test-id") . long ("split-test-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The webform split test ID"))
-            .about ("Get split test component")
+            .arg(
+                clap::Arg::new("split-test-component-id")
+                    .long("split-test-component-id")
+                    .value_parser(clap::value_parser!(String))
+                    .required(true)
+                    .help("The webform split test component ID"),
+            )
+            .arg(
+                clap::Arg::new("split-test-id")
+                    .long("split-test-id")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(true)
+                    .help("The webform split test ID"),
+            )
+            .about("Get split test component")
     }
     pub fn cli_list_web_forms() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("ws-size") . long ("ws-size") . value_parser (clap::value_parser! (std::num::NonZeroU32)) . required (false) . help ("The pagination total entries to retrieve"))
-            .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
+            .arg(
+                clap::Arg::new("ws-size")
+                    .long("ws-size")
+                    .value_parser(clap::value_parser!(std::num::NonZeroU32))
+                    .required(false)
+                    .help("The pagination total entries to retrieve"),
+            )
+            .arg(
+                clap::Arg::new("ws-start")
+                    .long("ws-start")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(false)
+                    .help("The pagination starting offset"),
+            )
             .arg(Self::limit_arg())
-            .about ("Get webforms for list")
+            .about("Get webforms for list")
     }
     pub fn cli_get_web_form() -> clap::Command {
-        clap::Command::new ("")
+        clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
-            .arg (clap::Arg::new ("webform-id") . long ("webform-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The webform ID"))
-            .about ("Get webform for list")
+            .arg(
+                clap::Arg::new("webform-id")
+                    .long("webform-id")
+                    .value_parser(clap::value_parser!(i32))
+                    .required(true)
+                    .help("The webform ID"),
+            )
+            .about("Get webform for list")
     }
     pub fn cli_get_broadcast_link_analytics() -> clap::Command {
         clap::Command::new ("")
@@ -921,19 +1173,27 @@ impl Cli {
             .about("Revoke a token")
     }
     pub fn cli_oauth_token() -> clap::Command {
-        clap::Command::new ("")
-            .arg (clap::Arg::new ("authorization") . long ("authorization") . value_parser (clap::value_parser! (String)) . required (false))
-            .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (true) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
-            .about ("Get a token")
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("authorization")
+                    .long("authorization")
+                    .value_parser(clap::value_parser!(String))
+                    .required(false),
+            )
+            .arg(
+                clap::Arg::new("json-body")
+                    .long("json-body")
+                    .value_name("JSON-FILE")
+                    .required(true)
+                    .value_parser(clap::value_parser!(std::path::PathBuf))
+                    .help("Path to a file that contains the full json body."),
+            )
+            .about("Get a token")
     }
     // -----------------------------------------------------------------------
     // execute dispatch
     // -----------------------------------------------------------------------
-    pub async fn execute(
-        &self,
-        cmd: CliCommand,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute(&self, cmd: CliCommand, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         match cmd {
             CliCommand::ListAccounts => self.execute_list_accounts(matches).await,
             CliCommand::GetAccount => self.execute_get_account(matches).await,
@@ -941,157 +1201,61 @@ impl Cli {
                 self.execute_find_account_subscribers(matches).await
             }
             CliCommand::ListAccountWebformSplitTests => {
-                self.execute_list_account_webform_split_tests(matches)
-                    .await
+                self.execute_list_account_webform_split_tests(matches).await
             }
-            CliCommand::ListAccountWebforms => {
-                self.execute_list_account_webforms(matches).await
-            }
-            CliCommand::ListIntegrations => {
-                self.execute_list_integrations(matches).await
-            }
-            CliCommand::GetIntegration => {
-                self.execute_get_integration(matches).await
-            }
+            CliCommand::ListAccountWebforms => self.execute_list_account_webforms(matches).await,
+            CliCommand::ListIntegrations => self.execute_list_integrations(matches).await,
+            CliCommand::GetIntegration => self.execute_get_integration(matches).await,
             CliCommand::ListLists => self.execute_list_lists(matches).await,
             CliCommand::FindLists => self.execute_find_lists(matches).await,
             CliCommand::GetList => self.execute_get_list(matches).await,
-            CliCommand::ListBroadcasts => {
-                self.execute_list_broadcasts(matches).await
-            }
-            CliCommand::CreateBroadcast => {
-                self.execute_create_broadcast(matches).await
-            }
-            CliCommand::GetBroadcastTotal => {
-                self.execute_get_broadcast_total(matches)
-                    .await
-            }
-            CliCommand::GetBroadcast => {
-                self.execute_get_broadcast(matches).await
-            }
-            CliCommand::UpdateBroadcast => {
-                self.execute_update_broadcast(matches).await
-            }
-            CliCommand::DeleteBroadcast => {
-                self.execute_delete_broadcast(matches).await
-            }
-            CliCommand::CancelBroadcast => {
-                self.execute_cancel_broadcast(matches)
-                    .await
-            }
-            CliCommand::GetBroadcastClicks => {
-                self.execute_get_broadcast_clicks(matches)
-                    .await
-            }
-            CliCommand::GetBroadcastOpens => {
-                self.execute_get_broadcast_opens(matches)
-                    .await
-            }
-            CliCommand::ScheduleBroadcast => {
-                self.execute_schedule_broadcast(matches)
-                    .await
-            }
-            CliCommand::WaitBroadcast => {
-                self.execute_wait_broadcast(matches).await
-            }
-            CliCommand::ListCampaigns => {
-                self.execute_list_campaigns(matches).await
-            }
-            CliCommand::ListCampaignStats => {
-                self.execute_list_campaign_stats(matches)
-                    .await
-            }
-            CliCommand::GetCampaignStat => {
-                self.execute_get_campaign_stat(matches)
-                    .await
-            }
-            CliCommand::FindCampaigns => {
-                self.execute_find_campaigns(matches)
-                    .await
-            }
-            CliCommand::GetCampaign => {
-                self.execute_get_campaign(matches)
-                    .await
-            }
-            CliCommand::ListCustomFields => {
-                self.execute_list_custom_fields(matches).await
-            }
-            CliCommand::CreateCustomField => {
-                self.execute_create_custom_field(matches)
-                    .await
-            }
-            CliCommand::GetCustomField => {
-                self.execute_get_custom_field(matches)
-                    .await
-            }
-            CliCommand::DeleteCustomField => {
-                self.execute_delete_custom_field(matches)
-                    .await
-            }
-            CliCommand::UpdateCustomField => {
-                self.execute_update_custom_field(matches)
-                    .await
-            }
-            CliCommand::ListLandingPages => {
-                self.execute_list_landing_pages(matches).await
-            }
-            CliCommand::GetLandingPage => {
-                self.execute_get_landing_page(matches)
-                    .await
-            }
-            CliCommand::CreatePurchase => {
-                self.execute_create_purchase(matches).await
-            }
-            CliCommand::ListSegments => {
-                self.execute_list_segments(matches).await
-            }
-            CliCommand::GetSegment => {
-                self.execute_get_segment(matches).await
-            }
-            CliCommand::ListSubscribers => {
-                self.execute_list_subscribers(matches).await
-            }
-            CliCommand::CreateSubscriber => {
-                self.execute_create_subscriber(matches).await
-            }
+            CliCommand::ListBroadcasts => self.execute_list_broadcasts(matches).await,
+            CliCommand::CreateBroadcast => self.execute_create_broadcast(matches).await,
+            CliCommand::GetBroadcastTotal => self.execute_get_broadcast_total(matches).await,
+            CliCommand::GetBroadcast => self.execute_get_broadcast(matches).await,
+            CliCommand::UpdateBroadcast => self.execute_update_broadcast(matches).await,
+            CliCommand::DeleteBroadcast => self.execute_delete_broadcast(matches).await,
+            CliCommand::CancelBroadcast => self.execute_cancel_broadcast(matches).await,
+            CliCommand::GetBroadcastClicks => self.execute_get_broadcast_clicks(matches).await,
+            CliCommand::GetBroadcastOpens => self.execute_get_broadcast_opens(matches).await,
+            CliCommand::ScheduleBroadcast => self.execute_schedule_broadcast(matches).await,
+            CliCommand::WaitBroadcast => self.execute_wait_broadcast(matches).await,
+            CliCommand::ListCampaigns => self.execute_list_campaigns(matches).await,
+            CliCommand::ListCampaignStats => self.execute_list_campaign_stats(matches).await,
+            CliCommand::GetCampaignStat => self.execute_get_campaign_stat(matches).await,
+            CliCommand::FindCampaigns => self.execute_find_campaigns(matches).await,
+            CliCommand::GetCampaign => self.execute_get_campaign(matches).await,
+            CliCommand::ListCustomFields => self.execute_list_custom_fields(matches).await,
+            CliCommand::CreateCustomField => self.execute_create_custom_field(matches).await,
+            CliCommand::GetCustomField => self.execute_get_custom_field(matches).await,
+            CliCommand::DeleteCustomField => self.execute_delete_custom_field(matches).await,
+            CliCommand::UpdateCustomField => self.execute_update_custom_field(matches).await,
+            CliCommand::ListLandingPages => self.execute_list_landing_pages(matches).await,
+            CliCommand::GetLandingPage => self.execute_get_landing_page(matches).await,
+            CliCommand::CreatePurchase => self.execute_create_purchase(matches).await,
+            CliCommand::ListSegments => self.execute_list_segments(matches).await,
+            CliCommand::GetSegment => self.execute_get_segment(matches).await,
+            CliCommand::ListSubscribers => self.execute_list_subscribers(matches).await,
+            CliCommand::CreateSubscriber => self.execute_create_subscriber(matches).await,
             CliCommand::DeleteSubscriberByEmail => {
-                self.execute_delete_subscriber_by_email(matches)
-                    .await
+                self.execute_delete_subscriber_by_email(matches).await
             }
             CliCommand::UpdateSubscriberByEmail => {
                 self.execute_update_subscriber_by_email(matches).await
             }
-            CliCommand::FindSubscribers => {
-                self.execute_find_subscribers(matches)
-                    .await
-            }
-            CliCommand::GetSubscriber => {
-                self.execute_get_subscriber(matches).await
-            }
-            CliCommand::MoveSubscriber => {
-                self.execute_move_subscriber(matches).await
-            }
-            CliCommand::DeleteSubscriber => {
-                self.execute_delete_subscriber(matches)
-                    .await
-            }
-            CliCommand::UpdateSubscriber => {
-                self.execute_update_subscriber(matches)
-                    .await
-            }
+            CliCommand::FindSubscribers => self.execute_find_subscribers(matches).await,
+            CliCommand::GetSubscriber => self.execute_get_subscriber(matches).await,
+            CliCommand::MoveSubscriber => self.execute_move_subscriber(matches).await,
+            CliCommand::DeleteSubscriber => self.execute_delete_subscriber(matches).await,
+            CliCommand::UpdateSubscriber => self.execute_update_subscriber(matches).await,
             CliCommand::GetSubscriberActivity => {
-                self.execute_get_subscriber_activity(matches)
-                    .await
+                self.execute_get_subscriber_activity(matches).await
             }
             CliCommand::ListTags => self.execute_list_tags(matches).await,
             CliCommand::ListWebFormSplitTests => {
-                self.execute_list_web_form_split_tests(matches)
-                    .await
+                self.execute_list_web_form_split_tests(matches).await
             }
-            CliCommand::GetWebFormSplitTest => {
-                self.execute_get_web_form_split_test(matches)
-                    .await
-            }
+            CliCommand::GetWebFormSplitTest => self.execute_get_web_form_split_test(matches).await,
             CliCommand::ListWebFormSplitTestComponents => {
                 self.execute_list_web_form_split_test_components(matches)
                     .await
@@ -1100,19 +1264,13 @@ impl Cli {
                 self.execute_get_web_form_split_test_component(matches)
                     .await
             }
-            CliCommand::ListWebForms => {
-                self.execute_list_web_forms(matches).await
-            }
-            CliCommand::GetWebForm => {
-                self.execute_get_web_form(matches).await
-            }
+            CliCommand::ListWebForms => self.execute_list_web_forms(matches).await,
+            CliCommand::GetWebForm => self.execute_get_web_form(matches).await,
             CliCommand::GetBroadcastLinkAnalytics => {
                 self.execute_get_broadcast_link_analytics(matches).await
             }
             CliCommand::OauthGetAccessToken => self.execute_oauth_get_access_token(matches).await,
-            CliCommand::OauthGetRequestToken => {
-                self.execute_oauth_get_request_token(matches).await
-            }
+            CliCommand::OauthGetRequestToken => self.execute_oauth_get_request_token(matches).await,
             CliCommand::OauthRevoke => self.execute_oauth_revoke(matches).await,
             CliCommand::OauthToken => self.execute_oauth_token(matches).await,
         }
@@ -1164,12 +1322,38 @@ impl Cli {
             &self.client,
             self.account_id,
             list_id,
-            None, None, None, None, None, None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
             Some(email),
-            None, None, None, None, None, None, None, None,
-            None, None, None, None, None, None, None,
-            None, None, None, None, None, None, None,
-            None, None, None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
         )
         .await
         .context("failed to look up subscriber by email")?;
@@ -1244,37 +1428,79 @@ impl Cli {
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
-        let tags = matches.get_one::<String>("tags").map(|s| serde_json::to_string(&[s]).unwrap());
-        let tags_not_in = matches.get_one::<String>("tags-not-in").map(|s| serde_json::to_string(&[s]).unwrap());
+        let tags = matches
+            .get_one::<String>("tags")
+            .map(|s| serde_json::to_string(&[s]).unwrap());
+        let tags_not_in = matches
+            .get_one::<String>("tags-not-in")
+            .map(|s| serde_json::to_string(&[s]).unwrap());
         let result = crate::endpoints::find_account_subscribers(
             &self.client,
             self.account_id,
-            matches.get_one::<types::GetAccountsFindsubscribersAdTracking>("ad-tracking").map(|v| v.as_str()),
+            matches
+                .get_one::<types::GetAccountsFindsubscribersAdTracking>("ad-tracking")
+                .map(|v| v.as_str()),
             matches.get_one::<i32>("area-code").copied(),
-            matches.get_one::<types::GetAccountsFindsubscribersCity>("city").map(|v| v.as_str()),
-            matches.get_one::<types::GetAccountsFindsubscribersCountry>("country").map(|v| v.as_str()),
-            matches.get_one::<String>("custom-fields").map(|s| s.as_str()),
+            matches
+                .get_one::<types::GetAccountsFindsubscribersCity>("city")
+                .map(|v| v.as_str()),
+            matches
+                .get_one::<types::GetAccountsFindsubscribersCountry>("country")
+                .map(|v| v.as_str()),
+            matches
+                .get_one::<String>("custom-fields")
+                .map(|s| s.as_str()),
             matches.get_one::<i32>("dma-code").copied(),
-            matches.get_one::<types::GetAccountsFindsubscribersEmail>("email").map(|v| v.as_str()),
-            matches.get_one::<i32>("last-followup-message-number-sent").copied(),
-            matches.get_one::<chrono::NaiveDate>("last-followup-message-sent-at").copied(),
+            matches
+                .get_one::<types::GetAccountsFindsubscribersEmail>("email")
+                .map(|v| v.as_str()),
+            matches
+                .get_one::<i32>("last-followup-message-number-sent")
+                .copied(),
+            matches
+                .get_one::<chrono::NaiveDate>("last-followup-message-sent-at")
+                .copied(),
             matches.get_one::<f64>("latitude").copied(),
             matches.get_one::<f64>("longitude").copied(),
-            matches.get_one::<types::GetAccountsFindsubscribersMiscNotes>("misc-notes").map(|v| v.as_str()),
-            matches.get_one::<types::GetAccountsFindsubscribersName>("name").map(|v| v.as_str()),
-            matches.get_one::<types::GetAccountsFindsubscribersPostalCode>("postal-code").map(|v| v.as_str()),
-            matches.get_one::<types::GetAccountsFindsubscribersRegion>("region").map(|v| v.as_str()),
+            matches
+                .get_one::<types::GetAccountsFindsubscribersMiscNotes>("misc-notes")
+                .map(|v| v.as_str()),
+            matches
+                .get_one::<types::GetAccountsFindsubscribersName>("name")
+                .map(|v| v.as_str()),
+            matches
+                .get_one::<types::GetAccountsFindsubscribersPostalCode>("postal-code")
+                .map(|v| v.as_str()),
+            matches
+                .get_one::<types::GetAccountsFindsubscribersRegion>("region")
+                .map(|v| v.as_str()),
             matches.get_one::<types::GetAccountsFindsubscribersStatus>("status"),
-            matches.get_one::<chrono::NaiveDate>("subscribed-after").copied(),
-            matches.get_one::<chrono::NaiveDate>("subscribed-at").copied(),
-            matches.get_one::<chrono::NaiveDate>("subscribed-before").copied(),
-            matches.get_one::<types::GetAccountsFindsubscribersSubscriptionMethod>("subscription-method"),
+            matches
+                .get_one::<chrono::NaiveDate>("subscribed-after")
+                .copied(),
+            matches
+                .get_one::<chrono::NaiveDate>("subscribed-at")
+                .copied(),
+            matches
+                .get_one::<chrono::NaiveDate>("subscribed-before")
+                .copied(),
+            matches.get_one::<types::GetAccountsFindsubscribersSubscriptionMethod>(
+                "subscription-method",
+            ),
             tags.as_deref(),
             tags_not_in.as_deref(),
-            matches.get_one::<types::GetAccountsFindsubscribersUnsubscribeMethod>("unsubscribe-method"),
-            matches.get_one::<chrono::NaiveDate>("unsubscribed-after").copied(),
-            matches.get_one::<chrono::NaiveDate>("unsubscribed-at").copied(),
-            matches.get_one::<chrono::NaiveDate>("unsubscribed-before").copied(),
+            matches.get_one::<types::GetAccountsFindsubscribersUnsubscribeMethod>(
+                "unsubscribe-method",
+            ),
+            matches
+                .get_one::<chrono::NaiveDate>("unsubscribed-after")
+                .copied(),
+            matches
+                .get_one::<chrono::NaiveDate>("unsubscribed-at")
+                .copied(),
+            matches
+                .get_one::<chrono::NaiveDate>("unsubscribed-before")
+                .copied(),
             matches.get_one::<chrono::NaiveDate>("verified-at").copied(),
             matches.get_one::<types::GetAccountsFindsubscribersWsShow>("ws-show"),
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
@@ -1326,24 +1552,14 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_integration(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_get_integration(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let integration_id = *matches.get_one::<i32>("integration-id").unwrap();
-        let result = crate::endpoints::get_integration(
-            &self.client,
-            self.account_id,
-            integration_id,
-        )
-        .await;
+        let result =
+            crate::endpoints::get_integration(&self.client, self.account_id, integration_id).await;
         self.print_result(result)
     }
 
-    pub async fn execute_list_lists(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_list_lists(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let result = crate::endpoints::list_lists(
             &self.client,
             self.account_id,
@@ -1354,14 +1570,13 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_find_lists(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_find_lists(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let result = crate::endpoints::find_lists(
             &self.client,
             self.account_id,
-            matches.get_one::<types::GetAccountsListsFindName>("name").map(|v| v.as_str()),
+            matches
+                .get_one::<types::GetAccountsListsFindName>("name")
+                .map(|v| v.as_str()),
             matches.get_one::<types::GetAccountsListsFindWsShow>("ws-show"),
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
             matches.get_one::<i32>("ws-start").copied(),
@@ -1370,19 +1585,13 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_get_list(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_get_list(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let result = crate::endpoints::get_list(&self.client, self.account_id, list_id).await;
         self.print_result(result)
     }
 
-    pub async fn execute_list_broadcasts(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_list_broadcasts(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let ws_size = matches.get_one::<std::num::NonZeroU32>("ws-size").copied();
         let ws_start = matches.get_one::<i32>("ws-start").copied();
@@ -1405,10 +1614,7 @@ impl Cli {
         }
         Ok(())
     }
-    pub async fn execute_create_broadcast(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_create_broadcast(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let body = if let Some(path) = matches.get_one::<std::path::PathBuf>("json-body") {
             let txt = std::fs::read_to_string(path)
@@ -1417,26 +1623,43 @@ impl Cli {
                 .with_context(|| format!("failed to parse {}", path.display()))?
         } else {
             let mut body = serde_json::Map::new();
-            if let Some(v) = matches.get_one::<String>("body-amp") { body.insert("body_amp".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("body-html") { body.insert("body_html".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("body-text") { body.insert("body_text".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<bool>("click-tracking-enabled") { body.insert("click_tracking_enabled".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("exclude-lists") { body.insert("exclude_lists".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("facebook-integration") { body.insert("facebook_integration".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("include-lists") { body.insert("include_lists".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<bool>("is-archived") { body.insert("is_archived".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<bool>("notify-on-send") { body.insert("notify_on_send".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("subject") { body.insert("subject".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("twitter-integration") { body.insert("twitter_integration".into(), serde_json::json!(v)); }
+            if let Some(v) = matches.get_one::<String>("body-amp") {
+                body.insert("body_amp".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("body-html") {
+                body.insert("body_html".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("body-text") {
+                body.insert("body_text".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<bool>("click-tracking-enabled") {
+                body.insert("click_tracking_enabled".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("exclude-lists") {
+                body.insert("exclude_lists".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("facebook-integration") {
+                body.insert("facebook_integration".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("include-lists") {
+                body.insert("include_lists".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<bool>("is-archived") {
+                body.insert("is_archived".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<bool>("notify-on-send") {
+                body.insert("notify_on_send".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("subject") {
+                body.insert("subject".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("twitter-integration") {
+                body.insert("twitter_integration".into(), serde_json::json!(v));
+            }
             serde_json::from_value::<types::CreateBroadcast>(serde_json::Value::Object(body))?
         };
-        let result = crate::endpoints::create_broadcast(
-            &self.client,
-            self.account_id,
-            list_id,
-            &body,
-        )
-        .await;
+        let result =
+            crate::endpoints::create_broadcast(&self.client, self.account_id, list_id, &body).await;
         self.print_result(result)
     }
 
@@ -1449,32 +1672,24 @@ impl Cli {
             &self.client,
             self.account_id,
             list_id,
-            matches.get_one::<types::GetAccountsListsBroadcastsTotalStatus>("status").unwrap(),
+            matches
+                .get_one::<types::GetAccountsListsBroadcastsTotalStatus>("status")
+                .unwrap(),
         )
         .await;
         self.print_result(result)
     }
 
-    pub async fn execute_get_broadcast(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_get_broadcast(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let broadcast_id = *matches.get_one::<i32>("broadcast-id").unwrap();
-        let result = crate::endpoints::get_broadcast(
-            &self.client,
-            self.account_id,
-            list_id,
-            broadcast_id,
-        )
-        .await;
+        let result =
+            crate::endpoints::get_broadcast(&self.client, self.account_id, list_id, broadcast_id)
+                .await;
         self.print_result(result)
     }
 
-    pub async fn execute_update_broadcast(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_update_broadcast(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let broadcast_id = *matches.get_one::<i32>("broadcast-id").unwrap();
         let body = if let Some(path) = matches.get_one::<std::path::PathBuf>("json-body") {
@@ -1484,18 +1699,42 @@ impl Cli {
                 .with_context(|| format!("failed to parse {}", path.display()))?
         } else {
             let mut body = serde_json::Map::new();
-            if let Some(v) = matches.get_one::<String>("body-amp") { body.insert("body_amp".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("body-html") { body.insert("body_html".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("body-text") { body.insert("body_text".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<bool>("click-tracking-enabled") { body.insert("click_tracking_enabled".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("exclude-lists") { body.insert("exclude_lists".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("facebook-integration") { body.insert("facebook_integration".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("include-lists") { body.insert("include_lists".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<bool>("is-archived") { body.insert("is_archived".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<bool>("notify-on-send") { body.insert("notify_on_send".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("segment-link") { body.insert("segment_link".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("subject") { body.insert("subject".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("twitter-integration") { body.insert("twitter_integration".into(), serde_json::json!(v)); }
+            if let Some(v) = matches.get_one::<String>("body-amp") {
+                body.insert("body_amp".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("body-html") {
+                body.insert("body_html".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("body-text") {
+                body.insert("body_text".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<bool>("click-tracking-enabled") {
+                body.insert("click_tracking_enabled".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("exclude-lists") {
+                body.insert("exclude_lists".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("facebook-integration") {
+                body.insert("facebook_integration".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("include-lists") {
+                body.insert("include_lists".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<bool>("is-archived") {
+                body.insert("is_archived".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<bool>("notify-on-send") {
+                body.insert("notify_on_send".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("segment-link") {
+                body.insert("segment_link".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("subject") {
+                body.insert("subject".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("twitter-integration") {
+                body.insert("twitter_integration".into(), serde_json::json!(v));
+            }
             serde_json::from_value::<types::UpdateBroadcast>(serde_json::Value::Object(body))?
         };
         let result = crate::endpoints::update_broadcast(
@@ -1509,10 +1748,7 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_delete_broadcast(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_delete_broadcast(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let broadcast_id = *matches.get_one::<i32>("broadcast-id").unwrap();
         let result = crate::endpoints::delete_broadcast(
@@ -1525,10 +1761,7 @@ impl Cli {
         self.print_void(result)
     }
 
-    pub async fn execute_cancel_broadcast(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_cancel_broadcast(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let broadcast_id = *matches.get_one::<i32>("broadcast-id").unwrap();
         let result = crate::endpoints::cancel_broadcast(
@@ -1555,7 +1788,9 @@ impl Cli {
             matches.get_one::<String>("after").map(|s| s.as_str()),
             matches.get_one::<String>("before").map(|s| s.as_str()),
             matches.get_one::<bool>("detailed").copied(),
-            matches.get_one::<std::num::NonZeroU64>("page-size").copied(),
+            matches
+                .get_one::<std::num::NonZeroU64>("page-size")
+                .copied(),
         )
         .await;
         self.print_paginated_ndjson(result, matches).await
@@ -1574,7 +1809,9 @@ impl Cli {
             broadcast_id,
             matches.get_one::<String>("after").map(|s| s.as_str()),
             matches.get_one::<String>("before").map(|s| s.as_str()),
-            matches.get_one::<std::num::NonZeroU64>("page-size").copied(),
+            matches
+                .get_one::<std::num::NonZeroU64>("page-size")
+                .copied(),
         )
         .await;
         self.print_paginated_ndjson(result, matches).await
@@ -1609,10 +1846,7 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_wait_broadcast(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_wait_broadcast(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let broadcast_id = *matches.get_one::<i32>("broadcast-id").unwrap();
         let interval = *matches.get_one::<u64>("interval").unwrap();
@@ -1630,24 +1864,28 @@ impl Cli {
                 Some(types::BroadcastStatus::Sent) => {
                     return self.print_result(Ok::<_, crate::client::ApiError>(broadcast));
                 }
-                Some(ref status @ (types::BroadcastStatus::Sending | types::BroadcastStatus::Scheduled)) => {
-                    eprintln!("Broadcast {broadcast_id} status: {status} — polling again in {interval}s");
+                Some(
+                    ref status @ (types::BroadcastStatus::Sending
+                    | types::BroadcastStatus::Scheduled),
+                ) => {
+                    eprintln!(
+                        "Broadcast {broadcast_id} status: {status} — polling again in {interval}s"
+                    );
                     tokio::time::sleep(std::time::Duration::from_secs(interval)).await;
                 }
                 Some(ref status) => {
                     anyhow::bail!("Broadcast {broadcast_id} has status: {status} — cannot wait for completion");
                 }
                 None => {
-                    anyhow::bail!("Broadcast {broadcast_id} has no status — cannot wait for completion");
+                    anyhow::bail!(
+                        "Broadcast {broadcast_id} has no status — cannot wait for completion"
+                    );
                 }
             }
         }
     }
 
-    pub async fn execute_list_campaigns(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_list_campaigns(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let result = crate::endpoints::list_campaigns(
             &self.client,
@@ -1721,16 +1959,15 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_find_campaigns(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_find_campaigns(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let result = crate::endpoints::find_campaigns(
             &self.client,
             self.account_id,
             list_id,
-            matches.get_one::<types::GetAccountsListsCampaignsFindCampaignType>("campaign-type").unwrap(),
+            matches
+                .get_one::<types::GetAccountsListsCampaignsFindCampaignType>("campaign-type")
+                .unwrap(),
             matches.get_one::<types::GetAccountsListsCampaignsFindWsShow>("ws-show"),
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
             matches.get_one::<i32>("ws-start").copied(),
@@ -1739,10 +1976,7 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_campaign(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_get_campaign(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let campaign_id = *matches.get_one::<i32>("campaign-id").unwrap();
         let campaign_type = matches
@@ -1789,30 +2023,30 @@ impl Cli {
                 .with_context(|| format!("failed to parse {}", path.display()))?
         } else {
             let mut body = serde_json::Map::new();
-            if let Some(v) = matches.get_one::<String>("name") { body.insert("name".into(), serde_json::json!(v)); }
+            if let Some(v) = matches.get_one::<String>("name") {
+                body.insert("name".into(), serde_json::json!(v));
+            }
             body.insert("ws.op".into(), serde_json::json!("create"));
-            serde_json::from_value::<types::PostAccountsListsCustomFieldsBody>(serde_json::Value::Object(body))?
+            serde_json::from_value::<types::PostAccountsListsCustomFieldsBody>(
+                serde_json::Value::Object(body),
+            )?
         };
-        let result = crate::endpoints::create_custom_field(
-            &self.client,
-            self.account_id,
-            list_id,
-            &body,
-        )
-        .await;
+        let result =
+            crate::endpoints::create_custom_field(&self.client, self.account_id, list_id, &body)
+                .await;
         match result {
             Err(e) if e.api_message_is("name: Must be unique") => {
-                let name = matches.get_one::<String>("name").map(|s| s.as_str()).unwrap_or("unknown");
+                let name = matches
+                    .get_one::<String>("name")
+                    .map(|s| s.as_str())
+                    .unwrap_or("unknown");
                 Err(e).context(format!("custom field '{name}' already exists"))
             }
             other => self.print_void(other),
         }
     }
 
-    pub async fn execute_get_custom_field(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_get_custom_field(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let custom_field_id = self.resolve_custom_field_id(matches, list_id).await?;
         let result = crate::endpoints::get_custom_field(
@@ -1854,9 +2088,15 @@ impl Cli {
                 .with_context(|| format!("failed to parse {}", path.display()))?
         } else {
             let mut body = serde_json::Map::new();
-            if let Some(v) = matches.get_one::<bool>("is-subscriber-updateable") { body.insert("is_subscriber_updateable".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("name") { body.insert("name".into(), serde_json::json!(v)); }
-            serde_json::from_value::<types::PatchAccountsListsCustomFieldsBody>(serde_json::Value::Object(body))?
+            if let Some(v) = matches.get_one::<bool>("is-subscriber-updateable") {
+                body.insert("is_subscriber_updateable".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("name") {
+                body.insert("name".into(), serde_json::json!(v));
+            }
+            serde_json::from_value::<types::PatchAccountsListsCustomFieldsBody>(
+                serde_json::Value::Object(body),
+            )?
         };
         let result = crate::endpoints::update_custom_field(
             &self.client,
@@ -1884,10 +2124,7 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_landing_page(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_get_landing_page(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let landing_page_id = *matches.get_one::<uuid::Uuid>("landing-page-id").unwrap();
         let result = crate::endpoints::get_landing_page(
@@ -1900,10 +2137,7 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_create_purchase(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_create_purchase(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let body = if let Some(path) = matches.get_one::<std::path::PathBuf>("json-body") {
             let txt = std::fs::read_to_string(path)
@@ -1912,34 +2146,50 @@ impl Cli {
                 .with_context(|| format!("failed to parse {}", path.display()))?
         } else {
             let mut body = serde_json::Map::new();
-            if let Some(v) = matches.get_one::<types::PurchaseAdTracking>("ad-tracking") { body.insert("ad_tracking".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<String>("currency") { body.insert("currency".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<types::PurchaseEmail>("email") { body.insert("email".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<String>("event-note") { body.insert("event_note".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("event-time") { body.insert("event_time".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<types::PurchaseIpAddress>("ip-address") { body.insert("ip_address".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::PurchaseMiscNotes>("misc-notes") { body.insert("misc_notes".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::PurchaseName>("name") { body.insert("name".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<String>("product-name") { body.insert("product_name".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("url") { body.insert("url".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<f64>("value") { body.insert("value".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("vendor") { body.insert("vendor".into(), serde_json::json!(v)); }
+            if let Some(v) = matches.get_one::<types::PurchaseAdTracking>("ad-tracking") {
+                body.insert("ad_tracking".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<String>("currency") {
+                body.insert("currency".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<types::PurchaseEmail>("email") {
+                body.insert("email".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<String>("event-note") {
+                body.insert("event_note".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("event-time") {
+                body.insert("event_time".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<types::PurchaseIpAddress>("ip-address") {
+                body.insert("ip_address".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::PurchaseMiscNotes>("misc-notes") {
+                body.insert("misc_notes".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::PurchaseName>("name") {
+                body.insert("name".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<String>("product-name") {
+                body.insert("product_name".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("url") {
+                body.insert("url".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<f64>("value") {
+                body.insert("value".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<String>("vendor") {
+                body.insert("vendor".into(), serde_json::json!(v));
+            }
             serde_json::from_value::<types::Purchase>(serde_json::Value::Object(body))?
         };
-        let result = crate::endpoints::create_purchase(
-            &self.client,
-            self.account_id,
-            list_id,
-            &body,
-        )
-        .await;
+        let result =
+            crate::endpoints::create_purchase(&self.client, self.account_id, list_id, &body).await;
         self.print_void(result)
     }
 
-    pub async fn execute_list_segments(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_list_segments(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let result = crate::endpoints::list_segments(
             &self.client,
@@ -1952,26 +2202,15 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_segment(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_get_segment(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let segment_id = *matches.get_one::<i32>("segment-id").unwrap();
-        let result = crate::endpoints::get_segment(
-            &self.client,
-            self.account_id,
-            list_id,
-            segment_id,
-        )
-        .await;
+        let result =
+            crate::endpoints::get_segment(&self.client, self.account_id, list_id, segment_id).await;
         self.print_result(result)
     }
 
-    pub async fn execute_list_subscribers(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_list_subscribers(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let result = crate::endpoints::list_subscribers(
             &self.client,
@@ -1997,23 +2236,52 @@ impl Cli {
                 .with_context(|| format!("failed to parse {}", path.display()))?
         } else {
             let mut body = serde_json::Map::new();
-            if let Some(v) = matches.get_one::<types::AddSubscriberRequestBodyAdTracking>("ad-tracking") { body.insert("ad_tracking".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::AddSubscriberRequestBodyEmail>("email") { body.insert("email".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::AddSubscriberRequestBodyIpAddress>("ip-address") { body.insert("ip_address".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<i64>("last-followup-message-number-sent") { body.insert("last_followup_message_number_sent".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<types::AddSubscriberRequestBodyMiscNotes>("misc-notes") { body.insert("misc_notes".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::AddSubscriberRequestBodyName>("name") { body.insert("name".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::AddSubscriberRequestBodyStrictCustomFields>("strict-custom-fields") { body.insert("strict_custom_fields".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::AddSubscriberRequestBodyUpdateExisting>("update-existing") { body.insert("update_existing".into(), serde_json::json!(v.to_string())); }
-            serde_json::from_value::<types::AddSubscriberRequestBody>(serde_json::Value::Object(body))?
+            if let Some(v) =
+                matches.get_one::<types::AddSubscriberRequestBodyAdTracking>("ad-tracking")
+            {
+                body.insert("ad_tracking".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::AddSubscriberRequestBodyEmail>("email") {
+                body.insert("email".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) =
+                matches.get_one::<types::AddSubscriberRequestBodyIpAddress>("ip-address")
+            {
+                body.insert("ip_address".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<i64>("last-followup-message-number-sent") {
+                body.insert(
+                    "last_followup_message_number_sent".into(),
+                    serde_json::json!(v),
+                );
+            }
+            if let Some(v) =
+                matches.get_one::<types::AddSubscriberRequestBodyMiscNotes>("misc-notes")
+            {
+                body.insert("misc_notes".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::AddSubscriberRequestBodyName>("name") {
+                body.insert("name".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::AddSubscriberRequestBodyStrictCustomFields>(
+                "strict-custom-fields",
+            ) {
+                body.insert(
+                    "strict_custom_fields".into(),
+                    serde_json::json!(v.to_string()),
+                );
+            }
+            if let Some(v) =
+                matches.get_one::<types::AddSubscriberRequestBodyUpdateExisting>("update-existing")
+            {
+                body.insert("update_existing".into(), serde_json::json!(v.to_string()));
+            }
+            serde_json::from_value::<types::AddSubscriberRequestBody>(serde_json::Value::Object(
+                body,
+            ))?
         };
-        match crate::endpoints::create_subscriber(
-            &self.client,
-            self.account_id,
-            list_id,
-            &body,
-        )
-        .await
+        match crate::endpoints::create_subscriber(&self.client, self.account_id, list_id, &body)
+            .await
         {
             Err(e) if e.api_message_is("email: Subscriber already subscribed.") => {
                 Err(e).context("subscriber already on list")
@@ -2054,13 +2322,39 @@ impl Cli {
                 .with_context(|| format!("failed to parse {}", path.display()))?
         } else {
             let mut body = serde_json::Map::new();
-            if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyAdTracking>("ad-tracking") { body.insert("ad_tracking".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<String>("new-email") { body.insert("email".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<i64>("last-followup-message-number-sent") { body.insert("last_followup_message_number_sent".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("misc-notes") { body.insert("misc_notes".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyName>("name") { body.insert("name".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyStatus>("status") { body.insert("status".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyStrictCustomFields>("strict-custom-fields") { body.insert("strict_custom_fields".into(), serde_json::json!(v.to_string())); }
+            if let Some(v) =
+                matches.get_one::<types::UpdateSubscriberRequestBodyAdTracking>("ad-tracking")
+            {
+                body.insert("ad_tracking".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<String>("new-email") {
+                body.insert("email".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<i64>("last-followup-message-number-sent") {
+                body.insert(
+                    "last_followup_message_number_sent".into(),
+                    serde_json::json!(v),
+                );
+            }
+            if let Some(v) = matches.get_one::<String>("misc-notes") {
+                body.insert("misc_notes".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyName>("name") {
+                body.insert("name".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyStatus>("status") {
+                body.insert("status".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches
+                .get_one::<types::UpdateSubscriberRequestBodyStrictCustomFields>(
+                    "strict-custom-fields",
+                )
+            {
+                body.insert(
+                    "strict_custom_fields".into(),
+                    serde_json::json!(v.to_string()),
+                );
+            }
             if let Some(vals) = matches.get_many::<String>("custom-field") {
                 let cf: serde_json::Map<String, serde_json::Value> = vals
                     .map(|s| match s.split_once('=') {
@@ -2084,45 +2378,84 @@ impl Cli {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub async fn execute_find_subscribers(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_find_subscribers(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let tags = matches.get_one::<String>("tags").map(|s| serde_json::to_string(&[s]).unwrap());
-        let tags_not_in = matches.get_one::<String>("tags-not-in").map(|s| serde_json::to_string(&[s]).unwrap());
+        let tags = matches
+            .get_one::<String>("tags")
+            .map(|s| serde_json::to_string(&[s]).unwrap());
+        let tags_not_in = matches
+            .get_one::<String>("tags-not-in")
+            .map(|s| serde_json::to_string(&[s]).unwrap());
         let result = crate::endpoints::find_subscribers(
             &self.client,
             self.account_id,
             list_id,
-            matches.get_one::<types::GetAccountsListsSubscribersFindAdTracking>("ad-tracking").map(|v| v.as_str()),
+            matches
+                .get_one::<types::GetAccountsListsSubscribersFindAdTracking>("ad-tracking")
+                .map(|v| v.as_str()),
             matches.get_one::<i32>("area-code").copied(),
-            matches.get_one::<types::GetAccountsListsSubscribersFindCity>("city").map(|v| v.as_str()),
-            matches.get_one::<types::GetAccountsListsSubscribersFindCountry>("country").map(|v| v.as_str()),
-            matches.get_one::<String>("custom-fields").map(|s| s.as_str()),
+            matches
+                .get_one::<types::GetAccountsListsSubscribersFindCity>("city")
+                .map(|v| v.as_str()),
+            matches
+                .get_one::<types::GetAccountsListsSubscribersFindCountry>("country")
+                .map(|v| v.as_str()),
+            matches
+                .get_one::<String>("custom-fields")
+                .map(|s| s.as_str()),
             matches.get_one::<i32>("dma-code").copied(),
-            matches.get_one::<types::GetAccountsListsSubscribersFindEmail>("email").map(|v| v.as_str()),
-            matches.get_one::<i32>("last-followup-message-number-sent").copied(),
-            matches.get_one::<chrono::NaiveDate>("last-followup-message-sent-at").copied(),
+            matches
+                .get_one::<types::GetAccountsListsSubscribersFindEmail>("email")
+                .map(|v| v.as_str()),
+            matches
+                .get_one::<i32>("last-followup-message-number-sent")
+                .copied(),
+            matches
+                .get_one::<chrono::NaiveDate>("last-followup-message-sent-at")
+                .copied(),
             matches.get_one::<f64>("latitude").copied(),
             matches.get_one::<f64>("longitude").copied(),
-            matches.get_one::<types::GetAccountsListsSubscribersFindMiscNotes>("misc-notes").map(|v| v.as_str()),
-            matches.get_one::<types::GetAccountsListsSubscribersFindName>("name").map(|v| v.as_str()),
-            matches.get_one::<types::GetAccountsListsSubscribersFindPostalCode>("postal-code").map(|v| v.as_str()),
-            matches.get_one::<types::GetAccountsListsSubscribersFindRegion>("region").map(|v| v.as_str()),
+            matches
+                .get_one::<types::GetAccountsListsSubscribersFindMiscNotes>("misc-notes")
+                .map(|v| v.as_str()),
+            matches
+                .get_one::<types::GetAccountsListsSubscribersFindName>("name")
+                .map(|v| v.as_str()),
+            matches
+                .get_one::<types::GetAccountsListsSubscribersFindPostalCode>("postal-code")
+                .map(|v| v.as_str()),
+            matches
+                .get_one::<types::GetAccountsListsSubscribersFindRegion>("region")
+                .map(|v| v.as_str()),
             matches.get_one::<types::GetAccountsListsSubscribersFindSortKey>("sort-key"),
             matches.get_one::<types::GetAccountsListsSubscribersFindSortOrder>("sort-order"),
             matches.get_one::<types::GetAccountsListsSubscribersFindStatus>("status"),
-            matches.get_one::<chrono::NaiveDate>("subscribed-after").copied(),
-            matches.get_one::<chrono::NaiveDate>("subscribed-at").copied(),
-            matches.get_one::<chrono::NaiveDate>("subscribed-before").copied(),
-            matches.get_one::<types::GetAccountsListsSubscribersFindSubscriptionMethod>("subscription-method"),
+            matches
+                .get_one::<chrono::NaiveDate>("subscribed-after")
+                .copied(),
+            matches
+                .get_one::<chrono::NaiveDate>("subscribed-at")
+                .copied(),
+            matches
+                .get_one::<chrono::NaiveDate>("subscribed-before")
+                .copied(),
+            matches.get_one::<types::GetAccountsListsSubscribersFindSubscriptionMethod>(
+                "subscription-method",
+            ),
             tags.as_deref(),
             tags_not_in.as_deref(),
-            matches.get_one::<types::GetAccountsListsSubscribersFindUnsubscribeMethod>("unsubscribe-method"),
-            matches.get_one::<chrono::NaiveDate>("unsubscribed-after").copied(),
-            matches.get_one::<chrono::NaiveDate>("unsubscribed-at").copied(),
-            matches.get_one::<chrono::NaiveDate>("unsubscribed-before").copied(),
+            matches.get_one::<types::GetAccountsListsSubscribersFindUnsubscribeMethod>(
+                "unsubscribe-method",
+            ),
+            matches
+                .get_one::<chrono::NaiveDate>("unsubscribed-after")
+                .copied(),
+            matches
+                .get_one::<chrono::NaiveDate>("unsubscribed-at")
+                .copied(),
+            matches
+                .get_one::<chrono::NaiveDate>("unsubscribed-before")
+                .copied(),
             matches.get_one::<chrono::NaiveDate>("verified-at").copied(),
             matches.get_one::<types::GetAccountsListsSubscribersFindWsShow>("ws-show"),
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
@@ -2132,26 +2465,16 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_subscriber(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_get_subscriber(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let subscriber_id = self.resolve_subscriber_id(matches, list_id).await?;
-        let result = crate::endpoints::get_subscriber(
-            &self.client,
-            self.account_id,
-            list_id,
-            subscriber_id,
-        )
-        .await;
+        let result =
+            crate::endpoints::get_subscriber(&self.client, self.account_id, list_id, subscriber_id)
+                .await;
         self.print_result(result)
     }
 
-    pub async fn execute_move_subscriber(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_move_subscriber(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let subscriber_id = self.resolve_subscriber_id(matches, list_id).await?;
         let body = if let Some(path) = matches.get_one::<std::path::PathBuf>("json-body") {
@@ -2161,11 +2484,22 @@ impl Cli {
                 .with_context(|| format!("failed to parse {}", path.display()))?
         } else {
             let mut body = serde_json::Map::new();
-            if let Some(v) = matches.get_one::<bool>("enforce-custom-field-mapping") { body.insert("enforce_custom_field_mapping".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<i64>("last-followup-message-number-sent") { body.insert("last_followup_message_number_sent".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("list-link") { body.insert("list_link".into(), serde_json::json!(v)); }
+            if let Some(v) = matches.get_one::<bool>("enforce-custom-field-mapping") {
+                body.insert("enforce_custom_field_mapping".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<i64>("last-followup-message-number-sent") {
+                body.insert(
+                    "last_followup_message_number_sent".into(),
+                    serde_json::json!(v),
+                );
+            }
+            if let Some(v) = matches.get_one::<String>("list-link") {
+                body.insert("list_link".into(), serde_json::json!(v));
+            }
             body.insert("ws.op".into(), serde_json::json!("move"));
-            serde_json::from_value::<types::MoveSubscriberRequestBody>(serde_json::Value::Object(body))?
+            serde_json::from_value::<types::MoveSubscriberRequestBody>(serde_json::Value::Object(
+                body,
+            ))?
         };
         let result = crate::endpoints::move_subscriber(
             &self.client,
@@ -2207,13 +2541,39 @@ impl Cli {
                 .with_context(|| format!("failed to parse {}", path.display()))?
         } else {
             let mut body = serde_json::Map::new();
-            if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyAdTracking>("ad-tracking") { body.insert("ad_tracking".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<String>("new-email") { body.insert("email".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<i64>("last-followup-message-number-sent") { body.insert("last_followup_message_number_sent".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<String>("misc-notes") { body.insert("misc_notes".into(), serde_json::json!(v)); }
-            if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyName>("name") { body.insert("name".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyStatus>("status") { body.insert("status".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyStrictCustomFields>("strict-custom-fields") { body.insert("strict_custom_fields".into(), serde_json::json!(v.to_string())); }
+            if let Some(v) =
+                matches.get_one::<types::UpdateSubscriberRequestBodyAdTracking>("ad-tracking")
+            {
+                body.insert("ad_tracking".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<String>("new-email") {
+                body.insert("email".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<i64>("last-followup-message-number-sent") {
+                body.insert(
+                    "last_followup_message_number_sent".into(),
+                    serde_json::json!(v),
+                );
+            }
+            if let Some(v) = matches.get_one::<String>("misc-notes") {
+                body.insert("misc_notes".into(), serde_json::json!(v));
+            }
+            if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyName>("name") {
+                body.insert("name".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::UpdateSubscriberRequestBodyStatus>("status") {
+                body.insert("status".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches
+                .get_one::<types::UpdateSubscriberRequestBodyStrictCustomFields>(
+                    "strict-custom-fields",
+                )
+            {
+                body.insert(
+                    "strict_custom_fields".into(),
+                    serde_json::json!(v.to_string()),
+                );
+            }
             if let Some(vals) = matches.get_many::<String>("custom-field") {
                 let cf: serde_json::Map<String, serde_json::Value> = vals
                     .map(|s| match s.split_once('=') {
@@ -2253,17 +2613,9 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_list_tags(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_list_tags(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let result = crate::endpoints::list_tags(
-            &self.client,
-            self.account_id,
-            list_id,
-        )
-        .await;
+        let result = crate::endpoints::list_tags(&self.client, self.account_id, list_id).await;
         self.print_result(result)
     }
 
@@ -2339,10 +2691,7 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_list_web_forms(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_list_web_forms(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let result = crate::endpoints::list_web_forms(
             &self.client,
@@ -2355,19 +2704,12 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_web_form(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
+    pub async fn execute_get_web_form(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let webform_id = *matches.get_one::<i32>("webform-id").unwrap();
-        let result = crate::endpoints::get_web_form(
-            &self.client,
-            self.account_id,
-            list_id,
-            webform_id,
-        )
-        .await;
+        let result =
+            crate::endpoints::get_web_form(&self.client, self.account_id, list_id, webform_id)
+                .await;
         self.print_result(result)
     }
 
@@ -2389,7 +2731,9 @@ impl Cli {
             .to_string();
         let max_count = matches.get_one::<u64>("max-count").map(|v| *v as i32);
         let min_count = matches.get_one::<u64>("min-count").map(|v| *v as i32);
-        let page_size = matches.get_one::<std::num::NonZeroU64>("page-size").copied();
+        let page_size = matches
+            .get_one::<std::num::NonZeroU64>("page-size")
+            .copied();
         let sort_asc = matches.get_one::<bool>("sort-asc").copied();
         let sort_by = matches
             .get_one::<types::GetBroadcastLinksAnalyticsSortBy>("sort-by")
@@ -2421,15 +2765,41 @@ impl Cli {
                 .with_context(|| format!("failed to parse {}", path.display()))?
         } else {
             let mut body = serde_json::Map::new();
-            if let Some(v) = matches.get_one::<types::OauthCallback>("oauth-callback") { body.insert("oauth_callback".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthConsumerKey>("oauth-consumer-key") { body.insert("oauth_consumer_key".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthNonce>("oauth-nonce") { body.insert("oauth_nonce".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthSignature>("oauth-signature") { body.insert("oauth_signature".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthSignatureMethod>("oauth-signature-method") { body.insert("oauth_signature_method".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthTimestamp>("oauth-timestamp") { body.insert("oauth_timestamp".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthToken>("oauth-token") { body.insert("oauth_token".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthVersion>("oauth-version") { body.insert("oauth_version".into(), serde_json::json!(v.to_string())); }
-            serde_json::from_value::<types::PostOauthAccessTokenBody>(serde_json::Value::Object(body))?
+            if let Some(v) = matches.get_one::<types::OauthCallback>("oauth-callback") {
+                body.insert("oauth_callback".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::OauthConsumerKey>("oauth-consumer-key") {
+                body.insert(
+                    "oauth_consumer_key".into(),
+                    serde_json::json!(v.to_string()),
+                );
+            }
+            if let Some(v) = matches.get_one::<types::OauthNonce>("oauth-nonce") {
+                body.insert("oauth_nonce".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::OauthSignature>("oauth-signature") {
+                body.insert("oauth_signature".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) =
+                matches.get_one::<types::OauthSignatureMethod>("oauth-signature-method")
+            {
+                body.insert(
+                    "oauth_signature_method".into(),
+                    serde_json::json!(v.to_string()),
+                );
+            }
+            if let Some(v) = matches.get_one::<types::OauthTimestamp>("oauth-timestamp") {
+                body.insert("oauth_timestamp".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::OauthToken>("oauth-token") {
+                body.insert("oauth_token".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::OauthVersion>("oauth-version") {
+                body.insert("oauth_version".into(), serde_json::json!(v.to_string()));
+            }
+            serde_json::from_value::<types::PostOauthAccessTokenBody>(serde_json::Value::Object(
+                body,
+            ))?
         };
         let result = crate::endpoints::oauth_get_access_token(&self.client, &body).await;
         self.print_result(result)
@@ -2446,25 +2816,50 @@ impl Cli {
                 .with_context(|| format!("failed to parse {}", path.display()))?
         } else {
             let mut body = serde_json::Map::new();
-            if let Some(v) = matches.get_one::<types::OauthCallback>("oauth-callback") { body.insert("oauth_callback".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthConsumerKey>("oauth-consumer-key") { body.insert("oauth_consumer_key".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthNonce>("oauth-nonce") { body.insert("oauth_nonce".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthSignature>("oauth-signature") { body.insert("oauth_signature".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthSignatureMethod>("oauth-signature-method") { body.insert("oauth_signature_method".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthTimestamp>("oauth-timestamp") { body.insert("oauth_timestamp".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthToken>("oauth-token") { body.insert("oauth_token".into(), serde_json::json!(v.to_string())); }
-            if let Some(v) = matches.get_one::<types::OauthVersion>("oauth-version") { body.insert("oauth_version".into(), serde_json::json!(v.to_string())); }
-            serde_json::from_value::<types::PostOauthRequestTokenBody>(serde_json::Value::Object(body))?
+            if let Some(v) = matches.get_one::<types::OauthCallback>("oauth-callback") {
+                body.insert("oauth_callback".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::OauthConsumerKey>("oauth-consumer-key") {
+                body.insert(
+                    "oauth_consumer_key".into(),
+                    serde_json::json!(v.to_string()),
+                );
+            }
+            if let Some(v) = matches.get_one::<types::OauthNonce>("oauth-nonce") {
+                body.insert("oauth_nonce".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::OauthSignature>("oauth-signature") {
+                body.insert("oauth_signature".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) =
+                matches.get_one::<types::OauthSignatureMethod>("oauth-signature-method")
+            {
+                body.insert(
+                    "oauth_signature_method".into(),
+                    serde_json::json!(v.to_string()),
+                );
+            }
+            if let Some(v) = matches.get_one::<types::OauthTimestamp>("oauth-timestamp") {
+                body.insert("oauth_timestamp".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::OauthToken>("oauth-token") {
+                body.insert("oauth_token".into(), serde_json::json!(v.to_string()));
+            }
+            if let Some(v) = matches.get_one::<types::OauthVersion>("oauth-version") {
+                body.insert("oauth_version".into(), serde_json::json!(v.to_string()));
+            }
+            serde_json::from_value::<types::PostOauthRequestTokenBody>(serde_json::Value::Object(
+                body,
+            ))?
         };
         let result = crate::endpoints::oauth_get_request_token(&self.client, &body).await;
         self.print_result(result)
     }
 
-    pub async fn execute_oauth_revoke(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
-        let authorization = matches.get_one::<String>("authorization").map(|s| s.as_str());
+    pub async fn execute_oauth_revoke(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+        let authorization = matches
+            .get_one::<String>("authorization")
+            .map(|s| s.as_str());
         let path = matches.get_one::<std::path::PathBuf>("json-body").unwrap();
         let txt = std::fs::read_to_string(path)
             .with_context(|| format!("failed to read {}", path.display()))?;
@@ -2474,11 +2869,10 @@ impl Cli {
         self.print_void(result)
     }
 
-    pub async fn execute_oauth_token(
-        &self,
-        matches: &clap::ArgMatches,
-    ) -> anyhow::Result<()> {
-        let authorization = matches.get_one::<String>("authorization").map(|s| s.as_str());
+    pub async fn execute_oauth_token(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+        let authorization = matches
+            .get_one::<String>("authorization")
+            .map(|s| s.as_str());
         let path = matches.get_one::<std::path::PathBuf>("json-body").unwrap();
         let txt = std::fs::read_to_string(path)
             .with_context(|| format!("failed to read {}", path.display()))?;
@@ -2556,9 +2950,11 @@ impl Cli {
                 }
                 Some(url) => {
                     let url = url.to_string();
-                    page = self.client.get_url(&url).await.map_err(|e| {
-                        anyhow::anyhow!("fetching next page: {e}")
-                    })?;
+                    page = self
+                        .client
+                        .get_url(&url)
+                        .await
+                        .map_err(|e| anyhow::anyhow!("fetching next page: {e}"))?;
                 }
                 None => break,
             }
@@ -2566,10 +2962,7 @@ impl Cli {
         Ok(())
     }
 
-    fn print_void(
-        &self,
-        result: Result<(), crate::client::ApiError>,
-    ) -> anyhow::Result<()> {
+    fn print_void(&self, result: Result<(), crate::client::ApiError>) -> anyhow::Result<()> {
         match result {
             Ok(()) => Ok(()),
             Err(e) => Err(anyhow::anyhow!("{e}")),

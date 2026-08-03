@@ -44,21 +44,21 @@ async fn main() -> anyhow::Result<()> {
     }
 
     // Resolve token and session fallbacks
-    let (token, account_id, api_url, _auth_url) =
-        match matches.get_one::<String>("token").cloned() {
-            Some(t) => (t, None, api_url.clone(), auth_url.clone()),
-            None => {
-                let session = auth::load_session(creds_file).await?;
-                let parsed: i32 = session
-                    .account_id
-                    .parse()
-                    .context("invalid account_id in stored credentials")?;
-                // Stored URLs from credentials take effect when CLI arg is the default
-                let api_url = session.api_url.unwrap_or_else(|| api_url.clone());
-                let auth_url = session.auth_url.unwrap_or_else(|| auth_url.clone());
-                (session.access_token, Some(parsed), api_url, auth_url)
-            }
-        };
+    let (token, account_id, api_url, _auth_url) = match matches.get_one::<String>("token").cloned()
+    {
+        Some(t) => (t, None, api_url.clone(), auth_url.clone()),
+        None => {
+            let session = auth::load_session(creds_file).await?;
+            let parsed: i32 = session
+                .account_id
+                .parse()
+                .context("invalid account_id in stored credentials")?;
+            // Stored URLs from credentials take effect when CLI arg is the default
+            let api_url = session.api_url.unwrap_or_else(|| api_url.clone());
+            let auth_url = session.auth_url.unwrap_or_else(|| auth_url.clone());
+            (session.access_token, Some(parsed), api_url, auth_url)
+        }
+    };
 
     let client = aweber::client::Client::new_with_client(
         &api_url,
@@ -93,9 +93,7 @@ async fn main() -> anyhow::Result<()> {
                 .entries
                 .first()
                 .context("no accounts found for this token")?;
-            account
-                .id
-                .context("account missing id field")? as i32
+            account.id.context("account missing id field")? as i32
         }
     };
 
@@ -122,9 +120,7 @@ async fn handle_api_command(
     client: &aweber::client::Client,
     matches: &clap::ArgMatches,
 ) -> anyhow::Result<()> {
-    let path = matches
-        .get_one::<String>("path")
-        .expect("path is required");
+    let path = matches.get_one::<String>("path").expect("path is required");
     let method: reqwest::Method = matches
         .get_one::<String>("method")
         .expect("method has default")
@@ -145,9 +141,7 @@ async fn handle_api_command(
         .get_many::<String>("header")
         .unwrap_or_default()
         .map(|h| {
-            let (key, value) = h
-                .split_once(':')
-                .context("header must be key:value")?;
+            let (key, value) = h.split_once(':').context("header must be key:value")?;
             let name = key
                 .parse::<reqwest::header::HeaderName>()
                 .map_err(|e| anyhow::anyhow!("invalid header name '{key}': {e}"))?;
@@ -223,7 +217,10 @@ fn collect_headers(headers: &[(String, String)]) -> serde_json::Value {
                 serde_json::Value::String(values[0].to_string())
             } else {
                 serde_json::Value::Array(
-                    values.into_iter().map(|v| serde_json::Value::String(v.to_string())).collect(),
+                    values
+                        .into_iter()
+                        .map(|v| serde_json::Value::String(v.to_string()))
+                        .collect(),
                 )
             };
             (k.to_string(), value)

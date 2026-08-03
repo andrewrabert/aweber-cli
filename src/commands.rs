@@ -315,15 +315,13 @@ static GROUPS: &[Group] = &[
 /// Returns a `clap::Command` where each resource group is a top-level subcommand
 /// containing action subcommands. The auth subcommand is also included.
 pub fn build_command_tree() -> clap::Command {
-    let login_cmd = clap::Command::new("login")
-        .about("Log in to AWeber")
-        .arg(
-            clap::Arg::new("client-id")
-                .long("client-id")
-                .env("AWEBER_CLIENT_ID")
-                .default_value(auth::DEFAULT_CLIENT_ID)
-                .help("OAuth2 client ID"),
-        );
+    let login_cmd = clap::Command::new("login").about("Log in to AWeber").arg(
+        clap::Arg::new("client-id")
+            .long("client-id")
+            .env("AWEBER_CLIENT_ID")
+            .default_value(auth::DEFAULT_CLIENT_ID)
+            .help("OAuth2 client ID"),
+    );
 
     let auth_cmd = clap::Command::new("auth")
         .about("Manage authentication")

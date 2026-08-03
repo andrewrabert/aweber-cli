@@ -282,7 +282,11 @@ pub struct Activity {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub event_time: Option<String>,
     #[doc = "Identifier for this subscriber activity.  This is set to the type if no reasonable identifier exists."]
-    #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "crate::serde_helpers::deserialize_string_or_int")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::serde_helpers::deserialize_string_or_int"
+    )]
     pub id: Option<String>,
     #[doc = "The link to the event type"]
     #[serde(default, skip_serializing)]
@@ -294,11 +298,7 @@ pub struct Activity {
     #[serde(default, skip_serializing)]
     pub subscriber_link: Option<String>,
     #[doc = "The type of activity"]
-    #[serde(
-        rename = "type",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
     pub type_: Option<ActivityType>,
 }
 string_enum! { pub enum ActivityType { Click => "click", Link => "link", Open => "open", SentMessage => "sent_message", Subscribed => "subscribed", TrackedEvent => "tracked_event", Verified => "verified" } }
@@ -309,14 +309,8 @@ pub struct AddSubscriberRequestBody {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ad_tracking: Option<AddSubscriberRequestBodyAdTracking>,
     #[doc = "The custom fields specified on the subscriber.  Note that the custom fields are required to already exist for the list. See [Custom Fields](#tag/Custom-Fields) for details."]
-    #[serde(
-        default,
-        skip_serializing_if = "HashMap::is_empty"
-    )]
-    pub custom_fields: HashMap<
-        String,
-        AddSubscriberRequestBodyCustomFieldsValue,
-    >,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub custom_fields: HashMap<String, AddSubscriberRequestBodyCustomFieldsValue>,
     #[doc = "The subscriber's email address"]
     pub email: AddSubscriberRequestBodyEmail,
     #[doc = "The subscriber's IP address. This field is used to determine the following Geo Location fields: area_code, city, country, dma_code, latitude, longitude, postal_code, and region. IP address can only be specified when Subscribers are initially created. Internal, private, or reserved IP addresses are not acceptable."]
@@ -341,12 +335,12 @@ pub struct AddSubscriberRequestBody {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub update_existing: Option<AddSubscriberRequestBodyUpdateExisting>,
 }
-validated_string!(AddSubscriberRequestBodyAdTracking, min=1, max=20);
-validated_string!(AddSubscriberRequestBodyCustomFieldsValue, min=1);
-validated_string!(AddSubscriberRequestBodyEmail, min=1, max=50);
-validated_string!(AddSubscriberRequestBodyIpAddress, min=1, max=60);
-validated_string!(AddSubscriberRequestBodyMiscNotes, min=1, max=60);
-validated_string!(AddSubscriberRequestBodyName, min=1, max=60);
+validated_string!(AddSubscriberRequestBodyAdTracking, min = 1, max = 20);
+validated_string!(AddSubscriberRequestBodyCustomFieldsValue, min = 1);
+validated_string!(AddSubscriberRequestBodyEmail, min = 1, max = 50);
+validated_string!(AddSubscriberRequestBodyIpAddress, min = 1, max = 60);
+validated_string!(AddSubscriberRequestBodyMiscNotes, min = 1, max = 60);
+validated_string!(AddSubscriberRequestBodyName, min = 1, max = 60);
 string_enum! { pub enum AddSubscriberRequestBodyStrictCustomFields { True => "true", False => "false" } }
 string_enum! { pub enum AddSubscriberRequestBodyUpdateExisting { True => "true", False => "false" } }
 #[doc = "This will create an access token using an `authorization_code`"]
@@ -397,7 +391,11 @@ pub struct Broadcast {
     #[serde(default, skip_serializing)]
     pub clicks_collection_link: Option<String>,
     #[doc = "When the message was created."]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub created_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "List of [Lists](#tag/Lists) URLs that are excluded in the delivery of this broadcast.<br> This is the `self_link` of the list here - e.g. `https://api.aweber.com/1.0/accounts/<account_id>/lists/<list_id>`"]
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -424,7 +422,11 @@ pub struct Broadcast {
     #[serde(default, skip_serializing)]
     pub opens_collection_link: Option<String>,
     #[doc = "When broadcast is scheduled to send."]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub scheduled_for: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "URL to the [Segment](#tag/Segments) to send this broadcast to."]
     #[serde(default, skip_serializing)]
@@ -436,7 +438,11 @@ pub struct Broadcast {
     #[serde(default, skip_serializing)]
     pub self_link: Option<String>,
     #[doc = "Date/Time broadcast was sent."]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub sent_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "A list of statistics for a broadcast, only set for sent broadcasts."]
     #[serde(default, skip_serializing_if = "::serde_json::Map::is_empty")]
@@ -496,13 +502,21 @@ pub struct BroadcastClicksDetailed {
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, Default)]
 pub struct BroadcastClicksDetailedEntriesItem {
     #[doc = "Timestamp of when this specific click occurred"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub clicked_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "Email address of the subscriber who clicked the broadcast. *Note:* This is the current email address of the subscriber, not necessarily the email address the broadcast was sent to."]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,
     #[doc = "Time when this individual click event occurred (same value as clicked_at)"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub event_time: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "A link to the click type"]
     #[serde(default, skip_serializing)]
@@ -511,11 +525,7 @@ pub struct BroadcastClicksDetailedEntriesItem {
     #[serde(default, skip_serializing)]
     pub subscriber_link: Option<String>,
     #[doc = "Type of subscriber activity"]
-    #[serde(
-        rename = "type",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
     pub type_: Option<BroadcastClicksDetailedEntriesItemType>,
     #[doc = "The URL that was clicked"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -529,13 +539,25 @@ pub struct BroadcastClicksEntriesItem {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,
     #[doc = "Time when the first click occurred for this subscriber"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub event_time: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "Time of the first click by this subscriber"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub first_click_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "Time of the last click by this subscriber"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub last_click_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "A link to the click type"]
     #[serde(default, skip_serializing)]
@@ -547,11 +569,7 @@ pub struct BroadcastClicksEntriesItem {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub total_clicks: Option<::std::num::NonZeroU64>,
     #[doc = "Type of subscriber activity"]
-    #[serde(
-        rename = "type",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
     pub type_: Option<BroadcastClicksEntriesItemType>,
 }
 string_enum! { pub enum BroadcastClicksEntriesItemType { Click => "click" } }
@@ -591,7 +609,11 @@ pub struct BroadcastOpensEntriesItem {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,
     #[doc = "Time that the open occurred"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub event_time: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "A link to the open type"]
     #[serde(default, skip_serializing)]
@@ -600,11 +622,7 @@ pub struct BroadcastOpensEntriesItem {
     #[serde(default, skip_serializing)]
     pub subscriber_link: Option<String>,
     #[doc = "Type of subscriber activity"]
-    #[serde(
-        rename = "type",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
     pub type_: Option<BroadcastOpensEntriesItemType>,
 }
 string_enum! { pub enum BroadcastOpensEntriesItemType { Open => "open" } }
@@ -641,13 +659,21 @@ pub struct BroadcastsEntriesItem {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub broadcast_id: Option<i64>,
     #[doc = "When broadcast is scheduled to send."]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub scheduled_for: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The link to this resource."]
     #[serde(default, skip_serializing)]
     pub self_link: Option<String>,
     #[doc = "Date/Time broadcast was sent."]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub sent_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The status of the broadcast."]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -691,13 +717,21 @@ pub struct Campaign {
     #[serde(default, skip_serializing)]
     pub resource_type_link: Option<String>,
     #[doc = "When broadcast is scheduled to send (broadcast only)"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub scheduled_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The link to this resource"]
     #[serde(default, skip_serializing)]
     pub self_link: Option<String>,
     #[doc = "Date/Time campaign was sent (broadcast only)"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub sent_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub spam_assassin_score: Option<f32>,
@@ -827,7 +861,11 @@ pub struct CustomFields {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub total_size: Option<u64>,
 }
-validated_string!(DeleteAccountsListsSubscribersSubscriberEmail, min=1, max=50);
+validated_string!(
+    DeleteAccountsListsSubscribersSubscriberEmail,
+    min = 1,
+    max = 50
+);
 #[doc = "`EndpointError`"]
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, Default)]
 pub struct EndpointError {
@@ -847,11 +885,7 @@ pub struct EndpointErrorError {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<EndpointErrorErrorStatus>,
     #[doc = "The API error type"]
-    #[serde(
-        rename = "type",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
     pub type_: Option<EndpointErrorErrorType>,
 }
 #[doc = "The HTTP status code"]
@@ -993,14 +1027,14 @@ pub struct FormPkce {
 }
 string_enum! { pub enum FormPkceTokenTypeHint { AccessToken => "access_token", RefreshToken => "refresh_token" } }
 string_enum! { pub enum FormTokenTypeHint { AccessToken => "access_token", RefreshToken => "refresh_token" } }
-validated_string!(GetAccountsFindsubscribersAdTracking, min=1, max=20);
-validated_string!(GetAccountsFindsubscribersCity, min=1, max=100);
-validated_string!(GetAccountsFindsubscribersCountry, min=1, max=100);
-validated_string!(GetAccountsFindsubscribersEmail, min=1, max=50);
-validated_string!(GetAccountsFindsubscribersMiscNotes, max=60);
-validated_string!(GetAccountsFindsubscribersName, min=1, max=60);
-validated_string!(GetAccountsFindsubscribersPostalCode, min=1, max=100);
-validated_string!(GetAccountsFindsubscribersRegion, min=1, max=100);
+validated_string!(GetAccountsFindsubscribersAdTracking, min = 1, max = 20);
+validated_string!(GetAccountsFindsubscribersCity, min = 1, max = 100);
+validated_string!(GetAccountsFindsubscribersCountry, min = 1, max = 100);
+validated_string!(GetAccountsFindsubscribersEmail, min = 1, max = 50);
+validated_string!(GetAccountsFindsubscribersMiscNotes, max = 60);
+validated_string!(GetAccountsFindsubscribersName, min = 1, max = 60);
+validated_string!(GetAccountsFindsubscribersPostalCode, min = 1, max = 100);
+validated_string!(GetAccountsFindsubscribersRegion, min = 1, max = 100);
 string_enum! { pub enum GetAccountsFindsubscribersStatus { Subscribed => "subscribed", Unsubscribed => "unsubscribed", Unconfirmed => "unconfirmed" } }
 string_enum! { pub enum GetAccountsFindsubscribersSubscriptionMethod { Api => "api", Email => "email", Import => "import", Webform => "webform" } }
 string_enum! { pub enum GetAccountsFindsubscribersUnsubscribeMethod { UnsubscribeLink => "unsubscribe link", CustomerCp => "customer cp", Undeliverable => "undeliverable", ApiUnsubscribe => "api: unsubscribe", ApiMove => "api: move" } }
@@ -1022,7 +1056,7 @@ string_enum! { pub enum GetAccountsListsCampaignsCampaigntypecampaignidCampaignT
 string_enum! { pub enum GetAccountsListsCampaignsFindCampaignType { B => "b", F => "f" } }
 string_enum! { pub enum GetAccountsListsCampaignsFindWsOp { Find => "find" } }
 string_enum! { pub enum GetAccountsListsCampaignsFindWsShow { TotalSize => "total_size" } }
-validated_string!(GetAccountsListsFindName, min=1, max=100);
+validated_string!(GetAccountsListsFindName, min = 1, max = 100);
 string_enum! { pub enum GetAccountsListsFindWsOp { Find => "find" } }
 string_enum! { pub enum GetAccountsListsFindWsShow { TotalSize => "total_size" } }
 #[doc = "`GetAccountsListsSubscribers2Response`"]
@@ -1041,14 +1075,14 @@ pub struct GetAccountsListsSubscribers2Response {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
     #[doc = "The custom fields specified on the subscriber"]
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub custom_fields: HashMap<String, Option<String>>,
+    #[doc = "The subscriber's designated market area code (USA and canada only)"]
     #[serde(
         default,
-        skip_serializing_if = "HashMap::is_empty"
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_i64::option"
     )]
-    pub custom_fields:
-        HashMap<String, Option<String>>,
-    #[doc = "The subscriber's designated market area code (USA and canada only)"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_i64::option")]
     pub dma_code: Option<i64>,
     #[doc = "The subscriber's email address."]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1066,7 +1100,11 @@ pub struct GetAccountsListsSubscribers2Response {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub last_followup_message_number_sent: Option<i64>,
     #[doc = "The last followup message sent to the subscriber"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub last_followup_sent_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "A link to the [Last Follow Up Message](#tag/Campaigns/paths/~1accounts~1{accountId}~1lists~1{listId}~1campaigns~1{campaignType}{campaignId}/get) the subscriber was sent"]
     #[serde(default, skip_serializing)]
@@ -1097,12 +1135,15 @@ pub struct GetAccountsListsSubscribers2Response {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<GetAccountsListsSubscribers2ResponseStatus>,
     #[doc = "The timestamp for when the subscriber subscribed"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub subscribed_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The method by which the subscriber was subscribed.\n\n| Method    | Description                              |\n| ------    | -----------                              |\n| api       | subscribed via an API integration        |\n| email     | subscriber emailed to list to opt-in     |\n| import    | subscriber was imported by the customer  |\n| webform   | subscriber subscribed via a web form     |\n"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub subscription_method:
-        Option<GetAccountsListsSubscribers2ResponseSubscriptionMethod>,
+    pub subscription_method: Option<GetAccountsListsSubscribers2ResponseSubscriptionMethod>,
     #[doc = "The webform url from which the subscriber subscribed from"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub subscription_url: Option<String>,
@@ -1111,29 +1152,40 @@ pub struct GetAccountsListsSubscribers2Response {
     pub tags: Vec<String>,
     #[doc = "The method that describes how the subscriber unsubscribed"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub unsubscribe_method:
-        Option<GetAccountsListsSubscribers2ResponseUnsubscribeMethod>,
+    pub unsubscribe_method: Option<GetAccountsListsSubscribers2ResponseUnsubscribeMethod>,
     #[doc = "The timestamp for when the subscriber unsubscribed"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub unsubscribed_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The UUID (universally unique identifier) for the subscriber"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub uuid: Option<String>,
     #[doc = "The timestamp for when the subscriber confirmed their email address"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub verified_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 string_enum! { pub enum GetAccountsListsSubscribers2ResponseStatus { Subscribed => "subscribed", Unsubscribed => "unsubscribed", Unconfirmed => "unconfirmed" } }
 string_enum! { pub enum GetAccountsListsSubscribers2ResponseSubscriptionMethod { Api => "api", Email => "email", Import => "import", Webform => "webform" } }
 string_enum! { pub enum GetAccountsListsSubscribers2ResponseUnsubscribeMethod { UnsubscribeLink => "unsubscribe link", CustomerCp => "customer cp", Undeliverable => "undeliverable", ApiUnsubscribe => "api: unsubscribe", ApiMove => "api: move" } }
-validated_string!(GetAccountsListsSubscribersFindAdTracking, min=1, max=20);
-validated_string!(GetAccountsListsSubscribersFindCity, min=1, max=100);
-validated_string!(GetAccountsListsSubscribersFindCountry, min=1, max=100);
-validated_string!(GetAccountsListsSubscribersFindEmail, min=1, max=50);
-validated_string!(GetAccountsListsSubscribersFindMiscNotes, max=60);
-validated_string!(GetAccountsListsSubscribersFindName, min=1, max=60);
-validated_string!(GetAccountsListsSubscribersFindPostalCode, min=1, max=100);
-validated_string!(GetAccountsListsSubscribersFindRegion, min=1, max=100);
+validated_string!(GetAccountsListsSubscribersFindAdTracking, min = 1, max = 20);
+validated_string!(GetAccountsListsSubscribersFindCity, min = 1, max = 100);
+validated_string!(GetAccountsListsSubscribersFindCountry, min = 1, max = 100);
+validated_string!(GetAccountsListsSubscribersFindEmail, min = 1, max = 50);
+validated_string!(GetAccountsListsSubscribersFindMiscNotes, max = 60);
+validated_string!(GetAccountsListsSubscribersFindName, min = 1, max = 60);
+validated_string!(
+    GetAccountsListsSubscribersFindPostalCode,
+    min = 1,
+    max = 100
+);
+validated_string!(GetAccountsListsSubscribersFindRegion, min = 1, max = 100);
 string_enum! { pub enum GetAccountsListsSubscribersFindSortKey { SubscribedAt => "subscribed_at", UnsubscribedAt => "unsubscribed_at" } }
 string_enum! { pub enum GetAccountsListsSubscribersFindSortOrder { Asc => "asc", Desc => "desc" } }
 string_enum! { pub enum GetAccountsListsSubscribersFindStatus { Subscribed => "subscribed", Unsubscribed => "unsubscribed", Unconfirmed => "unconfirmed" } }
@@ -1212,19 +1264,31 @@ pub struct LandingPage {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub content_html: Option<String>,
     #[doc = "When the landing page was created"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub created_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The unique ID for the landing page"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub id: Option<::uuid::Uuid>,
     #[doc = "When the landing page was last modified"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub modified_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The landing page name"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[doc = "When the landing page was published"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub published_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The published HTML of the landing page"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1246,19 +1310,31 @@ pub struct LandingPage {
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, Default)]
 pub struct LandingPageNoContent {
     #[doc = "When the landing page was created"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub created_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The unique ID for the landing page"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub id: Option<::uuid::Uuid>,
     #[doc = "When the landing page was last modified"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub modified_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The landing page name"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[doc = "When the landing page was published"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub published_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The URL for the landing page"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1391,8 +1467,8 @@ pub struct ListCampaigns {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub total_size: Option<i64>,
 }
-validated_string!(ListName, min=1, max=32);
-validated_string!(ListUniqueListId, min=1, max=30);
+validated_string!(ListName, min = 1, max = 32);
+validated_string!(ListUniqueListId, min = 1, max = 30);
 #[doc = "`Lists`"]
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, Default)]
 pub struct Lists {
@@ -1449,7 +1525,11 @@ pub struct PatchAccountsListsCustomFieldsBody {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 }
-validated_string!(PatchAccountsListsSubscribersSubscriberEmail, min=1, max=50);
+validated_string!(
+    PatchAccountsListsSubscribersSubscriberEmail,
+    min = 1,
+    max = 50
+);
 #[doc = "`Pkce`"]
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug)]
 pub struct Pkce {
@@ -1619,12 +1699,8 @@ pub struct Purchase {
     #[doc = "Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html)."]
     pub currency: String,
     #[doc = "The custom fields specified on the subscriber"]
-    #[serde(
-        default,
-        skip_serializing_if = "HashMap::is_empty"
-    )]
-    pub custom_fields:
-        HashMap<String, Option<String>>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub custom_fields: HashMap<String, Option<String>>,
     #[doc = "The subscriber's email address"]
     pub email: PurchaseEmail,
     #[doc = "A custom note associated with this specific tracked event"]
@@ -1650,12 +1726,12 @@ pub struct Purchase {
     #[doc = "The sales tracking url profile for the web page"]
     pub vendor: String,
 }
-validated_string!(PurchaseAdTracking, min=1, max=20);
-validated_string!(PurchaseEmail, min=1, max=50);
-validated_string!(PurchaseIpAddress, min=1, max=60);
-validated_string!(PurchaseMiscNotes, max=60);
-validated_string!(PurchaseName, min=1, max=60);
-validated_string!(PurchaseTagsItem, min=1);
+validated_string!(PurchaseAdTracking, min = 1, max = 20);
+validated_string!(PurchaseEmail, min = 1, max = 50);
+validated_string!(PurchaseIpAddress, min = 1, max = 60);
+validated_string!(PurchaseMiscNotes, max = 60);
+validated_string!(PurchaseName, min = 1, max = 60);
+validated_string!(PurchaseTagsItem, min = 1);
 #[doc = "This will create an access token using a `refresh_token`"]
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug)]
 pub struct RefreshTokenConfidential {
@@ -1825,14 +1901,14 @@ pub struct Subscriber {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
     #[doc = "The custom fields specified on the subscriber"]
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub custom_fields: HashMap<String, Option<String>>,
+    #[doc = "The subscriber's designated market area code (USA and canada only)"]
     #[serde(
         default,
-        skip_serializing_if = "HashMap::is_empty"
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_i64::option"
     )]
-    pub custom_fields:
-        HashMap<String, Option<String>>,
-    #[doc = "The subscriber's designated market area code (USA and canada only)"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_i64::option")]
     pub dma_code: Option<i64>,
     #[doc = "The subscriber's email address."]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1850,7 +1926,11 @@ pub struct Subscriber {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub last_followup_message_number_sent: Option<i64>,
     #[doc = "The last followup message sent to the subscriber"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub last_followup_sent_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "A link to the [Last Follow Up Message](#tag/Campaigns/paths/~1accounts~1{accountId}~1lists~1{listId}~1campaigns~1{campaignType}{campaignId}/get) the subscriber was sent"]
     #[serde(default, skip_serializing)]
@@ -1881,7 +1961,11 @@ pub struct Subscriber {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<SubscriberStatus>,
     #[doc = "The timestamp for when the subscriber subscribed"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub subscribed_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The method by which the subscriber was subscribed.\n\n| Method    | Description                              |\n| ------    | -----------                              |\n| api       | subscribed via an API integration        |\n| email     | subscriber emailed to list to opt-in     |\n| import    | subscriber was imported by the customer  |\n| webform   | subscriber subscribed via a web form     |\n"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1896,10 +1980,18 @@ pub struct Subscriber {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub unsubscribe_method: Option<SubscriberUnsubscribeMethod>,
     #[doc = "The timestamp for when the subscriber unsubscribed"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub unsubscribed_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The timestamp for when the subscriber confirmed their email address"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub verified_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
 #[doc = "`SubscriberFind`"]
@@ -1918,14 +2010,14 @@ pub struct SubscriberFind {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub country: Option<SubscriberFindCountry>,
     #[doc = "The custom fields specified on the subscriber"]
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub custom_fields: HashMap<String, Option<String>>,
+    #[doc = "The subscriber's designated market area code (usa and canada only)"]
     #[serde(
         default,
-        skip_serializing_if = "HashMap::is_empty"
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_i64::option"
     )]
-    pub custom_fields:
-        HashMap<String, Option<String>>,
-    #[doc = "The subscriber's designated market area code (usa and canada only)"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_i64::option")]
     pub dma_code: Option<i64>,
     #[doc = "The subscriber's email address"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1943,7 +2035,11 @@ pub struct SubscriberFind {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub last_followup_message_number_sent: Option<i64>,
     #[doc = "The last followup message sent to the subscriber"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub last_followup_sent_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "A link to the [Last Follow Up Message](#tag/Campaigns/paths/~1accounts~1{accountId}~1lists~1{listId}~1campaigns~1{campaignType}{campaignId}/get) the subscriber was sent"]
     #[serde(default, skip_serializing)]
@@ -1980,7 +2076,11 @@ pub struct SubscriberFind {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub status: Option<SubscriberFindStatus>,
     #[doc = "The timestamp for when the subscriber subscribed"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub subscribed_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The method by which the subscriber was subscribed"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1995,25 +2095,33 @@ pub struct SubscriberFind {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub unsubscribe_method: Option<SubscriberFindUnsubscribeMethod>,
     #[doc = "The timestamp for when the subscriber unsubscribed"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub unsubscribed_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
     #[doc = "The timestamp for when the subscriber confirmed their email address"]
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "flexible_datetime::option")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "flexible_datetime::option"
+    )]
     pub verified_at: Option<::chrono::DateTime<::chrono::offset::Utc>>,
 }
-validated_string!(SubscriberFindAdTracking, min=1, max=20);
-validated_string!(SubscriberFindCity, min=1, max=100);
-validated_string!(SubscriberFindCountry, min=1, max=100);
-validated_string!(SubscriberFindEmail, min=1, max=50);
-validated_string!(SubscriberFindIpAddress, min=1, max=60);
-validated_string!(SubscriberFindListName, min=1, max=32);
-validated_string!(SubscriberFindMiscNotes, max=60);
-validated_string!(SubscriberFindName, min=1, max=60);
-validated_string!(SubscriberFindPostalCode, min=1, max=100);
-validated_string!(SubscriberFindRegion, min=1, max=100);
+validated_string!(SubscriberFindAdTracking, min = 1, max = 20);
+validated_string!(SubscriberFindCity, min = 1, max = 100);
+validated_string!(SubscriberFindCountry, min = 1, max = 100);
+validated_string!(SubscriberFindEmail, min = 1, max = 50);
+validated_string!(SubscriberFindIpAddress, min = 1, max = 60);
+validated_string!(SubscriberFindListName, min = 1, max = 32);
+validated_string!(SubscriberFindMiscNotes, max = 60);
+validated_string!(SubscriberFindName, min = 1, max = 60);
+validated_string!(SubscriberFindPostalCode, min = 1, max = 100);
+validated_string!(SubscriberFindRegion, min = 1, max = 100);
 string_enum! { pub enum SubscriberFindStatus { Subscribed => "subscribed", Unsubscribed => "unsubscribed", Unconfirmed => "unconfirmed" } }
 string_enum! { pub enum SubscriberFindSubscriptionMethod { Api => "api", Email => "email", Import => "import", Webform => "webform" } }
-validated_string!(SubscriberFindTagsItem, min=1);
+validated_string!(SubscriberFindTagsItem, min = 1);
 string_enum! { pub enum SubscriberFindUnsubscribeMethod { UnsubscribeLink => "unsubscribe link", CustomerCp => "customer cp", Undeliverable => "undeliverable", ApiUnsubscribe => "api: unsubscribe", ApiMove => "api: move" } }
 #[doc = "`SubscriberGetActivity`"]
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, Default)]
@@ -2117,14 +2225,8 @@ pub struct UpdateSubscriberRequestBody {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ad_tracking: Option<UpdateSubscriberRequestBodyAdTracking>,
     #[doc = "The custom fields specified on the subscriber.  Custom fields are represented as a sub-object where only the **values** can be modified. <br><br> **Note:** If updating custom field values, **all** fields must be included in the request. If all fields are not included, the omitted fields will be set to *null*. <br><br> In order to modify custom field values:\n- Retrieve the custom fields and values for the subscriber.\n- Add all fields and their values to the PATCH request.\n- Modify the value **only** for the fields you wish to update.\n- Submit the request containing all the custom fields and their respective values."]
-    #[serde(
-        default,
-        skip_serializing_if = "HashMap::is_empty"
-    )]
-    pub custom_fields: HashMap<
-        String,
-        Option<UpdateSubscriberRequestBodyCustomFieldsValue>,
-    >,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub custom_fields: HashMap<String, Option<UpdateSubscriberRequestBodyCustomFieldsValue>>,
     #[doc = "The subscriber's email address"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,
@@ -2142,14 +2244,13 @@ pub struct UpdateSubscriberRequestBody {
     pub status: Option<UpdateSubscriberRequestBodyStatus>,
     #[doc = "If this parameter is present and set to `true`, then custom field names are matched case sensitively.  Enabling this option also causes the operation to fail if a custom field is included that is not defined for the list."]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub strict_custom_fields:
-        Option<UpdateSubscriberRequestBodyStrictCustomFields>,
+    pub strict_custom_fields: Option<UpdateSubscriberRequestBodyStrictCustomFields>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tags: Option<UpdateSubscriberRequestBodyTags>,
 }
-validated_string!(UpdateSubscriberRequestBodyAdTracking, min=1, max=20);
-validated_string!(UpdateSubscriberRequestBodyCustomFieldsValue, min=1);
-validated_string!(UpdateSubscriberRequestBodyName, min=1, max=60);
+validated_string!(UpdateSubscriberRequestBodyAdTracking, min = 1, max = 20);
+validated_string!(UpdateSubscriberRequestBodyCustomFieldsValue, min = 1);
+validated_string!(UpdateSubscriberRequestBodyName, min = 1, max = 60);
 string_enum! { pub enum UpdateSubscriberRequestBodyStatus { Subscribed => "subscribed", Unsubscribed => "unsubscribed" } }
 string_enum! { pub enum UpdateSubscriberRequestBodyStrictCustomFields { True => "true", False => "false" } }
 #[doc = "An object with the keys \"add\" and/or \"remove\" and values of lists of tags"]
@@ -2225,11 +2326,7 @@ pub struct Webform {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub total_unique_displays: Option<i64>,
     #[doc = "The webform display type"]
-    #[serde(
-        rename = "type",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
     pub type_: Option<WebformType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub unique_conversion_percentage: Option<f32>,
@@ -2304,11 +2401,7 @@ pub struct WebformSplitTestComponent {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub total_unique_displays: Option<u64>,
     #[doc = "The webform display type"]
-    #[serde(
-        rename = "type",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
     pub type_: Option<WebformSplitTestComponentType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub unique_conversion_percentage: Option<f32>,
@@ -2319,7 +2412,7 @@ pub struct WebformSplitTestComponent {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub weight: Option<u64>,
 }
-validated_string!(WebformSplitTestComponentTagsItem, min=1);
+validated_string!(WebformSplitTestComponentTagsItem, min = 1);
 string_enum! { pub enum WebformSplitTestComponentType { Exitpopup => "exitpopup", Inline => "inline", Lightbox => "lightbox", Popover => "popover", Popunder => "popunder", Popup => "popup", Styled => "styled" } }
 #[doc = "`WebformSplitTestComponents`"]
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, Default)]
@@ -2342,7 +2435,7 @@ pub struct WebformSplitTestComponents {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub total_size: Option<u64>,
 }
-validated_string!(WebformTagsItem, min=1);
+validated_string!(WebformTagsItem, min = 1);
 string_enum! { pub enum WebformType { Exitpopup => "exitpopup", Inline => "inline", Lightbox => "lightbox", Popover => "popover", Popunder => "popunder", Popup => "popup", Styled => "styled" } }
 #[doc = "`Webforms`"]
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, Default)]
@@ -2470,10 +2563,9 @@ mod flexible_i64 {
                     .as_i64()
                     .map(Some)
                     .ok_or_else(|| serde::de::Error::custom("number out of i64 range")),
-                Some(serde_json::Value::String(s)) => s
-                    .parse::<i64>()
-                    .map(Some)
-                    .map_err(serde::de::Error::custom),
+                Some(serde_json::Value::String(s)) => {
+                    s.parse::<i64>().map(Some).map_err(serde::de::Error::custom)
+                }
                 Some(serde_json::Value::Null) | None => Ok(None),
                 _ => Err(serde::de::Error::custom("expected number or string")),
             }
@@ -2491,8 +2583,12 @@ macro_rules! impl_paginated_collection {
     ($collection:ty, $item:ty) => {
         impl PaginatedCollection for $collection {
             type Item = $item;
-            fn take_entries(&mut self) -> Vec<$item> { std::mem::take(&mut self.entries) }
-            fn next_collection_link(&self) -> Option<&str> { self.next_collection_link.as_deref() }
+            fn take_entries(&mut self) -> Vec<$item> {
+                std::mem::take(&mut self.entries)
+            }
+            fn next_collection_link(&self) -> Option<&str> {
+                self.next_collection_link.as_deref()
+            }
         }
     };
 }

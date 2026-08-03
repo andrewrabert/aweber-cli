@@ -63,50 +63,46 @@ pub async fn find_account_subscribers(
     ws_size: Option<std::num::NonZeroU32>,
     ws_start: Option<i32>,
 ) -> Result<types::FindSubscribersAccount, ApiError> {
-    ApiRequest::new(
-        client,
-        Method::GET,
-        format!("/1.0/accounts/{account_id}"),
-    )
-    .query("ws.op", "findSubscribers")
-    .query_opt("ad_tracking", ad_tracking)
-    .query_opt("area_code", area_code)
-    .query_opt("city", city)
-    .query_opt("country", country)
-    .query_opt("custom_fields", custom_fields)
-    .query_opt("dma_code", dma_code)
-    .query_opt("email", email)
-    .query_opt(
-        "last_followup_message_number_sent",
-        last_followup_message_number_sent,
-    )
-    .query_opt(
-        "last_followup_message_sent_at",
-        last_followup_message_sent_at,
-    )
-    .query_opt("latitude", latitude)
-    .query_opt("longitude", longitude)
-    .query_opt("misc_notes", misc_notes)
-    .query_opt("name", name)
-    .query_opt("postal_code", postal_code)
-    .query_opt("region", region)
-    .query_opt("status", status)
-    .query_opt("subscribed_after", subscribed_after)
-    .query_opt("subscribed_at", subscribed_at)
-    .query_opt("subscribed_before", subscribed_before)
-    .query_opt("subscription_method", subscription_method)
-    .query_opt("tags", tags)
-    .query_opt("tags_not_in", tags_not_in)
-    .query_opt("unsubscribe_method", unsubscribe_method)
-    .query_opt("unsubscribed_after", unsubscribed_after)
-    .query_opt("unsubscribed_at", unsubscribed_at)
-    .query_opt("unsubscribed_before", unsubscribed_before)
-    .query_opt("verified_at", verified_at)
-    .query_opt("ws.show", ws_show)
-    .query_opt("ws.size", ws_size)
-    .query_opt("ws.start", ws_start)
-    .send()
-    .await
+    ApiRequest::new(client, Method::GET, format!("/1.0/accounts/{account_id}"))
+        .query("ws.op", "findSubscribers")
+        .query_opt("ad_tracking", ad_tracking)
+        .query_opt("area_code", area_code)
+        .query_opt("city", city)
+        .query_opt("country", country)
+        .query_opt("custom_fields", custom_fields)
+        .query_opt("dma_code", dma_code)
+        .query_opt("email", email)
+        .query_opt(
+            "last_followup_message_number_sent",
+            last_followup_message_number_sent,
+        )
+        .query_opt(
+            "last_followup_message_sent_at",
+            last_followup_message_sent_at,
+        )
+        .query_opt("latitude", latitude)
+        .query_opt("longitude", longitude)
+        .query_opt("misc_notes", misc_notes)
+        .query_opt("name", name)
+        .query_opt("postal_code", postal_code)
+        .query_opt("region", region)
+        .query_opt("status", status)
+        .query_opt("subscribed_after", subscribed_after)
+        .query_opt("subscribed_at", subscribed_at)
+        .query_opt("subscribed_before", subscribed_before)
+        .query_opt("subscription_method", subscription_method)
+        .query_opt("tags", tags)
+        .query_opt("tags_not_in", tags_not_in)
+        .query_opt("unsubscribe_method", unsubscribe_method)
+        .query_opt("unsubscribed_after", unsubscribed_after)
+        .query_opt("unsubscribed_at", unsubscribed_at)
+        .query_opt("unsubscribed_before", unsubscribed_before)
+        .query_opt("verified_at", verified_at)
+        .query_opt("ws.show", ws_show)
+        .query_opt("ws.size", ws_size)
+        .query_opt("ws.start", ws_start)
+        .send()
+        .await
 }
 
 // ---------------------------------------------------------------------------
@@ -119,16 +115,12 @@ pub async fn list_account_webform_split_tests(
     ws_size: Option<std::num::NonZeroU32>,
     ws_start: Option<i32>,
 ) -> Result<types::WebFormSplitTests, ApiError> {
-    ApiRequest::new(
-        client,
-        Method::GET,
-        format!("/1.0/accounts/{account_id}"),
-    )
-    .query("ws.op", "getWebFormSplitTests")
-    .query_opt("ws.size", ws_size)
-    .query_opt("ws.start", ws_start)
-    .send()
-    .await
+    ApiRequest::new(client, Method::GET, format!("/1.0/accounts/{account_id}"))
+        .query("ws.op", "getWebFormSplitTests")
+        .query_opt("ws.size", ws_size)
+        .query_opt("ws.start", ws_start)
+        .send()
+        .await
 }
 
 pub async fn list_account_webforms(
@@ -137,16 +129,12 @@ pub async fn list_account_webforms(
     ws_size: Option<std::num::NonZeroU32>,
     ws_start: Option<i32>,
 ) -> Result<types::Webforms, ApiError> {
-    ApiRequest::new(
-        client,
-        Method::GET,
-        format!("/1.0/accounts/{account_id}"),
-    )
-    .query("ws.op", "getWebForms")
-    .query_opt("ws.size", ws_size)
-    .query_opt("ws.start", ws_start)
-    .send()
-    .await
+    ApiRequest::new(client, Method::GET, format!("/1.0/accounts/{account_id}"))
+        .query("ws.op", "getWebForms")
+        .query_opt("ws.size", ws_size)
+        .query_opt("ws.start", ws_start)
+        .send()
+        .await
 }
 
 // ---------------------------------------------------------------------------
@@ -472,9 +460,7 @@ pub async fn get_campaign_stat(
     ApiRequest::new(
         client,
         Method::GET,
-        format!(
-            "/accounts/{account_id}/lists/{list_id}/campaigns/b{campaign_id}/stats/{stats_id}"
-        ),
+        format!("/accounts/{account_id}/lists/{list_id}/campaigns/b{campaign_id}/stats/{stats_id}"),
     )
     .send()
     .await
@@ -514,9 +500,7 @@ pub async fn get_campaign(
     ApiRequest::new(
         client,
         Method::GET,
-        format!(
-            "/accounts/{account_id}/lists/{list_id}/campaigns/{campaign_type}{campaign_id}"
-        ),
+        format!("/accounts/{account_id}/lists/{list_id}/campaigns/{campaign_type}{campaign_id}"),
     )
     .send()
     .await
@@ -948,9 +932,7 @@ pub async fn get_subscriber_activity(
     ApiRequest::new(
         client,
         Method::GET,
-        format!(
-            "/accounts/{account_id}/lists/{list_id}/subscribers/{subscriber_id}"
-        ),
+        format!("/accounts/{account_id}/lists/{list_id}/subscribers/{subscriber_id}"),
     )
     .query("ws.op", "getActivity")
     .query_opt("ws.size", ws_size)

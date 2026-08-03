@@ -128,11 +128,7 @@ impl<'a> ApiRequest<'a> {
     }
 
     /// Add an optional query parameter (skipped if None).
-    pub fn query_opt<V: std::fmt::Display>(
-        mut self,
-        key: &'static str,
-        value: Option<V>,
-    ) -> Self {
+    pub fn query_opt<V: std::fmt::Display>(mut self, key: &'static str, value: Option<V>) -> Self {
         if let Some(v) = value {
             self.query.push((key, v.to_string()));
         }
@@ -196,10 +192,7 @@ impl<'a> ApiRequest<'a> {
     pub async fn send<T: serde::de::DeserializeOwned>(self) -> Result<T, ApiError> {
         let (req, verbose) = self.build_request();
         let body = handle_response(req.send().await?, verbose).await?;
-        serde_json::from_str(&body).map_err(|e| ApiError::Deserialize {
-            source: e,
-            body,
-        })
+        serde_json::from_str(&body).map_err(|e| ApiError::Deserialize { source: e, body })
     }
 
     /// Send the request, ignoring the response body (for DELETE, etc.).
@@ -292,10 +285,7 @@ impl Client {
 }
 
 /// Read the response body, log it if verbose, and return it on success or an error on failure.
-async fn handle_response(
-    response: reqwest::Response,
-    verbose: bool,
-) -> Result<String, ApiError> {
+async fn handle_response(response: reqwest::Response, verbose: bool) -> Result<String, ApiError> {
     let status = response.status().as_u16();
     let is_success = (200..300).contains(&status);
     let body = if is_success {

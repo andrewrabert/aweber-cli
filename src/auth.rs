@@ -48,8 +48,7 @@ fn credentials_path(override_path: Option<&Path>) -> Result<PathBuf> {
     match override_path {
         Some(path) => Ok(path.to_path_buf()),
         None => {
-            let config_dir =
-                dirs::config_dir().context("could not determine config directory")?;
+            let config_dir = dirs::config_dir().context("could not determine config directory")?;
             Ok(config_dir.join("aweber").join("credentials.json"))
         }
     }
