@@ -19,7 +19,7 @@ If the user hasn't specified which bump, recommend one based on the changes sinc
 
 ## 2. Bump Version in Cargo.toml
 
-Update the `version` field in `Cargo.toml`. Run `cargo check` to ensure `Cargo.lock` updates cleanly.
+Update `version` under `[workspace.package]` in the root `Cargo.toml` and the `aweber` version pin under `[workspace.dependencies]`. Run `cargo check --workspace` to ensure `Cargo.lock` updates cleanly.
 
 ## 3. Commit
 

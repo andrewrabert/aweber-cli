@@ -1,25 +1,28 @@
-[package]
-name = "aweber"
+[workspace]
+members = ["crates/api", "crates/cli"]
+resolver = "2"
+
+[workspace.package]
 version = "0.5.1"
 edition = "2021"
-description = "A CLI and library for the AWeber API"
 license = "MIT"
 repository = "https://github.com/andrewrabert/aweber-cli"
 homepage = "https://github.com/andrewrabert/aweber-cli"
 
-[dependencies]
+[workspace.dependencies]
+aweber = { version = "0.5.1", path = "crates/api" }
+anyhow = "1"
+base64 = "0.22"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive", "string", "env"] }
+colored_json = "5.0.0"
+dirs = "6"
+indexmap = "2"
+open = "5"
 reqwest = { version = "0.13", default-features = false, features = ["json", "query", "form", "rustls-no-provider"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "logging", "std", "tls12"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["preserve_order"] }
-indexmap = "2"
-anyhow = "1"
-open = "5"
-dirs = "6"
 sha2 = "0.10"
-base64 = "0.22"
 tokio = { version = "1", features = ["full"] }
 uuid = { version = "1.0", features = ["serde", "v4"] }
-colored_json = "5.0.0"

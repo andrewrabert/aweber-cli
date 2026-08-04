@@ -1,17 +1,17 @@
-use crate::types;
 use anyhow::Context as _;
+use aweber::types;
 
-pub struct Cli {
-    pub client: crate::client::Client,
-    pub account_id: i32,
+pub(crate) struct Cli {
+    pub(crate) client: aweber::client::Client,
+    pub(crate) account_id: i32,
 }
 
 impl Cli {
-    pub fn new(client: crate::client::Client, account_id: i32) -> Self {
+    pub(crate) fn new(client: aweber::client::Client, account_id: i32) -> Self {
         Self { client, account_id }
     }
 
-    pub fn get_command(cmd: CliCommand) -> clap::Command {
+    pub(crate) fn get_command(cmd: CliCommand) -> clap::Command {
         match cmd {
             CliCommand::ListAccounts => Self::cli_list_accounts(),
             CliCommand::GetAccount => Self::cli_get_account(),
@@ -147,7 +147,7 @@ impl Cli {
             .required(true)
     }
 
-    pub fn cli_list_accounts() -> clap::Command {
+    pub(crate) fn cli_list_accounts() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("ws-size")
@@ -166,10 +166,10 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get accounts")
     }
-    pub fn cli_get_account() -> clap::Command {
+    pub(crate) fn cli_get_account() -> clap::Command {
         clap::Command::new("").about("Get account")
     }
-    pub fn cli_find_account_subscribers() -> clap::Command {
+    pub(crate) fn cli_find_account_subscribers() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("ad-tracking") . long ("ad-tracking") . value_parser (clap::value_parser! (types :: GetAccountsFindsubscribersAdTracking)) . required (false) . help ("The customer ad tracking field"))
             .arg (clap::Arg::new ("area-code") . long ("area-code") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The subscriber's area code"))
@@ -204,7 +204,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about ("Find subscribers for account")
     }
-    pub fn cli_list_account_webform_split_tests() -> clap::Command {
+    pub(crate) fn cli_list_account_webform_split_tests() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("ws-size")
@@ -223,7 +223,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get split tests for account")
     }
-    pub fn cli_list_account_webforms() -> clap::Command {
+    pub(crate) fn cli_list_account_webforms() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("ws-size")
@@ -242,7 +242,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get webforms for account")
     }
-    pub fn cli_list_integrations() -> clap::Command {
+    pub(crate) fn cli_list_integrations() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("ws-size")
@@ -261,7 +261,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get integrations")
     }
-    pub fn cli_get_integration() -> clap::Command {
+    pub(crate) fn cli_get_integration() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("integration-id")
@@ -272,7 +272,7 @@ impl Cli {
             )
             .about("Get integration")
     }
-    pub fn cli_list_lists() -> clap::Command {
+    pub(crate) fn cli_list_lists() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("ws-size")
@@ -291,7 +291,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get lists")
     }
-    pub fn cli_find_lists() -> clap::Command {
+    pub(crate) fn cli_find_lists() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("name") . long ("name") . value_parser (clap::value_parser! (types :: GetAccountsListsFindName)) . required (false) . help ("Name or unique list ID of the list"))
             .arg (clap::Arg::new ("ws-show") . long ("ws-show") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsFindWsShow :: TotalSize . to_string () ,]) , | s | types :: GetAccountsListsFindWsShow :: try_from (s) . unwrap ())) . required (false) . help ("A flag to show the total size only - expecting \\\"total_size\\\", when added the response will be an integer"))
@@ -299,13 +299,13 @@ impl Cli {
             .arg (clap::Arg::new ("ws-start") . long ("ws-start") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The pagination starting offset"))
             .about ("Find lists")
     }
-    pub fn cli_get_list() -> clap::Command {
+    pub(crate) fn cli_get_list() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
             .about("Get list")
     }
-    pub fn cli_list_broadcasts() -> clap::Command {
+    pub(crate) fn cli_list_broadcasts() -> clap::Command {
         clap::Command::new ("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -315,7 +315,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about ("Get broadcasts")
     }
-    pub fn cli_create_broadcast() -> clap::Command {
+    pub(crate) fn cli_create_broadcast() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("body-amp") . long ("body-amp") . value_parser (clap::value_parser! (String)) . required (false) . help ("<b>[Please read <a href=\"https://help.aweber.com/hc/en-us/articles/360025741194\" target=\"_blank\">our KB article before using this field.]</b>The content of the message in AMP format."))
             .arg (clap::Arg::new ("body-html") . long ("body-html") . value_parser (clap::value_parser! (String)) . required_unless_present ("json-body") . help ("The content of the message in html format. If body_text is not provided, it will be auto-generated. If body_text is not provided, body_html must be provided."))
@@ -333,14 +333,14 @@ impl Cli {
             .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
             .about ("Create broadcast")
     }
-    pub fn cli_get_broadcast_total() -> clap::Command {
+    pub(crate) fn cli_get_broadcast_total() -> clap::Command {
         clap::Command::new ("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
             .arg (clap::Arg::new ("status") . long ("status") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsBroadcastsTotalStatus :: Draft . to_string () , types :: GetAccountsListsBroadcastsTotalStatus :: Scheduled . to_string () , types :: GetAccountsListsBroadcastsTotalStatus :: Sent . to_string () ,]) , | s | types :: GetAccountsListsBroadcastsTotalStatus :: try_from (s) . unwrap ())) . required (true) . help ("The status of the broadcasts to retrieve. **(Please be aware that `draft` only returns API created Broadcast drafts)**"))
             .about ("Get total broadcasts")
     }
-    pub fn cli_get_broadcast() -> clap::Command {
+    pub(crate) fn cli_get_broadcast() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("broadcast-id")
@@ -353,7 +353,7 @@ impl Cli {
             .group(Self::list_id_group())
             .about("Get broadcast")
     }
-    pub fn cli_update_broadcast() -> clap::Command {
+    pub(crate) fn cli_update_broadcast() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("body-amp") . long ("body-amp") . value_parser (clap::value_parser! (String)) . required (false) . help ("<b>[Please read <a href=\"https://help.aweber.com/hc/en-us/articles/360025741194\" target=\"_blank\">our KB article before using this field.]</b>The content of the message in AMP format."))
             .arg (clap::Arg::new ("body-html") . long ("body-html") . value_parser (clap::value_parser! (String)) . required (false) . help ("The content of the message in html format. If body_text is not provided, it will be auto-generated."))
@@ -373,7 +373,7 @@ impl Cli {
             .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
             .about ("Update broadcast")
     }
-    pub fn cli_delete_broadcast() -> clap::Command {
+    pub(crate) fn cli_delete_broadcast() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("broadcast-id")
@@ -386,7 +386,7 @@ impl Cli {
             .group(Self::list_id_group())
             .about("Delete broadcast")
     }
-    pub fn cli_cancel_broadcast() -> clap::Command {
+    pub(crate) fn cli_cancel_broadcast() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("broadcast-id")
@@ -399,7 +399,7 @@ impl Cli {
             .group(Self::list_id_group())
             .about("Cancel scheduled broadcast")
     }
-    pub fn cli_get_broadcast_clicks() -> clap::Command {
+    pub(crate) fn cli_get_broadcast_clicks() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("after") . long ("after") . value_parser (clap::value_parser! (String)) . required (false) . help ("The pagination key when paging forward. Cannot be combined with `before`."))
             .arg (clap::Arg::new ("before") . long ("before") . value_parser (clap::value_parser! (String)) . required (false) . help ("The pagination key when paging in reverse. Cannot be combined with `after`."))
@@ -411,7 +411,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about ("Get broadcast clicks")
     }
-    pub fn cli_get_broadcast_opens() -> clap::Command {
+    pub(crate) fn cli_get_broadcast_opens() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("after") . long ("after") . value_parser (clap::value_parser! (String)) . required (false) . help ("The pagination key when paging forward. Cannot be combined with `before`."))
             .arg (clap::Arg::new ("before") . long ("before") . value_parser (clap::value_parser! (String)) . required (false) . help ("The pagination key when paging in reverse. Cannot be combined with `after`."))
@@ -422,7 +422,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about ("Get broadcast opens")
     }
-    pub fn cli_schedule_broadcast() -> clap::Command {
+    pub(crate) fn cli_schedule_broadcast() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("broadcast-id")
@@ -450,7 +450,7 @@ impl Cli {
             )
             .about("Schedule broadcast")
     }
-    pub fn cli_wait_broadcast() -> clap::Command {
+    pub(crate) fn cli_wait_broadcast() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("broadcast-id")
@@ -470,7 +470,7 @@ impl Cli {
             )
             .about("Wait for a broadcast to finish sending")
     }
-    pub fn cli_list_campaigns() -> clap::Command {
+    pub(crate) fn cli_list_campaigns() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -491,7 +491,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get campaigns")
     }
-    pub fn cli_list_campaign_stats() -> clap::Command {
+    pub(crate) fn cli_list_campaign_stats() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("campaign-id")
@@ -519,7 +519,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get broadcast statistics")
     }
-    pub fn cli_get_campaign_stat() -> clap::Command {
+    pub(crate) fn cli_get_campaign_stat() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("campaign-id") . long ("campaign-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The campaign ID"))
             .args(Self::list_id_args())
@@ -527,7 +527,7 @@ impl Cli {
             .arg (clap::Arg::new ("stats-id") . long ("stats-id") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: TotalClicks . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: UniqueClicks . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: TotalOpens . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: UniqueOpens . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: TotalSales . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: TotalSalesDollars . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: TotalUnsubscribed . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: HourlyOpens . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: HourlyClicks . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: HourlyWebhits . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: HourlySales . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: HourlyUnsubscribed . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: DailyOpens . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: DailyClicks . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: DailyWebhits . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: DailySales . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: DailyUnsubscribed . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: ClicksByLink . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: WebhitsByLink . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: OpensBySubscriber . to_string () , types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: SalesBySubscriber . to_string () ,]) , | s | types :: GetAccountsListsCampaignsBcampaignidStats2StatsId :: try_from (s) . unwrap ())) . required (true) . help ("\n\n>The statistic's ID.\n>\n>The datatype of the ID may be different for each Stat.\n>\n>Below is a list of the statistic IDs that can be passed in.\n>\n>__Aggregate Statistics__\n>\n>| Stat ID | Description |\n>|---------|-------------|\n>| total_clicks | Total number of times a subscriber clicked any link appearing in your campaign except the unsubscribe link (includes multiple clicks of the same link) |\n>| unique_clicks | Total number of subscribers who clicked any link in your campaign |\n>| total_opens | Total number of times your campaign was opened by any subscriber your campaign was sent to (including multiple opens by the same subscriber) |\n>| unique_opens | Total number of subscribers who opened your campaign |\n>| total_sales | Total number of sales made by subscribers who received your campaign |\n>| total_sales_dollars | Total monetary value of sales made by subscribers who received your campaign |\n>| total_unsubscribed | Total number of subscribers who unsubscribed by clicking the unsubscribe link in your campaign |\n>\n>__Time Related Statistics__\n>\n>| Stat ID | Description |\n>|---------|-------------|\n>| hourly_clicks | Hourly breakdown of unique and total clicks for the first 24 hours after a campaign was sent |\n>| hourly_opens | Hourly breakdown of unique and total opens for the first 24 hours after a campaign was sent |\n>| hourly_sales | Hourly breakdown of sales for the first 24 hours after a campaign was sent |\n>| hourly_unsubscribed | Hourly breakdown of subscribers who unsubscribed by clicking the unsubscribed link for the first 24 hours after a campaign was sent |\n>| hourly_webhits | Hourly breakdown of webhits to your website from subscribers sent this message for the first 24 hours after a campaign was sent |\n>| daily_clicks | Daily breakdown of unique and total clicks for the first 14 days after a campaign was sent |\n>| daily_opens | Daily breakdown of unique and total opens for the first 14 days after a campaign was sent |\n>| daily_sales | Daily breakdown of sales for the first 14 days after a campaign was sent |\n>| daily_unsubscribed | Daily breakdown of subscribers who unsuscribed by clicking the unsubscribed link for the first 14 days after a campaign was sent |\n>| daily_webhits | Daily breakdown of webhits to your website from subscribers sent this message for the first 14 days after a campaign was sent |\n>\n>__Top 10 URL Statistics__\n>\n>| Stat ID | Description |\n>|---------|-------------|\n>| clicks_by_link | Top 10 links that were clicked (ranked by total_clicked) |\n>| webhits_by_link | Top 10 webhits by click (ranked by total clicks) |\n>\n>__Top 10 Subscriber Statistics__\n>(Requires access to subscriber data)\n>\n>| Stat ID | Description |\n>|---------|-------------|\n>| opens_by_subscriber | Top 10 subscribers that opened your message (ranked by total opens) |\n>| sales_by_subscriber | Top 10 subscribers that made a sale from your message (ranked by total sales dollars) |\n"))
             .about ("Get broadcast statistic")
     }
-    pub fn cli_find_campaigns() -> clap::Command {
+    pub(crate) fn cli_find_campaigns() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("campaign-type") . long ("campaign-type") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsCampaignsFindCampaignType :: B . to_string () , types :: GetAccountsListsCampaignsFindCampaignType :: F . to_string () ,]) , | s | types :: GetAccountsListsCampaignsFindCampaignType :: try_from (s) . unwrap ())) . required (true) . help ("The campaign type (b - broadcast, f - followup)"))
             .args(Self::list_id_args())
@@ -538,7 +538,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about ("Find campaigns")
     }
-    pub fn cli_get_campaign() -> clap::Command {
+    pub(crate) fn cli_get_campaign() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("campaign-id") . long ("campaign-id") . value_parser (clap::value_parser! (i32)) . required (true) . help ("The campaign ID"))
             .arg (clap::Arg::new ("campaign-type") . long ("campaign-type") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetAccountsListsCampaignsCampaigntypecampaignidCampaignType :: B . to_string () , types :: GetAccountsListsCampaignsCampaigntypecampaignidCampaignType :: F . to_string () ,]) , | s | types :: GetAccountsListsCampaignsCampaigntypecampaignidCampaignType :: try_from (s) . unwrap ())) . required (true) . help ("The campaign type (b - broadcast, f - followup)"))
@@ -546,7 +546,7 @@ impl Cli {
             .group(Self::list_id_group())
             .about ("Get campaign")
     }
-    pub fn cli_list_custom_fields() -> clap::Command {
+    pub(crate) fn cli_list_custom_fields() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -567,7 +567,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get custom fields")
     }
-    pub fn cli_create_custom_field() -> clap::Command {
+    pub(crate) fn cli_create_custom_field() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -588,7 +588,7 @@ impl Cli {
             )
             .about("Add custom field")
     }
-    pub fn cli_get_custom_field() -> clap::Command {
+    pub(crate) fn cli_get_custom_field() -> clap::Command {
         clap::Command::new("")
             .args(Self::custom_field_id_args())
             .group(Self::custom_field_id_group())
@@ -596,7 +596,7 @@ impl Cli {
             .group(Self::list_id_group())
             .about("Get custom field")
     }
-    pub fn cli_delete_custom_field() -> clap::Command {
+    pub(crate) fn cli_delete_custom_field() -> clap::Command {
         clap::Command::new("")
             .args(Self::custom_field_id_args())
             .group(Self::custom_field_id_group())
@@ -604,7 +604,7 @@ impl Cli {
             .group(Self::list_id_group())
             .about("Delete custom field")
     }
-    pub fn cli_update_custom_field() -> clap::Command {
+    pub(crate) fn cli_update_custom_field() -> clap::Command {
         clap::Command::new("")
             .args(Self::custom_field_id_args())
             .group(Self::custom_field_id_group())
@@ -634,7 +634,7 @@ impl Cli {
             )
             .about("Update custom field")
     }
-    pub fn cli_list_landing_pages() -> clap::Command {
+    pub(crate) fn cli_list_landing_pages() -> clap::Command {
         clap::Command::new("")
             .arg(
                 ::clap::Arg::new("list-id")
@@ -660,7 +660,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get landing pages")
     }
-    pub fn cli_get_landing_page() -> clap::Command {
+    pub(crate) fn cli_get_landing_page() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("landing-page-id")
@@ -673,7 +673,7 @@ impl Cli {
             .group(Self::list_id_group())
             .about("Get landing page")
     }
-    pub fn cli_create_purchase() -> clap::Command {
+    pub(crate) fn cli_create_purchase() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("ad-tracking") . long ("ad-tracking") . value_parser (clap::value_parser! (types :: PurchaseAdTracking)) . required (false) . help ("The customer ad tracking field"))
             .arg (clap::Arg::new ("currency") . long ("currency") . value_parser (clap::value_parser! (String)) . required_unless_present ("json-body") . help ("Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html)."))
@@ -692,7 +692,7 @@ impl Cli {
             .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
             .about ("Create a purchase")
     }
-    pub fn cli_list_segments() -> clap::Command {
+    pub(crate) fn cli_list_segments() -> clap::Command {
         clap::Command::new("")
             .arg(
                 ::clap::Arg::new("list-id")
@@ -718,7 +718,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get segments")
     }
-    pub fn cli_get_segment() -> clap::Command {
+    pub(crate) fn cli_get_segment() -> clap::Command {
         clap::Command::new("")
             .arg(
                 ::clap::Arg::new("list-id")
@@ -736,7 +736,7 @@ impl Cli {
             )
             .about("Get segment")
     }
-    pub fn cli_list_subscribers() -> clap::Command {
+    pub(crate) fn cli_list_subscribers() -> clap::Command {
         clap::Command::new ("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -746,7 +746,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about ("Get subscribers")
     }
-    pub fn cli_create_subscriber() -> clap::Command {
+    pub(crate) fn cli_create_subscriber() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("ad-tracking") . long ("ad-tracking") . value_parser (clap::value_parser! (types :: AddSubscriberRequestBodyAdTracking)) . required (false) . help ("The customer ad tracking field"))
             .arg (clap::Arg::new ("email") . long ("email") . value_parser (clap::value_parser! (types :: AddSubscriberRequestBodyEmail)) . required_unless_present ("json-body") . help ("The subscriber's email address"))
@@ -761,7 +761,7 @@ impl Cli {
             .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
             .about ("Add subscriber")
     }
-    pub fn cli_delete_subscriber_by_email() -> clap::Command {
+    pub(crate) fn cli_delete_subscriber_by_email() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -776,7 +776,7 @@ impl Cli {
             )
             .about("Delete subscriber by email")
     }
-    pub fn cli_update_subscriber_by_email() -> clap::Command {
+    pub(crate) fn cli_update_subscriber_by_email() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("ad-tracking") . long ("ad-tracking") . value_parser (clap::value_parser! (types :: UpdateSubscriberRequestBodyAdTracking)) . required (false) . help ("The customer ad tracking field"))
             .arg (clap::Arg::new ("custom-field") . long ("custom-field") . value_parser (clap::value_parser! (String)) . required (false) . action (clap::ArgAction::Append) . value_name ("KEY[=VALUE]") . help ("Set a custom field (KEY=VALUE, KEY= for empty string, KEY for null)"))
@@ -792,7 +792,7 @@ impl Cli {
             .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
             .about ("Update subscriber by email")
     }
-    pub fn cli_find_subscribers() -> clap::Command {
+    pub(crate) fn cli_find_subscribers() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("ad-tracking") . long ("ad-tracking") . value_parser (clap::value_parser! (types :: GetAccountsListsSubscribersFindAdTracking)) . required (false) . help ("The customer ad tracking field"))
             .arg (clap::Arg::new ("area-code") . long ("area-code") . value_parser (clap::value_parser! (i32)) . required (false) . help ("The subscriber's area code"))
@@ -831,7 +831,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about ("Find subscribers for list")
     }
-    pub fn cli_get_subscriber() -> clap::Command {
+    pub(crate) fn cli_get_subscriber() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -839,7 +839,7 @@ impl Cli {
             .group(Self::subscriber_id_group())
             .about("Get subscriber")
     }
-    pub fn cli_move_subscriber() -> clap::Command {
+    pub(crate) fn cli_move_subscriber() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("enforce-custom-field-mapping") . long ("enforce-custom-field-mapping") . value_parser (clap::value_parser! (bool)) . required (false) . help ("If set to true, this will cause the move of a subscriber to fail if the custom fields from the origin list do not match (case insensitively) to the target list"))
             .arg (clap::Arg::new ("last-followup-message-number-sent") . long ("last-followup-message-number-sent") . value_parser (clap::value_parser! (i64)) . required (false) . help ("The sequence number of the last followup message sent to the subscriber.  This field determines the next followup message to be sent to the Subscriber.  When set to 0, the Subscriber will receive the 1st (autoresponse) Followup message.  Set the value of this field to 1001 if you do not want any Followups to be sent to this Subscriber."))
@@ -851,7 +851,7 @@ impl Cli {
             .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
             .about ("Move subscriber")
     }
-    pub fn cli_delete_subscriber() -> clap::Command {
+    pub(crate) fn cli_delete_subscriber() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -859,7 +859,7 @@ impl Cli {
             .group(Self::subscriber_id_group())
             .about("Delete subscriber by ID")
     }
-    pub fn cli_update_subscriber() -> clap::Command {
+    pub(crate) fn cli_update_subscriber() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("ad-tracking") . long ("ad-tracking") . value_parser (clap::value_parser! (types :: UpdateSubscriberRequestBodyAdTracking)) . required (false) . help ("The customer ad tracking field"))
             .arg (clap::Arg::new ("custom-field") . long ("custom-field") . value_parser (clap::value_parser! (String)) . required (false) . action (clap::ArgAction::Append) . value_name ("KEY[=VALUE]") . help ("Set a custom field (KEY=VALUE, KEY= for empty string, KEY for null)"))
@@ -876,7 +876,7 @@ impl Cli {
             .arg (clap::Arg::new ("json-body") . long ("json-body") . value_name ("JSON-FILE") . required (false) . value_parser (clap::value_parser! (std :: path :: PathBuf)) . help ("Path to a file that contains the full json body."))
             .about ("Update subscriber by ID")
     }
-    pub fn cli_get_subscriber_activity() -> clap::Command {
+    pub(crate) fn cli_get_subscriber_activity() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -899,13 +899,13 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get subscriber activity")
     }
-    pub fn cli_list_tags() -> clap::Command {
+    pub(crate) fn cli_list_tags() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
             .about("Get tags for list")
     }
-    pub fn cli_list_web_form_split_tests() -> clap::Command {
+    pub(crate) fn cli_list_web_form_split_tests() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -926,7 +926,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get split tests for list")
     }
-    pub fn cli_get_web_form_split_test() -> clap::Command {
+    pub(crate) fn cli_get_web_form_split_test() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -939,7 +939,7 @@ impl Cli {
             )
             .about("Get split test for list")
     }
-    pub fn cli_list_web_form_split_test_components() -> clap::Command {
+    pub(crate) fn cli_list_web_form_split_test_components() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -967,7 +967,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get split test components")
     }
-    pub fn cli_get_web_form_split_test_component() -> clap::Command {
+    pub(crate) fn cli_get_web_form_split_test_component() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -987,7 +987,7 @@ impl Cli {
             )
             .about("Get split test component")
     }
-    pub fn cli_list_web_forms() -> clap::Command {
+    pub(crate) fn cli_list_web_forms() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -1008,7 +1008,7 @@ impl Cli {
             .arg(Self::limit_arg())
             .about("Get webforms for list")
     }
-    pub fn cli_get_web_form() -> clap::Command {
+    pub(crate) fn cli_get_web_form() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
@@ -1021,7 +1021,7 @@ impl Cli {
             )
             .about("Get webform for list")
     }
-    pub fn cli_get_broadcast_link_analytics() -> clap::Command {
+    pub(crate) fn cli_get_broadcast_link_analytics() -> clap::Command {
         clap::Command::new ("")
             .arg (clap::Arg::new ("after") . long ("after") . value_parser (clap::value_parser! (String)) . required (false) . help ("specifies the IDs for pagination, for results from after onward"))
             .arg (clap::Arg::new ("before") . long ("before") . value_parser (clap::value_parser! (i64)) . required (false) . help ("specifies the IDs for pagination, for results from before onward"))
@@ -1034,7 +1034,7 @@ impl Cli {
             .arg (clap::Arg::new ("sort-by") . long ("sort-by") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetBroadcastLinksAnalyticsSortBy :: Unique . to_string () , types :: GetBroadcastLinksAnalyticsSortBy :: Total . to_string () ,]) , | s | types :: GetBroadcastLinksAnalyticsSortBy :: try_from (s) . unwrap ())) . required (false) . help ("Field to sort the results by"))
             .about ("Broadcast Links Analytics")
     }
-    pub fn cli_oauth_get_access_token() -> clap::Command {
+    pub(crate) fn cli_oauth_get_access_token() -> clap::Command {
         clap::Command::new("")
             .arg(
                 ::clap::Arg::new("oauth-callback")
@@ -1094,7 +1094,7 @@ impl Cli {
             )
             .about("Get an access token")
     }
-    pub fn cli_oauth_get_request_token() -> clap::Command {
+    pub(crate) fn cli_oauth_get_request_token() -> clap::Command {
         clap::Command::new("")
             .arg(
                 ::clap::Arg::new("oauth-callback")
@@ -1154,7 +1154,7 @@ impl Cli {
             )
             .about("Get a request token")
     }
-    pub fn cli_oauth_revoke() -> clap::Command {
+    pub(crate) fn cli_oauth_revoke() -> clap::Command {
         clap::Command::new("")
             .arg(
                 ::clap::Arg::new("authorization")
@@ -1172,7 +1172,7 @@ impl Cli {
             )
             .about("Revoke a token")
     }
-    pub fn cli_oauth_token() -> clap::Command {
+    pub(crate) fn cli_oauth_token() -> clap::Command {
         clap::Command::new("")
             .arg(
                 clap::Arg::new("authorization")
@@ -1193,7 +1193,11 @@ impl Cli {
     // -----------------------------------------------------------------------
     // execute dispatch
     // -----------------------------------------------------------------------
-    pub async fn execute(&self, cmd: CliCommand, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute(
+        &self,
+        cmd: CliCommand,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         match cmd {
             CliCommand::ListAccounts => self.execute_list_accounts(matches).await,
             CliCommand::GetAccount => self.execute_get_account(matches).await,
@@ -1276,7 +1280,7 @@ impl Cli {
         }
     }
     // -----------------------------------------------------------------------
-    // execute_* methods - call crate::endpoints::* directly
+    // execute_* methods - call aweber::endpoints::* directly
     // -----------------------------------------------------------------------
 
     async fn resolve_list_id(&self, matches: &clap::ArgMatches) -> anyhow::Result<i32> {
@@ -1284,7 +1288,7 @@ impl Cli {
             return Ok(id);
         }
         let name = matches.get_one::<String>("list").unwrap();
-        let result = crate::endpoints::find_lists(
+        let result = aweber::endpoints::find_lists(
             &self.client,
             self.account_id,
             Some(name),
@@ -1318,7 +1322,7 @@ impl Cli {
             return Ok(id);
         }
         let email = matches.get_one::<String>("email").unwrap();
-        let result = crate::endpoints::find_subscribers(
+        let result = aweber::endpoints::find_subscribers(
             &self.client,
             self.account_id,
             list_id,
@@ -1384,7 +1388,7 @@ impl Cli {
             return Ok(id);
         }
         let name = matches.get_one::<String>("custom-field").unwrap();
-        let result = crate::endpoints::list_custom_fields(
+        let result = aweber::endpoints::list_custom_fields(
             &self.client,
             self.account_id,
             list_id,
@@ -1411,20 +1415,26 @@ impl Cli {
             .ok_or_else(|| anyhow::anyhow!("custom field '{name}' found but has no ID"))
     }
 
-    pub async fn execute_list_accounts(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_list_accounts(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let ws_size = matches.get_one::<std::num::NonZeroU32>("ws-size").copied();
         let ws_start = matches.get_one::<i32>("ws-start").copied();
-        let result = crate::endpoints::get_accounts(&self.client, ws_size, ws_start).await;
+        let result = aweber::endpoints::get_accounts(&self.client, ws_size, ws_start).await;
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_account(&self, _matches: &clap::ArgMatches) -> anyhow::Result<()> {
-        let result = crate::endpoints::get_account(&self.client, self.account_id).await;
+    pub(crate) async fn execute_get_account(
+        &self,
+        _matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
+        let result = aweber::endpoints::get_account(&self.client, self.account_id).await;
         self.print_result(result)
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub async fn execute_find_account_subscribers(
+    pub(crate) async fn execute_find_account_subscribers(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
@@ -1434,7 +1444,7 @@ impl Cli {
         let tags_not_in = matches
             .get_one::<String>("tags-not-in")
             .map(|s| serde_json::to_string(&[s]).unwrap());
-        let result = crate::endpoints::find_account_subscribers(
+        let result = aweber::endpoints::find_account_subscribers(
             &self.client,
             self.account_id,
             matches
@@ -1510,11 +1520,11 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_list_account_webform_split_tests(
+    pub(crate) async fn execute_list_account_webform_split_tests(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
-        let result = crate::endpoints::list_account_webform_split_tests(
+        let result = aweber::endpoints::list_account_webform_split_tests(
             &self.client,
             self.account_id,
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
@@ -1524,11 +1534,11 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_list_account_webforms(
+    pub(crate) async fn execute_list_account_webforms(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
-        let result = crate::endpoints::list_account_webforms(
+        let result = aweber::endpoints::list_account_webforms(
             &self.client,
             self.account_id,
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
@@ -1538,11 +1548,11 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_list_integrations(
+    pub(crate) async fn execute_list_integrations(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
-        let result = crate::endpoints::list_integrations(
+        let result = aweber::endpoints::list_integrations(
             &self.client,
             self.account_id,
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
@@ -1552,15 +1562,21 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_integration(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_get_integration(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let integration_id = *matches.get_one::<i32>("integration-id").unwrap();
         let result =
-            crate::endpoints::get_integration(&self.client, self.account_id, integration_id).await;
+            aweber::endpoints::get_integration(&self.client, self.account_id, integration_id).await;
         self.print_result(result)
     }
 
-    pub async fn execute_list_lists(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
-        let result = crate::endpoints::list_lists(
+    pub(crate) async fn execute_list_lists(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
+        let result = aweber::endpoints::list_lists(
             &self.client,
             self.account_id,
             matches.get_one::<std::num::NonZeroU32>("ws-size").copied(),
@@ -1570,8 +1586,11 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_find_lists(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
-        let result = crate::endpoints::find_lists(
+    pub(crate) async fn execute_find_lists(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
+        let result = aweber::endpoints::find_lists(
             &self.client,
             self.account_id,
             matches
@@ -1585,13 +1604,16 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_get_list(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_get_list(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let result = crate::endpoints::get_list(&self.client, self.account_id, list_id).await;
+        let result = aweber::endpoints::get_list(&self.client, self.account_id, list_id).await;
         self.print_result(result)
     }
 
-    pub async fn execute_list_broadcasts(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_list_broadcasts(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let ws_size = matches.get_one::<std::num::NonZeroU32>("ws-size").copied();
         let ws_start = matches.get_one::<i32>("ws-start").copied();
@@ -1601,7 +1623,7 @@ impl Cli {
             None => vec![Draft, Scheduled, Sent],
         };
         for status in &statuses {
-            let result = crate::endpoints::list_broadcasts(
+            let result = aweber::endpoints::list_broadcasts(
                 &self.client,
                 self.account_id,
                 list_id,
@@ -1614,7 +1636,10 @@ impl Cli {
         }
         Ok(())
     }
-    pub async fn execute_create_broadcast(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_create_broadcast(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let body = if let Some(path) = matches.get_one::<std::path::PathBuf>("json-body") {
             let txt = std::fs::read_to_string(path)
@@ -1659,16 +1684,17 @@ impl Cli {
             serde_json::from_value::<types::CreateBroadcast>(serde_json::Value::Object(body))?
         };
         let result =
-            crate::endpoints::create_broadcast(&self.client, self.account_id, list_id, &body).await;
+            aweber::endpoints::create_broadcast(&self.client, self.account_id, list_id, &body)
+                .await;
         self.print_result(result)
     }
 
-    pub async fn execute_get_broadcast_total(
+    pub(crate) async fn execute_get_broadcast_total(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let result = crate::endpoints::get_broadcast_total(
+        let result = aweber::endpoints::get_broadcast_total(
             &self.client,
             self.account_id,
             list_id,
@@ -1680,16 +1706,22 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_get_broadcast(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_get_broadcast(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let broadcast_id = *matches.get_one::<i32>("broadcast-id").unwrap();
         let result =
-            crate::endpoints::get_broadcast(&self.client, self.account_id, list_id, broadcast_id)
+            aweber::endpoints::get_broadcast(&self.client, self.account_id, list_id, broadcast_id)
                 .await;
         self.print_result(result)
     }
 
-    pub async fn execute_update_broadcast(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_update_broadcast(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let broadcast_id = *matches.get_one::<i32>("broadcast-id").unwrap();
         let body = if let Some(path) = matches.get_one::<std::path::PathBuf>("json-body") {
@@ -1737,7 +1769,7 @@ impl Cli {
             }
             serde_json::from_value::<types::UpdateBroadcast>(serde_json::Value::Object(body))?
         };
-        let result = crate::endpoints::update_broadcast(
+        let result = aweber::endpoints::update_broadcast(
             &self.client,
             self.account_id,
             list_id,
@@ -1748,10 +1780,13 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_delete_broadcast(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_delete_broadcast(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let broadcast_id = *matches.get_one::<i32>("broadcast-id").unwrap();
-        let result = crate::endpoints::delete_broadcast(
+        let result = aweber::endpoints::delete_broadcast(
             &self.client,
             self.account_id,
             list_id,
@@ -1761,10 +1796,13 @@ impl Cli {
         self.print_void(result)
     }
 
-    pub async fn execute_cancel_broadcast(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_cancel_broadcast(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let broadcast_id = *matches.get_one::<i32>("broadcast-id").unwrap();
-        let result = crate::endpoints::cancel_broadcast(
+        let result = aweber::endpoints::cancel_broadcast(
             &self.client,
             self.account_id,
             list_id,
@@ -1774,13 +1812,13 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_get_broadcast_clicks(
+    pub(crate) async fn execute_get_broadcast_clicks(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let broadcast_id = *matches.get_one::<i32>("broadcast-id").unwrap();
-        let result = crate::endpoints::get_broadcast_clicks(
+        let result = aweber::endpoints::get_broadcast_clicks(
             &self.client,
             self.account_id,
             list_id,
@@ -1796,13 +1834,13 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_broadcast_opens(
+    pub(crate) async fn execute_get_broadcast_opens(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let broadcast_id = *matches.get_one::<i32>("broadcast-id").unwrap();
-        let result = crate::endpoints::get_broadcast_opens(
+        let result = aweber::endpoints::get_broadcast_opens(
             &self.client,
             self.account_id,
             list_id,
@@ -1817,7 +1855,7 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_schedule_broadcast(
+    pub(crate) async fn execute_schedule_broadcast(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
@@ -1835,7 +1873,7 @@ impl Cli {
             }
             serde_json::from_value::<types::ScheduleBroadcast>(serde_json::Value::Object(body))?
         };
-        let result = crate::endpoints::schedule_broadcast(
+        let result = aweber::endpoints::schedule_broadcast(
             &self.client,
             self.account_id,
             list_id,
@@ -1846,13 +1884,16 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_wait_broadcast(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_wait_broadcast(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let broadcast_id = *matches.get_one::<i32>("broadcast-id").unwrap();
         let interval = *matches.get_one::<u64>("interval").unwrap();
 
         loop {
-            let broadcast = crate::endpoints::get_broadcast(
+            let broadcast = aweber::endpoints::get_broadcast(
                 &self.client,
                 self.account_id,
                 list_id,
@@ -1862,7 +1903,7 @@ impl Cli {
 
             match broadcast.status {
                 Some(types::BroadcastStatus::Sent) => {
-                    return self.print_result(Ok::<_, crate::client::ApiError>(broadcast));
+                    return self.print_result(Ok::<_, aweber::client::ApiError>(broadcast));
                 }
                 Some(
                     ref status @ (types::BroadcastStatus::Sending
@@ -1885,9 +1926,12 @@ impl Cli {
         }
     }
 
-    pub async fn execute_list_campaigns(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_list_campaigns(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let result = crate::endpoints::list_campaigns(
+        let result = aweber::endpoints::list_campaigns(
             &self.client,
             self.account_id,
             list_id,
@@ -1898,13 +1942,13 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_list_campaign_stats(
+    pub(crate) async fn execute_list_campaign_stats(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let campaign_id = *matches.get_one::<i32>("campaign-id").unwrap();
-        let result = crate::endpoints::list_campaign_stats(
+        let result = aweber::endpoints::list_campaign_stats(
             &self.client,
             self.account_id,
             list_id,
@@ -1916,7 +1960,7 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_campaign_stat(
+    pub(crate) async fn execute_get_campaign_stat(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
@@ -1944,7 +1988,7 @@ impl Cli {
         // We'll print the stats_id.to_string() directly.
         let _ = (list_id, campaign_id, stats_id);
         // Use a workaround: call the endpoint via the client directly
-        use crate::client::ApiRequest;
+        use aweber::client::ApiRequest;
         use reqwest::Method;
         let result: Result<types::Stat, _> = ApiRequest::new(
             &self.client,
@@ -1959,9 +2003,12 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_find_campaigns(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_find_campaigns(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let result = crate::endpoints::find_campaigns(
+        let result = aweber::endpoints::find_campaigns(
             &self.client,
             self.account_id,
             list_id,
@@ -1976,7 +2023,10 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_campaign(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_get_campaign(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let campaign_id = *matches.get_one::<i32>("campaign-id").unwrap();
         let campaign_type = matches
@@ -1984,7 +2034,7 @@ impl Cli {
                 "campaign-type",
             )
             .unwrap();
-        let result = crate::endpoints::get_campaign(
+        let result = aweber::endpoints::get_campaign(
             &self.client,
             self.account_id,
             list_id,
@@ -1995,12 +2045,12 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_list_custom_fields(
+    pub(crate) async fn execute_list_custom_fields(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let result = crate::endpoints::list_custom_fields(
+        let result = aweber::endpoints::list_custom_fields(
             &self.client,
             self.account_id,
             list_id,
@@ -2011,7 +2061,7 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_create_custom_field(
+    pub(crate) async fn execute_create_custom_field(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
@@ -2032,7 +2082,7 @@ impl Cli {
             )?
         };
         let result =
-            crate::endpoints::create_custom_field(&self.client, self.account_id, list_id, &body)
+            aweber::endpoints::create_custom_field(&self.client, self.account_id, list_id, &body)
                 .await;
         match result {
             Err(e) if e.api_message_is("name: Must be unique") => {
@@ -2046,10 +2096,13 @@ impl Cli {
         }
     }
 
-    pub async fn execute_get_custom_field(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_get_custom_field(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let custom_field_id = self.resolve_custom_field_id(matches, list_id).await?;
-        let result = crate::endpoints::get_custom_field(
+        let result = aweber::endpoints::get_custom_field(
             &self.client,
             self.account_id,
             list_id,
@@ -2059,13 +2112,13 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_delete_custom_field(
+    pub(crate) async fn execute_delete_custom_field(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let custom_field_id = self.resolve_custom_field_id(matches, list_id).await?;
-        let result = crate::endpoints::delete_custom_field(
+        let result = aweber::endpoints::delete_custom_field(
             &self.client,
             self.account_id,
             list_id,
@@ -2075,7 +2128,7 @@ impl Cli {
         self.print_void(result)
     }
 
-    pub async fn execute_update_custom_field(
+    pub(crate) async fn execute_update_custom_field(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
@@ -2098,7 +2151,7 @@ impl Cli {
                 serde_json::Value::Object(body),
             )?
         };
-        let result = crate::endpoints::update_custom_field(
+        let result = aweber::endpoints::update_custom_field(
             &self.client,
             self.account_id,
             list_id,
@@ -2108,12 +2161,12 @@ impl Cli {
         .await;
         self.print_result(result)
     }
-    pub async fn execute_list_landing_pages(
+    pub(crate) async fn execute_list_landing_pages(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let result = crate::endpoints::list_landing_pages(
+        let result = aweber::endpoints::list_landing_pages(
             &self.client,
             self.account_id,
             list_id,
@@ -2124,10 +2177,13 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_landing_page(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_get_landing_page(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let landing_page_id = *matches.get_one::<uuid::Uuid>("landing-page-id").unwrap();
-        let result = crate::endpoints::get_landing_page(
+        let result = aweber::endpoints::get_landing_page(
             &self.client,
             self.account_id,
             list_id,
@@ -2137,7 +2193,10 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_create_purchase(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_create_purchase(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let body = if let Some(path) = matches.get_one::<std::path::PathBuf>("json-body") {
             let txt = std::fs::read_to_string(path)
@@ -2185,13 +2244,16 @@ impl Cli {
             serde_json::from_value::<types::Purchase>(serde_json::Value::Object(body))?
         };
         let result =
-            crate::endpoints::create_purchase(&self.client, self.account_id, list_id, &body).await;
+            aweber::endpoints::create_purchase(&self.client, self.account_id, list_id, &body).await;
         self.print_void(result)
     }
 
-    pub async fn execute_list_segments(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_list_segments(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let result = crate::endpoints::list_segments(
+        let result = aweber::endpoints::list_segments(
             &self.client,
             self.account_id,
             list_id,
@@ -2202,17 +2264,24 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_segment(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_get_segment(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let segment_id = *matches.get_one::<i32>("segment-id").unwrap();
         let result =
-            crate::endpoints::get_segment(&self.client, self.account_id, list_id, segment_id).await;
+            aweber::endpoints::get_segment(&self.client, self.account_id, list_id, segment_id)
+                .await;
         self.print_result(result)
     }
 
-    pub async fn execute_list_subscribers(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_list_subscribers(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let result = crate::endpoints::list_subscribers(
+        let result = aweber::endpoints::list_subscribers(
             &self.client,
             self.account_id,
             list_id,
@@ -2224,7 +2293,7 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_create_subscriber(
+    pub(crate) async fn execute_create_subscriber(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
@@ -2280,7 +2349,7 @@ impl Cli {
                 body,
             ))?
         };
-        match crate::endpoints::create_subscriber(&self.client, self.account_id, list_id, &body)
+        match aweber::endpoints::create_subscriber(&self.client, self.account_id, list_id, &body)
             .await
         {
             Err(e) if e.api_message_is("email: Subscriber already subscribed.") => {
@@ -2290,7 +2359,7 @@ impl Cli {
         }
     }
 
-    pub async fn execute_delete_subscriber_by_email(
+    pub(crate) async fn execute_delete_subscriber_by_email(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
@@ -2298,7 +2367,7 @@ impl Cli {
         let subscriber_email = matches
             .get_one::<types::DeleteAccountsListsSubscribersSubscriberEmail>("email")
             .unwrap();
-        let result = crate::endpoints::delete_subscriber_by_email(
+        let result = aweber::endpoints::delete_subscriber_by_email(
             &self.client,
             self.account_id,
             list_id,
@@ -2307,7 +2376,7 @@ impl Cli {
         .await;
         self.print_void(result)
     }
-    pub async fn execute_update_subscriber_by_email(
+    pub(crate) async fn execute_update_subscriber_by_email(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
@@ -2366,7 +2435,7 @@ impl Cli {
             }
             serde_json::Value::Object(body)
         };
-        let result = crate::endpoints::update_subscriber_by_email(
+        let result = aweber::endpoints::update_subscriber_by_email(
             &self.client,
             self.account_id,
             list_id,
@@ -2378,7 +2447,10 @@ impl Cli {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub async fn execute_find_subscribers(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_find_subscribers(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let tags = matches
             .get_one::<String>("tags")
@@ -2386,7 +2458,7 @@ impl Cli {
         let tags_not_in = matches
             .get_one::<String>("tags-not-in")
             .map(|s| serde_json::to_string(&[s]).unwrap());
-        let result = crate::endpoints::find_subscribers(
+        let result = aweber::endpoints::find_subscribers(
             &self.client,
             self.account_id,
             list_id,
@@ -2465,16 +2537,26 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_subscriber(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_get_subscriber(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let subscriber_id = self.resolve_subscriber_id(matches, list_id).await?;
-        let result =
-            crate::endpoints::get_subscriber(&self.client, self.account_id, list_id, subscriber_id)
-                .await;
+        let result = aweber::endpoints::get_subscriber(
+            &self.client,
+            self.account_id,
+            list_id,
+            subscriber_id,
+        )
+        .await;
         self.print_result(result)
     }
 
-    pub async fn execute_move_subscriber(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_move_subscriber(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let subscriber_id = self.resolve_subscriber_id(matches, list_id).await?;
         let body = if let Some(path) = matches.get_one::<std::path::PathBuf>("json-body") {
@@ -2501,7 +2583,7 @@ impl Cli {
                 body,
             ))?
         };
-        let result = crate::endpoints::move_subscriber(
+        let result = aweber::endpoints::move_subscriber(
             &self.client,
             self.account_id,
             list_id,
@@ -2512,13 +2594,13 @@ impl Cli {
         self.print_void(result)
     }
 
-    pub async fn execute_delete_subscriber(
+    pub(crate) async fn execute_delete_subscriber(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let subscriber_id = self.resolve_subscriber_id(matches, list_id).await?;
-        let result = crate::endpoints::delete_subscriber(
+        let result = aweber::endpoints::delete_subscriber(
             &self.client,
             self.account_id,
             list_id,
@@ -2528,7 +2610,7 @@ impl Cli {
         self.print_void(result)
     }
 
-    pub async fn execute_update_subscriber(
+    pub(crate) async fn execute_update_subscriber(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
@@ -2585,7 +2667,7 @@ impl Cli {
             }
             serde_json::Value::Object(body)
         };
-        let result = crate::endpoints::update_subscriber(
+        let result = aweber::endpoints::update_subscriber(
             &self.client,
             self.account_id,
             list_id,
@@ -2595,13 +2677,13 @@ impl Cli {
         .await;
         self.print_result(result)
     }
-    pub async fn execute_get_subscriber_activity(
+    pub(crate) async fn execute_get_subscriber_activity(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let subscriber_id = self.resolve_subscriber_id(matches, list_id).await?;
-        let result = crate::endpoints::get_subscriber_activity(
+        let result = aweber::endpoints::get_subscriber_activity(
             &self.client,
             self.account_id,
             list_id,
@@ -2613,18 +2695,18 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_list_tags(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_list_tags(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let result = crate::endpoints::list_tags(&self.client, self.account_id, list_id).await;
+        let result = aweber::endpoints::list_tags(&self.client, self.account_id, list_id).await;
         self.print_result(result)
     }
 
-    pub async fn execute_list_web_form_split_tests(
+    pub(crate) async fn execute_list_web_form_split_tests(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let result = crate::endpoints::list_web_form_split_tests(
+        let result = aweber::endpoints::list_web_form_split_tests(
             &self.client,
             self.account_id,
             list_id,
@@ -2635,13 +2717,13 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_web_form_split_test(
+    pub(crate) async fn execute_get_web_form_split_test(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let split_test_id = *matches.get_one::<i32>("split-test-id").unwrap();
-        let result = crate::endpoints::get_web_form_split_test(
+        let result = aweber::endpoints::get_web_form_split_test(
             &self.client,
             self.account_id,
             list_id,
@@ -2651,13 +2733,13 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_list_web_form_split_test_components(
+    pub(crate) async fn execute_list_web_form_split_test_components(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let split_test_id = *matches.get_one::<i32>("split-test-id").unwrap();
-        let result = crate::endpoints::list_web_form_split_test_components(
+        let result = aweber::endpoints::list_web_form_split_test_components(
             &self.client,
             self.account_id,
             list_id,
@@ -2669,7 +2751,7 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_web_form_split_test_component(
+    pub(crate) async fn execute_get_web_form_split_test_component(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
@@ -2680,7 +2762,7 @@ impl Cli {
             .unwrap()
             .parse()
             .context("split-test-component-id must be an integer")?;
-        let result = crate::endpoints::get_web_form_split_test_component(
+        let result = aweber::endpoints::get_web_form_split_test_component(
             &self.client,
             self.account_id,
             list_id,
@@ -2691,9 +2773,12 @@ impl Cli {
         self.print_result(result)
     }
 
-    pub async fn execute_list_web_forms(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_list_web_forms(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
-        let result = crate::endpoints::list_web_forms(
+        let result = aweber::endpoints::list_web_forms(
             &self.client,
             self.account_id,
             list_id,
@@ -2704,16 +2789,19 @@ impl Cli {
         self.print_paginated_ndjson(result, matches).await
     }
 
-    pub async fn execute_get_web_form(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_get_web_form(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let webform_id = *matches.get_one::<i32>("webform-id").unwrap();
         let result =
-            crate::endpoints::get_web_form(&self.client, self.account_id, list_id, webform_id)
+            aweber::endpoints::get_web_form(&self.client, self.account_id, list_id, webform_id)
                 .await;
         self.print_result(result)
     }
 
-    pub async fn execute_get_broadcast_link_analytics(
+    pub(crate) async fn execute_get_broadcast_link_analytics(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
@@ -2738,7 +2826,7 @@ impl Cli {
         let sort_by = matches
             .get_one::<types::GetBroadcastLinksAnalyticsSortBy>("sort-by")
             .map(|v| v.to_string());
-        let result = crate::endpoints::get_broadcast_link_analytics(
+        let result = aweber::endpoints::get_broadcast_link_analytics(
             &self.client,
             account_id,
             after,
@@ -2754,7 +2842,7 @@ impl Cli {
         .await;
         self.print_result(result)
     }
-    pub async fn execute_oauth_get_access_token(
+    pub(crate) async fn execute_oauth_get_access_token(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
@@ -2801,11 +2889,11 @@ impl Cli {
                 body,
             ))?
         };
-        let result = crate::endpoints::oauth_get_access_token(&self.client, &body).await;
+        let result = aweber::endpoints::oauth_get_access_token(&self.client, &body).await;
         self.print_result(result)
     }
 
-    pub async fn execute_oauth_get_request_token(
+    pub(crate) async fn execute_oauth_get_request_token(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
@@ -2852,11 +2940,14 @@ impl Cli {
                 body,
             ))?
         };
-        let result = crate::endpoints::oauth_get_request_token(&self.client, &body).await;
+        let result = aweber::endpoints::oauth_get_request_token(&self.client, &body).await;
         self.print_result(result)
     }
 
-    pub async fn execute_oauth_revoke(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_oauth_revoke(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let authorization = matches
             .get_one::<String>("authorization")
             .map(|s| s.as_str());
@@ -2865,11 +2956,14 @@ impl Cli {
             .with_context(|| format!("failed to read {}", path.display()))?;
         let body = serde_json::from_str::<types::PostOauth2RevokeBody>(&txt)
             .with_context(|| format!("failed to parse {}", path.display()))?;
-        let result = crate::endpoints::oauth2_revoke(&self.client, authorization, &body).await;
+        let result = aweber::endpoints::oauth2_revoke(&self.client, authorization, &body).await;
         self.print_void(result)
     }
 
-    pub async fn execute_oauth_token(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
+    pub(crate) async fn execute_oauth_token(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
         let authorization = matches
             .get_one::<String>("authorization")
             .map(|s| s.as_str());
@@ -2878,7 +2972,7 @@ impl Cli {
             .with_context(|| format!("failed to read {}", path.display()))?;
         let body = serde_json::from_str::<types::PostOauth2TokenBody>(&txt)
             .with_context(|| format!("failed to parse {}", path.display()))?;
-        let result = crate::endpoints::oauth2_token(&self.client, authorization, &body).await;
+        let result = aweber::endpoints::oauth2_token(&self.client, authorization, &body).await;
         self.print_result(result)
     }
 
@@ -2888,7 +2982,7 @@ impl Cli {
 
     fn print_result<T: serde::Serialize>(
         &self,
-        result: Result<T, crate::client::ApiError>,
+        result: Result<T, aweber::client::ApiError>,
     ) -> anyhow::Result<()> {
         use std::io::IsTerminal;
         match result {
@@ -2907,7 +3001,7 @@ impl Cli {
 
     async fn print_paginated_ndjson<C>(
         &self,
-        first_page: Result<C, crate::client::ApiError>,
+        first_page: Result<C, aweber::client::ApiError>,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()>
     where
@@ -2962,7 +3056,7 @@ impl Cli {
         Ok(())
     }
 
-    fn print_void(&self, result: Result<(), crate::client::ApiError>) -> anyhow::Result<()> {
+    fn print_void(&self, result: Result<(), aweber::client::ApiError>) -> anyhow::Result<()> {
         match result {
             Ok(()) => Ok(()),
             Err(e) => Err(anyhow::anyhow!("{e}")),
@@ -2971,7 +3065,8 @@ impl Cli {
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum CliCommand {
+#[allow(dead_code)]
+pub(crate) enum CliCommand {
     ListAccounts,
     GetAccount,
     FindAccountSubscribers,
@@ -3032,7 +3127,8 @@ pub enum CliCommand {
     OauthToken,
 }
 impl CliCommand {
-    pub fn iter() -> impl Iterator<Item = CliCommand> {
+    #[allow(dead_code)]
+    pub(crate) fn iter() -> impl Iterator<Item = CliCommand> {
         vec![
             CliCommand::ListAccounts,
             CliCommand::GetAccount,

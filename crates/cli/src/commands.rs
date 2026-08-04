@@ -1,5 +1,5 @@
 use crate::auth;
-use aweber::cli::{Cli, CliCommand};
+use crate::cli::{Cli, CliCommand};
 
 /// A single route: an action name within a group, mapped to a CliCommand variant.
 struct Route {
@@ -384,14 +384,14 @@ pub fn build_command_tree() -> clap::Command {
             clap::Arg::new("api-url")
                 .long("api-url")
                 .env("AWEBER_API_URL")
-                .default_value(auth::DEFAULT_API_URL)
+                .default_value(aweber::oauth::DEFAULT_API_URL)
                 .help("AWeber API base URL"),
         )
         .arg(
             clap::Arg::new("auth-url")
                 .long("auth-url")
                 .env("AWEBER_AUTH_URL")
-                .default_value(auth::DEFAULT_AUTH_URL)
+                .default_value(aweber::oauth::DEFAULT_AUTH_URL)
                 .help("AWeber auth base URL"),
         )
         .arg(
