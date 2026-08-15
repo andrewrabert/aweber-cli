@@ -24,6 +24,18 @@ fn next_cursor_ignores_a_link_without_rel_next() {
     assert_eq!(next_cursor(&headers, "after"), None);
 }
 
+/// A `next` cursor whose percent escape is followed by a multibyte character
+/// decodes to the bytes it names, and the process survives.
+#[test]
+fn a_cursor_with_a_multibyte_escape_decodes() {
+    let headers =
+        headers("<https://api.aweber.com/reports?after=t%C3%B6k%C3%A9n%2c9>; rel=\"next\"");
+    assert_eq!(
+        next_cursor(&headers, "after"),
+        Some("tökén,9".parse().unwrap())
+    );
+}
+
 #[test]
 fn offset_cursor_past_the_cap_resolves_to_none() {
     assert_eq!(

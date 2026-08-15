@@ -1,4 +1,4 @@
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 pub const STARTER: &str = "e0000000-0000-4000-8000-000000000001";
 pub const WAIT_ACTION: &str = "a0000000-0000-4000-8000-000000000001";

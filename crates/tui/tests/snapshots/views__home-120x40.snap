@@ -1,0 +1,44 @@
+---
+source: crates/tui/tests/views.rs
+expression: harness.screen()
+---
+home   account Acme (1)   list Weekly
+lists               Manage subscriber lists
+subscribers         Manage subscribers
+broadcasts          Manage broadcasts (email campaigns)
+campaigns           Manage a single follow-up or broadcast message on a list
+workflows           Manage automation workflows (unrelated to `aweber campaigns`)
+account             Manage your AWeber account
+custom-fields       Manage custom fields
+tags                Manage tags
+segments            Manage segments
+integrations        Manage integrations
+landing-pages       Manage landing pages
+purchases           Record purchases
+webforms            Manage webforms
+webform-split-tests Manage webform split tests
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+q quit  Enter open  Ctrl-p palette

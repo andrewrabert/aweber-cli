@@ -1,0 +1,28 @@
+---
+source: crates/tui/tests/views.rs
+expression: harness.screen()
+---
+home › subscribers list   account Acme (1)   list Weekly
+Email                       Status                    Subscribed
+ada@exam┌ stop a watch ────────────────────────────────────────────────┐0+00:00
+grace@ex│>                                                             │
+        │GET /1.0/accounts/1/lists/7/broadcasts/9                      │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        └──────────────────────────────────────────────────────────────┘
+loaded 2
+⏳  GET /1.0/accounts/1/lists/7/broadcasts/9
+q quit  Enter run  Esc close  Ctrl-p palette

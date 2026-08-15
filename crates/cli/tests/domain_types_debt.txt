@@ -2,6 +2,7 @@
 crates/api/src/workflows/campaign.rs::Workflow::errors
 
 crates/api/src/workflows/message.rs::get_message_subjects
+crates/api/src/workflows/message.rs::subjects_of
 
 crates/api/src/workflows/analytics.rs::get_campaign_message_totals
 crates/api/src/workflows/analytics.rs::get_recurring_events
