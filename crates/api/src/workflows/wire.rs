@@ -450,7 +450,7 @@ fn read_conditions(criteria: &[Criterion<'_>]) -> Result<Vec<Condition>, ReadErr
                 key => {
                     return Err(ReadError(format!(
                         "'{key}' is not a subscribe condition the builder writes"
-                    )))
+                    )));
                 }
             }
         } else if FunctionName::named(criterion.function, FunctionName::CUSTOM_FIELD) {
@@ -476,7 +476,7 @@ fn read_conditions(criteria: &[Criterion<'_>]) -> Result<Vec<Condition>, ReadErr
             (operator, _) => {
                 return Err(ReadError(format!(
                     "'{operator}' is not a subscribe condition operator the builder writes"
-                )))
+                )));
             }
         };
         conditions.push(Condition { field, test });
@@ -611,10 +611,10 @@ fn read_set_branch(kwargs: &Object) -> Result<Action, ReadError> {
             .and_then(|text| text.parse().ok());
         let criteria = read_criteria(object)?;
         let first = criteria.first();
-        if tested.is_none() {
-            if let Some(criterion) = first {
-                tested = Some(read_tested(criterion)?);
-            }
+        if tested.is_none()
+            && let Some(criterion) = first
+        {
+            tested = Some(read_tested(criterion)?);
         }
         branches.push(RuleBranch {
             id,

@@ -1,0 +1,44 @@
+---
+source: crates/tui/tests/views.rs
+expression: harness.screen()
+---
+home › event log   account Acme (1)   list Weekly
+03:04:05 GET /1.0/accounts/1/lists 200 42ms
+03:04:05 GET /1.0/accounts/1/lists 429 attempt 2 waited 2000ms — waiting out 429
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+q quit  Esc back  Ctrl-p palette

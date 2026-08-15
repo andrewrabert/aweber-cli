@@ -113,10 +113,10 @@ impl Graph {
         automations: Automations,
         at: Placement,
     ) -> Result<RuleId, GraphError> {
-        if let Placement::Inside { feed } = at {
-            if !matches!(kind, StepKind::Message { .. }) {
-                return Err(GraphError::LoopTakesMessages { feed });
-            }
+        if let Placement::Inside { feed } = at
+            && !matches!(kind, StepKind::Message { .. })
+        {
+            return Err(GraphError::LoopTakesMessages { feed });
         }
         let step = Step {
             id: RuleId::new(),
@@ -397,10 +397,10 @@ impl Graph {
                 }
             }
         }
-        if parents.is_empty() {
-            if let Some(starter) = &self.starter {
-                parents.push(wire::identity(&starter.event));
-            }
+        if parents.is_empty()
+            && let Some(starter) = &self.starter
+        {
+            parents.push(wire::identity(&starter.event));
         }
         Position {
             parents,

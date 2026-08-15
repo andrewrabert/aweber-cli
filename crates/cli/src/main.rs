@@ -7,6 +7,8 @@ mod auth;
 mod cli;
 mod commands;
 mod credentials;
+mod observer;
+mod tui;
 mod workflows;
 
 #[tokio::main]
@@ -45,25 +47,39 @@ async fn main() -> anyhow::Result<()> {
         }
     }
 
-    // Resolve token and session fallbacks
-    let (token, account_id, account, api_url) = match matches.get_one::<String>("token").cloned() {
-        Some(t) => (t, None, None, api_url.clone()),
-        None => {
-            let session = credentials::load_session(creds_file).await?;
-            let parsed: i32 = session
-                .account_id
-                .parse()
-                .context("invalid account_id in stored credentials")?;
+    let verbose = matches.get_flag("verbose");
+
+    if let Some(("tui", _)) = matches.subcommand() {
+        return tui::launch(
+            creds_file,
+            api_url,
+            auth_url,
+            matches.get_one::<String>("token").map(String::as_str),
+            verbose,
+        )
+        .await;
+    }
+
+    // Resolve session, token, and stored fallbacks
+    let token = matches.get_one::<String>("token").cloned();
+    let store = credentials::Store::new(creds_file)?;
+    let (session, stored) = store.open(token.as_deref()).await?;
+    let (account_id, account, api_url) = match stored {
+        Some(stored) => {
             // Stored URLs from credentials take effect when CLI arg is the default
-            let api_url = session.api_url.unwrap_or_else(|| api_url.clone());
-            (session.access_token, Some(parsed), session.account, api_url)
+            let api_url = store
+                .load()
+                .ok()
+                .and_then(|creds| creds.api_url)
+                .unwrap_or_else(|| api_url.clone());
+            (Some(stored.id), stored.uuid, api_url)
         }
+        None => (None, None, api_url.clone()),
     };
 
-    let client = aweber::client::Client::with_bearer_token(&api_url, &token)?;
-
-    let verbose = matches.get_flag("verbose");
-    let client = client.with_verbose(verbose);
+    let client = aweber::client::Client::with_session(&api_url, session)?
+        .with_observer(std::sync::Arc::new(observer::Verbose::new(verbose)))
+        .with_bodies_observed(verbose);
 
     // Handle api command (needs auth but not account_id)
     if let Some(("api", api_matches)) = matches.subcommand() {

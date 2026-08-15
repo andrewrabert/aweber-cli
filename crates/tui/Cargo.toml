@@ -1,0 +1,38 @@
+[package]
+name = "aweber-tui"
+description = "A terminal UI for the AWeber API"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+aweber = { workspace = true, features = ["catalog"] }
+anyhow.workspace = true
+chrono.workspace = true
+crossterm.workspace = true
+nucleo-matcher.workspace = true
+open.workspace = true
+ratatui.workspace = true
+reqwest.workspace = true
+serde_json.workspace = true
+throbber-widgets-tui.workspace = true
+tokio = { workspace = true, features = ["macros", "process", "rt", "sync", "time"] }
+tokio-util.workspace = true
+tui-input.workspace = true
+tui-tree-widget.workspace = true
+uuid.workspace = true
+
+[target.'cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))'.dependencies]
+arboard.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
+rustls.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread"] }
+wiremock.workspace = true
+
+[lints]
+workspace = true

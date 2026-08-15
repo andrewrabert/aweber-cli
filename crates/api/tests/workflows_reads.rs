@@ -39,12 +39,14 @@ async fn get_workflow_sends_include_ruleset() {
         workflow.ruleset_write_op(),
         aweber::workflows::PatchOperation::Add
     );
-    assert!(workflow
-        .ruleset()
-        .expect("an empty ruleset reads")
-        .working(aweber::workflows::Timezone::utc())
-        .steps()
-        .is_empty());
+    assert!(
+        workflow
+            .ruleset()
+            .expect("an empty ruleset reads")
+            .working(aweber::workflows::Timezone::utc())
+            .steps()
+            .is_empty()
+    );
     assert_eq!(
         workflow.precondition_version().map(|v| v.to_string()),
         Some("7".to_string())

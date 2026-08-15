@@ -1,0 +1,28 @@
+---
+source: crates/tui/tests/views.rs
+expression: harness.screen()
+---
+home › subscribers list   account Acme (1)   list Weekly
+Email                       Status                    Subscribed
+ada@example.com             subscribed                2026-01-01T00:00:00+00:00
+grace@example.com           unconfirmed               null
+
+
+
+     ┌ the request failed ────────────────────────────────────────────────┐
+     │status  500                                                         │
+     │request  GET /1.0/accounts/1/lists/7/subscribers                    │
+     │message  the server is having a moment                              │
+     │                                                                    │
+     │                                                                    │
+     │                                                                    │
+     │                                                                    │
+     └────────────────────────────────────────────────────────────────────┘
+
+
+
+
+
+loaded 2
+
+q quit  Esc close  Enter dismiss  Ctrl-p palette

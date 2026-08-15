@@ -1,380 +1,57 @@
 use crate::auth;
-use crate::cli::{Cli, CliCommand};
+use crate::cli::{CliCommand, WorkflowCommand};
 
-/// A single route: an action name within a group, mapped to a CliCommand variant.
+const WORKFLOWS: &str = "workflows";
+
+/// One `aweber workflows` action.
 struct Route {
     action: &'static str,
-    command: CliCommand,
+    command: WorkflowCommand,
 }
 
-/// A resource group containing one or more routes.
-struct Group {
-    name: &'static str,
-    about: &'static str,
-    long_about: Option<&'static str>,
-    routes: &'static [Route],
-}
-
-/// The complete route table. Groups are ordered by usage frequency (most-used first).
-/// Every non-OAuth CliCommand variant must appear exactly once.
-static GROUPS: &[Group] = &[
-    Group {
-        name: "lists",
-        about: "Manage subscriber lists",
-        long_about: None,
-        routes: &[
-            Route {
-                action: "list",
-                command: CliCommand::ListLists,
-            },
-            Route {
-                action: "get",
-                command: CliCommand::GetList,
-            },
-            Route {
-                action: "find",
-                command: CliCommand::FindLists,
-            },
-        ],
+/// The `workflows` group is the binary's own: each action reads and edits a
+/// workflow through `aweber::workflows` over several requests, where the
+/// catalog offers the TUI one request per operation under the same group name.
+/// Every `WorkflowCommand` appears exactly once.
+static WORKFLOW_ROUTES: &[Route] = &[
+    Route {
+        action: "list",
+        command: WorkflowCommand::List,
     },
-    Group {
-        name: "subscribers",
-        about: "Manage subscribers",
-        long_about: None,
-        routes: &[
-            Route {
-                action: "list",
-                command: CliCommand::ListSubscribers,
-            },
-            Route {
-                action: "get",
-                command: CliCommand::GetSubscriber,
-            },
-            Route {
-                action: "create",
-                command: CliCommand::CreateSubscriber,
-            },
-            Route {
-                action: "update",
-                command: CliCommand::UpdateSubscriber,
-            },
-            Route {
-                action: "update-by-email",
-                command: CliCommand::UpdateSubscriberByEmail,
-            },
-            Route {
-                action: "delete",
-                command: CliCommand::DeleteSubscriber,
-            },
-            Route {
-                action: "delete-by-email",
-                command: CliCommand::DeleteSubscriberByEmail,
-            },
-            Route {
-                action: "unsubscribe",
-                command: CliCommand::UnsubscribeSubscriber,
-            },
-            Route {
-                action: "find",
-                command: CliCommand::FindSubscribers,
-            },
-            Route {
-                action: "move",
-                command: CliCommand::MoveSubscriber,
-            },
-            Route {
-                action: "activity",
-                command: CliCommand::GetSubscriberActivity,
-            },
-        ],
+    Route {
+        action: "show",
+        command: WorkflowCommand::Show,
     },
-    Group {
-        name: "broadcasts",
-        about: "Manage broadcasts (email campaigns)",
-        long_about: None,
-        routes: &[
-            Route {
-                action: "list",
-                command: CliCommand::ListBroadcasts,
-            },
-            Route {
-                action: "get",
-                command: CliCommand::GetBroadcast,
-            },
-            Route {
-                action: "create",
-                command: CliCommand::CreateBroadcast,
-            },
-            Route {
-                action: "update",
-                command: CliCommand::UpdateBroadcast,
-            },
-            Route {
-                action: "delete",
-                command: CliCommand::DeleteBroadcast,
-            },
-            Route {
-                action: "schedule",
-                command: CliCommand::ScheduleBroadcast,
-            },
-            Route {
-                action: "cancel",
-                command: CliCommand::CancelBroadcast,
-            },
-            Route {
-                action: "wait",
-                command: CliCommand::WaitBroadcast,
-            },
-            Route {
-                action: "total",
-                command: CliCommand::GetBroadcastTotal,
-            },
-            Route {
-                action: "clicks",
-                command: CliCommand::GetBroadcastClicks,
-            },
-            Route {
-                action: "opens",
-                command: CliCommand::GetBroadcastOpens,
-            },
-            Route {
-                action: "link-analytics",
-                command: CliCommand::GetBroadcastLinkAnalytics,
-            },
-        ],
+    Route {
+        action: "create",
+        command: WorkflowCommand::Create,
     },
-    Group {
-        name: "campaigns",
-        about: "Manage a single follow-up or broadcast message on a list",
-        long_about: None,
-        routes: &[
-            Route {
-                action: "list",
-                command: CliCommand::ListCampaigns,
-            },
-            Route {
-                action: "get",
-                command: CliCommand::GetCampaign,
-            },
-            Route {
-                action: "find",
-                command: CliCommand::FindCampaigns,
-            },
-            // TODO: verify stats/stat naming against Swagger API semantics
-            Route {
-                action: "stats",
-                command: CliCommand::ListCampaignStats,
-            },
-            Route {
-                action: "stat",
-                command: CliCommand::GetCampaignStat,
-            },
-        ],
+    Route {
+        action: "update",
+        command: WorkflowCommand::Update,
     },
-    Group {
-        name: "workflows",
-        about: "Manage automation workflows",
-        long_about: Some(
-            "Manage automation workflows.\n\n\
-             These commands use an undocumented, unversioned and unsupported API \
-             surface that can change or disappear without notice.",
-        ),
-        routes: &[
-            Route {
-                action: "list",
-                command: CliCommand::ListWorkflows,
-            },
-            Route {
-                action: "show",
-                command: CliCommand::ShowWorkflow,
-            },
-            Route {
-                action: "create",
-                command: CliCommand::CreateWorkflow,
-            },
-            Route {
-                action: "update",
-                command: CliCommand::UpdateWorkflow,
-            },
-            Route {
-                action: "add-step",
-                command: CliCommand::AddWorkflowStep,
-            },
-            Route {
-                action: "update-step",
-                command: CliCommand::UpdateWorkflowStep,
-            },
-            Route {
-                action: "publish",
-                command: CliCommand::PublishWorkflow,
-            },
-            Route {
-                action: "delete",
-                command: CliCommand::DeleteWorkflow,
-            },
-        ],
+    Route {
+        action: "add-step",
+        command: WorkflowCommand::AddStep,
     },
-    Group {
-        name: "account",
-        about: "Manage your AWeber account",
-        long_about: None,
-        routes: &[
-            Route {
-                action: "list",
-                command: CliCommand::ListAccounts,
-            },
-            Route {
-                action: "get",
-                command: CliCommand::GetAccount,
-            },
-            Route {
-                action: "find-subscribers",
-                command: CliCommand::FindAccountSubscribers,
-            },
-            Route {
-                action: "webforms",
-                command: CliCommand::ListAccountWebforms,
-            },
-            Route {
-                action: "webform-split-tests",
-                command: CliCommand::ListAccountWebformSplitTests,
-            },
-        ],
+    Route {
+        action: "update-step",
+        command: WorkflowCommand::UpdateStep,
     },
-    Group {
-        name: "custom-fields",
-        about: "Manage custom fields",
-        long_about: None,
-        routes: &[
-            Route {
-                action: "list",
-                command: CliCommand::ListCustomFields,
-            },
-            Route {
-                action: "get",
-                command: CliCommand::GetCustomField,
-            },
-            Route {
-                action: "create",
-                command: CliCommand::CreateCustomField,
-            },
-            Route {
-                action: "update",
-                command: CliCommand::UpdateCustomField,
-            },
-            Route {
-                action: "delete",
-                command: CliCommand::DeleteCustomField,
-            },
-        ],
+    Route {
+        action: "publish",
+        command: WorkflowCommand::Publish,
     },
-    Group {
-        name: "tags",
-        about: "Manage tags",
-        long_about: None,
-        routes: &[Route {
-            action: "list",
-            command: CliCommand::ListTags,
-        }],
-    },
-    Group {
-        name: "segments",
-        about: "Manage segments",
-        long_about: None,
-        routes: &[
-            Route {
-                action: "list",
-                command: CliCommand::ListSegments,
-            },
-            Route {
-                action: "get",
-                command: CliCommand::GetSegment,
-            },
-        ],
-    },
-    Group {
-        name: "integrations",
-        about: "Manage integrations",
-        long_about: None,
-        routes: &[
-            Route {
-                action: "list",
-                command: CliCommand::ListIntegrations,
-            },
-            Route {
-                action: "get",
-                command: CliCommand::GetIntegration,
-            },
-        ],
-    },
-    Group {
-        name: "landing-pages",
-        about: "Manage landing pages",
-        long_about: None,
-        routes: &[
-            Route {
-                action: "list",
-                command: CliCommand::ListLandingPages,
-            },
-            Route {
-                action: "get",
-                command: CliCommand::GetLandingPage,
-            },
-        ],
-    },
-    Group {
-        name: "purchases",
-        about: "Record purchases",
-        long_about: None,
-        routes: &[Route {
-            action: "create",
-            command: CliCommand::CreatePurchase,
-        }],
-    },
-    Group {
-        name: "webforms",
-        about: "Manage webforms",
-        long_about: None,
-        routes: &[
-            Route {
-                action: "list",
-                command: CliCommand::ListWebForms,
-            },
-            Route {
-                action: "get",
-                command: CliCommand::GetWebForm,
-            },
-        ],
-    },
-    Group {
-        name: "webform-split-tests",
-        about: "Manage webform split tests",
-        long_about: None,
-        routes: &[
-            Route {
-                action: "list",
-                command: CliCommand::ListWebFormSplitTests,
-            },
-            Route {
-                action: "get",
-                command: CliCommand::GetWebFormSplitTest,
-            },
-            Route {
-                action: "components",
-                command: CliCommand::ListWebFormSplitTestComponents,
-            },
-            Route {
-                action: "component",
-                command: CliCommand::GetWebFormSplitTestComponent,
-            },
-        ],
+    Route {
+        action: "delete",
+        command: WorkflowCommand::Delete,
     },
 ];
 
 /// Build the clap command tree with nested resource-group subcommands.
 ///
-/// Returns a `clap::Command` where each resource group is a top-level subcommand
-/// containing action subcommands. The auth subcommand is also included.
+/// Every group but `workflows` is the catalog's, in route-table order;
+/// `workflows` takes the catalog group's place with the binary's own actions.
 pub fn build_command_tree() -> clap::Command {
     let login_cmd = clap::Command::new("login").about("Log in to AWeber").arg(
         clap::Arg::new("client-id")
@@ -390,39 +67,6 @@ pub fn build_command_tree() -> clap::Command {
         .subcommand(login_cmd)
         .subcommand(clap::Command::new("logout").about("Log out and remove stored credentials"))
         .subcommand(clap::Command::new("status").about("Show authentication status"));
-
-    let api_cmd = clap::Command::new("api")
-        .about("Make an authenticated API request")
-        .arg(
-            clap::Arg::new("path")
-                .required(true)
-                .help("API path (e.g., /1.0/accounts/12345/lists)"),
-        )
-        .arg(
-            clap::Arg::new("method")
-                .short('X')
-                .long("method")
-                .default_value("GET")
-                .help("HTTP method"),
-        )
-        .arg(
-            clap::Arg::new("input")
-                .long("input")
-                .help("Request body file (use - for stdin)"),
-        )
-        .arg(
-            clap::Arg::new("header")
-                .short('H')
-                .long("header")
-                .action(clap::ArgAction::Append)
-                .help("Extra header (key:value, repeatable)"),
-        )
-        .arg(
-            clap::Arg::new("json")
-                .long("json")
-                .action(clap::ArgAction::SetTrue)
-                .help("Output JSON object with status, headers, and body"),
-        );
 
     let mut app = clap::Command::new("aweber-cli")
         .bin_name("aweber")
@@ -465,87 +109,109 @@ pub fn build_command_tree() -> clap::Command {
         )
         .subcommand_required(true)
         .subcommand(auth_cmd)
-        .subcommand(api_cmd);
+        .subcommand(aweber::catalog::raw_command())
+        .subcommand(clap::Command::new("tui").about("Browse the API in a full-screen terminal UI"));
 
-    for group in GROUPS {
-        let mut group_cmd = clap::Command::new(group.name)
-            .about(group.about)
-            .subcommand_required(true);
-        if let Some(long_about) = group.long_about {
-            group_cmd = group_cmd.long_about(long_about);
+    for group in aweber::catalog::groups() {
+        if group.hidden {
+            continue;
         }
-
-        for route in group.routes {
-            let subcmd = Cli::get_command(route.command).name(route.action.to_string());
-            group_cmd = group_cmd.subcommand(subcmd);
-        }
-
+        let group_cmd = match (group.cli, group.name) {
+            (true, _) => aweber::catalog::group_command(group),
+            (false, WORKFLOWS) => workflows_command(group),
+            (false, other) => panic!("neither the catalog nor aweber routes the `{other}` group"),
+        };
         app = app.subcommand(group_cmd);
     }
 
     app
 }
 
-/// Resolve a (group_name, action_name) pair to the corresponding CliCommand.
+/// `aweber workflows`, in the catalog group's place and with the binary's own
+/// actions.
+fn workflows_command(group: &aweber::catalog::Group) -> clap::Command {
+    let mut group_cmd = clap::Command::new(group.name)
+        .about("Manage automation workflows")
+        .long_about(
+            "Manage automation workflows.\n\n\
+             These commands use an undocumented, unversioned and unsupported API \
+             surface that can change or disappear without notice.",
+        )
+        .subcommand_required(true);
+    for route in WORKFLOW_ROUTES {
+        group_cmd = group_cmd.subcommand(route.command.command().name(route.action));
+    }
+    group_cmd
+}
+
+/// Resolve a (group_name, action_name) pair to the command the binary runs.
 ///
-/// Returns `None` if the group or action is not found.
+/// Returns `None` if the group or action is not routed, including the hidden
+/// `oauth` operations and the catalog's TUI-only `workflows` operations.
 pub fn resolve_command(group: &str, action: &str) -> Option<CliCommand> {
-    GROUPS
-        .iter()
-        .find(|g| g.name == group)
-        .and_then(|g| g.routes.iter().find(|r| r.action == action))
-        .map(|r| r.command)
+    if group == WORKFLOWS {
+        return WORKFLOW_ROUTES
+            .iter()
+            .find(|route| route.action == action)
+            .map(|route| CliCommand::Workflow(route.command));
+    }
+    aweber::catalog::resolve(group, action)
+        .filter(|operation| !operation.is_hidden() && operation.is_cli())
+        .map(CliCommand::Operation)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashSet;
-
-    /// The 4 OAuth commands that are intentionally hidden from the CLI.
-    const HIDDEN_COMMANDS: &[CliCommand] = &[
-        CliCommand::OauthGetAccessToken,
-        CliCommand::OauthGetRequestToken,
-        CliCommand::OauthRevoke,
-        CliCommand::OauthToken,
-    ];
+    use std::collections::BTreeSet;
 
     #[test]
-    fn all_non_oauth_commands_are_routed_exactly_once() {
-        // Collect all commands from the route table.
-        let mut routed: Vec<CliCommand> = Vec::new();
-        for group in GROUPS {
-            for route in group.routes {
-                routed.push(route.command);
-            }
-        }
-
-        // Verify no duplicates.
-        // CliCommand does not derive Hash/Eq (generated code, cannot modify),
-        // so use the Debug string as a stable unique identifier.
-        let unique: HashSet<_> = routed.iter().copied().map(|c| format!("{c:?}")).collect();
+    fn every_workflow_command_is_routed_exactly_once() {
+        let routed: Vec<String> = WORKFLOW_ROUTES
+            .iter()
+            .map(|route| format!("{:?}", route.command))
+            .collect();
+        let unique: BTreeSet<&String> = routed.iter().collect();
         assert_eq!(
             routed.len(),
             unique.len(),
-            "route table contains duplicate commands"
+            "a workflow command is routed twice"
         );
+        for command in WorkflowCommand::ALL {
+            assert!(
+                routed.contains(&format!("{command:?}")),
+                "{command:?} is not routed"
+            );
+        }
+    }
 
-        // Verify every non-OAuth CliCommand variant is present.
-        let hidden_set: HashSet<String> =
-            HIDDEN_COMMANDS.iter().map(|c| format!("{c:?}")).collect();
-        let routed_set: HashSet<String> = routed.iter().map(|c| format!("{c:?}")).collect();
+    #[test]
+    fn the_workflows_group_is_the_one_group_the_catalog_leaves_to_the_binary() {
+        let left: Vec<&str> = aweber::catalog::groups()
+            .iter()
+            .filter(|group| !group.hidden && !group.cli)
+            .map(|group| group.name)
+            .collect();
+        assert_eq!(left, vec![WORKFLOWS]);
+    }
 
-        for cmd in CliCommand::iter() {
-            let name = format!("{cmd:?}");
-            if hidden_set.contains(&name) {
+    #[test]
+    fn the_tree_parses_every_routed_command() {
+        let tree = build_command_tree();
+        for group in aweber::catalog::groups()
+            .iter()
+            .filter(|group| !group.hidden)
+        {
+            let group_cmd = tree
+                .get_subcommands()
+                .find(|candidate| candidate.get_name() == group.name)
+                .unwrap_or_else(|| panic!("`aweber {}` is in the tree", group.name));
+            for action in group_cmd.get_subcommands() {
                 assert!(
-                    !routed_set.contains(&name),
-                    "OAuth command {name} should not be in route table"
-                );
-            } else {
-                assert!(
-                    routed_set.contains(&name),
-                    "non-OAuth command {name} is missing from route table"
+                    resolve_command(group.name, action.get_name()).is_some(),
+                    "`aweber {} {}` is in the tree but does not resolve",
+                    group.name,
+                    action.get_name()
                 );
             }
         }
@@ -553,23 +219,28 @@ mod tests {
 
     #[test]
     fn resolve_command_finds_known_routes() {
-        assert!(matches!(
+        assert_eq!(
             resolve_command("lists", "list"),
-            Some(CliCommand::ListLists)
-        ));
-        assert!(matches!(
+            Some(CliCommand::Operation(aweber::catalog::Operation::ListLists))
+        );
+        assert_eq!(
             resolve_command("broadcasts", "create"),
-            Some(CliCommand::CreateBroadcast)
-        ));
-        assert!(matches!(
-            resolve_command("subscribers", "activity"),
-            Some(CliCommand::GetSubscriberActivity)
-        ));
+            Some(CliCommand::Operation(
+                aweber::catalog::Operation::CreateBroadcast
+            ))
+        );
+        assert_eq!(
+            resolve_command("workflows", "show"),
+            Some(CliCommand::Workflow(WorkflowCommand::Show))
+        );
     }
 
     #[test]
     fn resolve_command_returns_none_for_unknown() {
         assert!(resolve_command("nonexistent", "list").is_none());
         assert!(resolve_command("lists", "nonexistent").is_none());
+        // The catalog's `workflows get` is the TUI's, not a CLI command.
+        assert!(resolve_command("workflows", "get").is_none());
+        assert!(resolve_command("oauth", "token").is_none());
     }
 }
