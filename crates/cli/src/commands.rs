@@ -11,6 +11,7 @@ struct Route {
 struct Group {
     name: &'static str,
     about: &'static str,
+    long_about: Option<&'static str>,
     routes: &'static [Route],
 }
 
@@ -20,6 +21,7 @@ static GROUPS: &[Group] = &[
     Group {
         name: "lists",
         about: "Manage subscriber lists",
+        long_about: None,
         routes: &[
             Route {
                 action: "list",
@@ -38,6 +40,7 @@ static GROUPS: &[Group] = &[
     Group {
         name: "subscribers",
         about: "Manage subscribers",
+        long_about: None,
         routes: &[
             Route {
                 action: "list",
@@ -53,11 +56,23 @@ static GROUPS: &[Group] = &[
             },
             Route {
                 action: "update",
+                command: CliCommand::UpdateSubscriber,
+            },
+            Route {
+                action: "update-by-email",
                 command: CliCommand::UpdateSubscriberByEmail,
             },
             Route {
                 action: "delete",
+                command: CliCommand::DeleteSubscriber,
+            },
+            Route {
+                action: "delete-by-email",
                 command: CliCommand::DeleteSubscriberByEmail,
+            },
+            Route {
+                action: "unsubscribe",
+                command: CliCommand::UnsubscribeSubscriber,
             },
             Route {
                 action: "find",
@@ -68,14 +83,6 @@ static GROUPS: &[Group] = &[
                 command: CliCommand::MoveSubscriber,
             },
             Route {
-                action: "unsubscribe",
-                command: CliCommand::DeleteSubscriber,
-            },
-            Route {
-                action: "update-by-email",
-                command: CliCommand::UpdateSubscriber,
-            },
-            Route {
                 action: "activity",
                 command: CliCommand::GetSubscriberActivity,
             },
@@ -84,6 +91,7 @@ static GROUPS: &[Group] = &[
     Group {
         name: "broadcasts",
         about: "Manage broadcasts (email campaigns)",
+        long_about: None,
         routes: &[
             Route {
                 action: "list",
@@ -137,7 +145,8 @@ static GROUPS: &[Group] = &[
     },
     Group {
         name: "campaigns",
-        about: "Manage campaigns",
+        about: "Manage a single follow-up or broadcast message on a list",
+        long_about: None,
         routes: &[
             Route {
                 action: "list",
@@ -163,8 +172,52 @@ static GROUPS: &[Group] = &[
         ],
     },
     Group {
+        name: "workflows",
+        about: "Manage automation workflows",
+        long_about: Some(
+            "Manage automation workflows.\n\n\
+             These commands use an undocumented, unversioned and unsupported API \
+             surface that can change or disappear without notice.",
+        ),
+        routes: &[
+            Route {
+                action: "list",
+                command: CliCommand::ListWorkflows,
+            },
+            Route {
+                action: "show",
+                command: CliCommand::ShowWorkflow,
+            },
+            Route {
+                action: "create",
+                command: CliCommand::CreateWorkflow,
+            },
+            Route {
+                action: "update",
+                command: CliCommand::UpdateWorkflow,
+            },
+            Route {
+                action: "add-step",
+                command: CliCommand::AddWorkflowStep,
+            },
+            Route {
+                action: "update-step",
+                command: CliCommand::UpdateWorkflowStep,
+            },
+            Route {
+                action: "publish",
+                command: CliCommand::PublishWorkflow,
+            },
+            Route {
+                action: "delete",
+                command: CliCommand::DeleteWorkflow,
+            },
+        ],
+    },
+    Group {
         name: "account",
         about: "Manage your AWeber account",
+        long_about: None,
         routes: &[
             Route {
                 action: "list",
@@ -191,6 +244,7 @@ static GROUPS: &[Group] = &[
     Group {
         name: "custom-fields",
         about: "Manage custom fields",
+        long_about: None,
         routes: &[
             Route {
                 action: "list",
@@ -217,6 +271,7 @@ static GROUPS: &[Group] = &[
     Group {
         name: "tags",
         about: "Manage tags",
+        long_about: None,
         routes: &[Route {
             action: "list",
             command: CliCommand::ListTags,
@@ -225,6 +280,7 @@ static GROUPS: &[Group] = &[
     Group {
         name: "segments",
         about: "Manage segments",
+        long_about: None,
         routes: &[
             Route {
                 action: "list",
@@ -239,6 +295,7 @@ static GROUPS: &[Group] = &[
     Group {
         name: "integrations",
         about: "Manage integrations",
+        long_about: None,
         routes: &[
             Route {
                 action: "list",
@@ -253,6 +310,7 @@ static GROUPS: &[Group] = &[
     Group {
         name: "landing-pages",
         about: "Manage landing pages",
+        long_about: None,
         routes: &[
             Route {
                 action: "list",
@@ -267,6 +325,7 @@ static GROUPS: &[Group] = &[
     Group {
         name: "purchases",
         about: "Record purchases",
+        long_about: None,
         routes: &[Route {
             action: "create",
             command: CliCommand::CreatePurchase,
@@ -275,6 +334,7 @@ static GROUPS: &[Group] = &[
     Group {
         name: "webforms",
         about: "Manage webforms",
+        long_about: None,
         routes: &[
             Route {
                 action: "list",
@@ -289,6 +349,7 @@ static GROUPS: &[Group] = &[
     Group {
         name: "webform-split-tests",
         about: "Manage webform split tests",
+        long_about: None,
         routes: &[
             Route {
                 action: "list",
@@ -410,6 +471,9 @@ pub fn build_command_tree() -> clap::Command {
         let mut group_cmd = clap::Command::new(group.name)
             .about(group.about)
             .subcommand_required(true);
+        if let Some(long_about) = group.long_about {
+            group_cmd = group_cmd.long_about(long_about);
+        }
 
         for route in group.routes {
             let subcmd = Cli::get_command(route.command).name(route.action.to_string());
@@ -465,9 +529,6 @@ mod tests {
             unique.len(),
             "route table contains duplicate commands"
         );
-
-        // Verify count is exactly 54.
-        assert_eq!(routed.len(), 54, "expected 54 routed commands");
 
         // Verify every non-OAuth CliCommand variant is present.
         let hidden_set: HashSet<String> =

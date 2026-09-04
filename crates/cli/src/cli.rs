@@ -4,11 +4,37 @@ use aweber::types;
 pub(crate) struct Cli {
     pub(crate) client: aweber::client::Client,
     pub(crate) account_id: i32,
+    account: tokio::sync::OnceCell<aweber::ids::AccountUid>,
 }
 
 impl Cli {
-    pub(crate) fn new(client: aweber::client::Client, account_id: i32) -> Self {
-        Self { client, account_id }
+    pub(crate) fn new(
+        client: aweber::client::Client,
+        account_id: i32,
+        account: Option<aweber::ids::AccountUid>,
+    ) -> Self {
+        let cell = tokio::sync::OnceCell::new();
+        if let Some(account) = account {
+            cell.set(account).expect("a fresh cell is empty");
+        }
+        Self {
+            client,
+            account_id,
+            account: cell,
+        }
+    }
+
+    pub(crate) async fn account_uid(&self) -> anyhow::Result<aweber::ids::AccountUid> {
+        self.account
+            .get_or_try_init(|| async {
+                let document = aweber::endpoints::get_account(&self.client, self.account_id)
+                    .await
+                    .map_err(|e| anyhow::anyhow!("{e}"))
+                    .context("failed to look up the account uid")?;
+                aweber::endpoints::account_uid(&document).context("account has no uid")
+            })
+            .await
+            .copied()
     }
 
     pub(crate) fn get_command(cmd: CliCommand) -> clap::Command {
@@ -73,6 +99,15 @@ impl Cli {
             CliCommand::ListWebForms => Self::cli_list_web_forms(),
             CliCommand::GetWebForm => Self::cli_get_web_form(),
             CliCommand::GetBroadcastLinkAnalytics => Self::cli_get_broadcast_link_analytics(),
+            CliCommand::UnsubscribeSubscriber => Self::cli_unsubscribe_subscriber(),
+            CliCommand::ListWorkflows => Self::cli_list_workflows(),
+            CliCommand::ShowWorkflow => Self::cli_show_workflow(),
+            CliCommand::CreateWorkflow => Self::cli_create_workflow(),
+            CliCommand::UpdateWorkflow => Self::cli_update_workflow(),
+            CliCommand::AddWorkflowStep => Self::cli_add_workflow_step(),
+            CliCommand::UpdateWorkflowStep => Self::cli_update_workflow_step(),
+            CliCommand::PublishWorkflow => Self::cli_publish_workflow(),
+            CliCommand::DeleteWorkflow => Self::cli_delete_workflow(),
             CliCommand::OauthGetAccessToken => Self::cli_oauth_get_access_token(),
             CliCommand::OauthGetRequestToken => Self::cli_oauth_get_request_token(),
             CliCommand::OauthRevoke => Self::cli_oauth_revoke(),
@@ -99,7 +134,7 @@ impl Cli {
             clap::Arg::new("list")
                 .long("list")
                 .value_parser(clap::value_parser!(String))
-                .help("The list name (looked up via the API)"),
+                .help("The list name or unique list ID (looked up via the API)"),
         ]
     }
 
@@ -636,13 +671,8 @@ impl Cli {
     }
     pub(crate) fn cli_list_landing_pages() -> clap::Command {
         clap::Command::new("")
-            .arg(
-                ::clap::Arg::new("list-id")
-                    .long("list-id")
-                    .value_parser(::clap::value_parser!(i32))
-                    .required(true)
-                    .help("The list ID"),
-            )
+            .args(Self::list_id_args())
+            .group(Self::list_id_group())
             .arg(
                 ::clap::Arg::new("ws-size")
                     .long("ws-size")
@@ -694,13 +724,8 @@ impl Cli {
     }
     pub(crate) fn cli_list_segments() -> clap::Command {
         clap::Command::new("")
-            .arg(
-                ::clap::Arg::new("list-id")
-                    .long("list-id")
-                    .value_parser(::clap::value_parser!(i32))
-                    .required(true)
-                    .help("The list ID"),
-            )
+            .args(Self::list_id_args())
+            .group(Self::list_id_group())
             .arg(
                 ::clap::Arg::new("ws-size")
                     .long("ws-size")
@@ -720,13 +745,8 @@ impl Cli {
     }
     pub(crate) fn cli_get_segment() -> clap::Command {
         clap::Command::new("")
-            .arg(
-                ::clap::Arg::new("list-id")
-                    .long("list-id")
-                    .value_parser(::clap::value_parser!(i32))
-                    .required(true)
-                    .help("The list ID"),
-            )
+            .args(Self::list_id_args())
+            .group(Self::list_id_group())
             .arg(
                 ::clap::Arg::new("segment-id")
                     .long("segment-id")
@@ -1032,8 +1052,663 @@ impl Cli {
             .arg (clap::Arg::new ("page-size") . long ("page-size") . value_parser (clap::value_parser! (std::num::NonZeroU64)) . required (false) . help ("specifies the max number of items in a single page"))
             .arg (clap::Arg::new ("sort-asc") . long ("sort-asc") . value_parser (clap::value_parser! (bool)) . required (false) . help ("Whether to sort in ascending order (true) or descending order (false)"))
             .arg (clap::Arg::new ("sort-by") . long ("sort-by") . value_parser (clap::builder::TypedValueParser::map (clap::builder::PossibleValuesParser::new ([types :: GetBroadcastLinksAnalyticsSortBy :: Unique . to_string () , types :: GetBroadcastLinksAnalyticsSortBy :: Total . to_string () ,]) , | s | types :: GetBroadcastLinksAnalyticsSortBy :: try_from (s) . unwrap ())) . required (false) . help ("Field to sort the results by"))
+            .arg(Self::limit_arg())
             .about ("Broadcast Links Analytics")
     }
+    fn workflow_positional() -> clap::Arg {
+        clap::Arg::new("workflow")
+            .required(true)
+            .value_parser(clap::value_parser!(
+                crate::workflows::request::WorkflowSource
+            ))
+            .help("The workflow id, or its name with --list")
+    }
+
+    fn workflow_list_arg(required: bool) -> clap::Arg {
+        clap::Arg::new("list")
+            .long("list")
+            .required(required)
+            .value_parser(clap::value_parser!(String))
+            .help("The list name or unique list ID")
+    }
+
+    fn workflow_property_args() -> [clap::Arg; 6] {
+        [
+            clap::Arg::new("timezone")
+                .long("timezone")
+                .value_parser(clap::value_parser!(aweber::workflows::Timezone))
+                .help("The workflow timezone, e.g. America/New_York"),
+            clap::Arg::new("sharing")
+                .long("sharing")
+                .value_parser(clap::value_parser!(aweber::workflows::Sharing))
+                .help("Let anyone holding the sharing code copy this workflow (yes|no)"),
+            clap::Arg::new("starter")
+                .long("starter")
+                .value_parser(clap::value_parser!(crate::workflows::request::StarterKind))
+                .help("What starts a subscriber (new-subscriber|tag)"),
+            clap::Arg::new("starter-tag")
+                .long("starter-tag")
+                .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                .help("The tag that starts a subscriber"),
+            clap::Arg::new("add-exit-tag")
+                .long("add-exit-tag")
+                .action(clap::ArgAction::Append)
+                .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                .help("Remove the subscriber if they get this tag"),
+            clap::Arg::new("remove-exit-tag")
+                .long("remove-exit-tag")
+                .action(clap::ArgAction::Append)
+                .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                .help("Stop this tag from removing a subscriber"),
+        ]
+    }
+
+    fn workflow_placement_args() -> [clap::Arg; 4] {
+        [
+            clap::Arg::new("before")
+                .long("before")
+                .value_parser(clap::value_parser!(aweber::ids::RuleId))
+                .help("Place the step just before that step"),
+            clap::Arg::new("after")
+                .long("after")
+                .value_parser(clap::value_parser!(aweber::ids::RuleId))
+                .help("Place the step just after that step"),
+            clap::Arg::new("branch")
+                .long("branch")
+                .num_args(2)
+                .value_names(["SPLIT", "BRANCH"])
+                .value_parser(clap::value_parser!(crate::workflows::request::BranchArg))
+                .help("Place the step in that branch of that split"),
+            clap::Arg::new("inside")
+                .long("inside")
+                .value_name("STEP-ID")
+                .value_parser(clap::value_parser!(aweber::ids::RuleId))
+                .help("Place the step inside that feed step's loop"),
+        ]
+    }
+
+    fn workflow_automation_args() -> [clap::Arg; 9] {
+        [
+            clap::Arg::new("when-opened-apply-tag")
+                .long("when-opened-apply-tag")
+                .action(clap::ArgAction::Append)
+                .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                .help("On open, apply this tag"),
+            clap::Arg::new("when-opened-remove-tag")
+                .long("when-opened-remove-tag")
+                .action(clap::ArgAction::Append)
+                .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                .help("On open, remove this tag"),
+            clap::Arg::new("when-opened-exit")
+                .long("when-opened-exit")
+                .action(clap::ArgAction::SetTrue)
+                .help("On open, exit the workflow"),
+            clap::Arg::new("no-open-automation")
+                .long("no-open-automation")
+                .action(clap::ArgAction::SetTrue)
+                .help("Remove the open automation"),
+            clap::Arg::new("when-clicked-apply-tag")
+                .long("when-clicked-apply-tag")
+                .action(clap::ArgAction::Append)
+                .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                .help("On click, apply this tag"),
+            clap::Arg::new("when-clicked-remove-tag")
+                .long("when-clicked-remove-tag")
+                .action(clap::ArgAction::Append)
+                .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                .help("On click, remove this tag"),
+            clap::Arg::new("when-clicked-exit")
+                .long("when-clicked-exit")
+                .action(clap::ArgAction::SetTrue)
+                .help("On click, exit the workflow"),
+            clap::Arg::new("link")
+                .long("link")
+                .action(clap::ArgAction::Append)
+                .value_parser(clap::value_parser!(aweber::workflows::LinkUrl))
+                .help("Limit the click rule to these links"),
+            clap::Arg::new("remove-click-rule")
+                .long("remove-click-rule")
+                .action(clap::ArgAction::Append)
+                .value_parser(clap::value_parser!(u64).range(1..))
+                .help("Delete click rule n"),
+        ]
+    }
+
+    fn workflow_wait_args() -> [clap::Arg; 4] {
+        [
+            clap::Arg::new("for")
+                .long("for")
+                .value_parser(clap::value_parser!(aweber::workflows::Delay))
+                .help("Wait this long, e.g. 45m, 4h, 2d, 1w, 6mo"),
+            clap::Arg::new("send-on")
+                .long("send-on")
+                .value_parser(clap::value_parser!(aweber::workflows::SendDays))
+                .help("The days a subscriber may move on"),
+            clap::Arg::new("send-at")
+                .long("send-at")
+                .value_parser(clap::value_parser!(aweber::workflows::SendTime))
+                .help("The time of day on those days"),
+            clap::Arg::new("subscriber-timezone")
+                .long("subscriber-timezone")
+                .value_parser(clap::value_parser!(aweber::workflows::TimezoneSource))
+                .help("Resolve this step's time in the subscriber's own timezone (yes|no)"),
+        ]
+    }
+
+    fn workflow_feed_args() -> [clap::Arg; 3] {
+        [
+            clap::Arg::new("url")
+                .long("url")
+                .value_parser(clap::value_parser!(aweber::workflows::FeedUrl))
+                .help("The RSS feed url"),
+            clap::Arg::new("check-every")
+                .long("check-every")
+                .value_parser(clap::value_parser!(aweber::workflows::Recurrence))
+                .help("How often the feed is checked: 1h, 1d, 1w, 1mo"),
+            clap::Arg::new("check-times")
+                .long("check-times")
+                .value_name("N")
+                .value_parser(clap::value_parser!(u32).range(1..))
+                .help("Stop checking after this many checks; steps may then follow the feed"),
+        ]
+    }
+
+    fn workflow_split_args() -> [clap::Arg; 4] {
+        [
+            clap::Arg::new("link-contains")
+                .long("link-contains")
+                .value_name("TEXT")
+                .value_parser(clap::value_parser!(aweber::workflows::LinkFragment))
+                .conflicts_with("link")
+                .help("Limit the click test to links containing this text"),
+            clap::Arg::new("when-tagged")
+                .long("when-tagged")
+                .value_name("TAG")
+                .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                .conflicts_with_all(["when-opened", "when-clicked"])
+                .help("The tag the split tests the subscriber for"),
+            clap::Arg::new("when-opened")
+                .long("when-opened")
+                .action(clap::ArgAction::SetTrue)
+                .conflicts_with("when-clicked")
+                .help("Test whether any message the workflow sent was opened"),
+            clap::Arg::new("when-clicked")
+                .long("when-clicked")
+                .action(clap::ArgAction::SetTrue)
+                .help("Test whether any message the workflow sent was clicked"),
+        ]
+    }
+
+    pub(crate) fn cli_list_workflows() -> clap::Command {
+        clap::Command::new("")
+            .arg(Self::workflow_list_arg(true))
+            .arg(
+                clap::Arg::new("status")
+                    .long("status")
+                    .action(clap::ArgAction::Append)
+                    .value_parser(clap::value_parser!(aweber::workflows::WorkflowStatus))
+                    .help("Only workflows with this status"),
+            )
+            .arg(
+                clap::Arg::new("starter-tag")
+                    .long("starter-tag")
+                    .action(clap::ArgAction::Append)
+                    .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                    .help("Only workflows started by this tag"),
+            )
+            .about("List the workflows on a list")
+    }
+
+    pub(crate) fn cli_show_workflow() -> clap::Command {
+        clap::Command::new("")
+            .arg(Self::workflow_positional())
+            .arg(Self::workflow_list_arg(false))
+            .arg(
+                clap::Arg::new("published")
+                    .long("published")
+                    .action(clap::ArgAction::SetTrue)
+                    .help("Show the published version instead of the working copy"),
+            )
+            .arg(
+                clap::Arg::new("draft")
+                    .long("draft")
+                    .action(clap::ArgAction::SetTrue)
+                    .help("Show only the unpublished changes"),
+            )
+            .arg(
+                clap::Arg::new("no-stats")
+                    .long("no-stats")
+                    .action(clap::ArgAction::SetTrue)
+                    .help("Omit the stats fields"),
+            )
+            .about("Show a workflow, its steps and its exit tags")
+    }
+
+    pub(crate) fn cli_create_workflow() -> clap::Command {
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("name")
+                    .required(true)
+                    .value_parser(clap::value_parser!(aweber::workflows::WorkflowName))
+                    .help("The workflow name"),
+            )
+            .arg(Self::workflow_list_arg(true))
+            .arg(
+                clap::Arg::new("from")
+                    .long("from")
+                    .value_parser(clap::value_parser!(
+                        crate::workflows::request::WorkflowSource
+                    ))
+                    .help(
+                        "Duplicate this workflow, sharing code or name instead of starting empty",
+                    ),
+            )
+            .args(Self::workflow_property_args())
+            .about("Create a workflow")
+    }
+
+    pub(crate) fn cli_update_workflow() -> clap::Command {
+        clap::Command::new("")
+            .arg(Self::workflow_positional())
+            .arg(Self::workflow_list_arg(false))
+            .arg(
+                clap::Arg::new("name")
+                    .long("name")
+                    .value_parser(clap::value_parser!(aweber::workflows::WorkflowName))
+                    .help("Rename the workflow"),
+            )
+            .arg(
+                clap::Arg::new("status")
+                    .long("status")
+                    .value_parser(clap::value_parser!(aweber::workflows::StatusChange))
+                    .help("Set the running status (active|paused|draining|stopped)"),
+            )
+            .args(Self::workflow_property_args())
+            .about("Update a workflow's name, status and properties")
+    }
+
+    fn add_step_workflow_positional() -> clap::Arg {
+        clap::Arg::new("workflow")
+            .required(true)
+            .value_name("WORKFLOW")
+            .value_parser(clap::value_parser!(
+                crate::workflows::request::WorkflowSource
+            ))
+            .help("Workflow name or id")
+    }
+
+    fn add_step_shared_args() -> [clap::Arg; 5] {
+        [
+            clap::Arg::new("list")
+                .long("list")
+                .global(true)
+                .display_order(100)
+                .value_name("LIST")
+                .value_parser(clap::value_parser!(String))
+                .help("The workflow's list (required when WORKFLOW is a name)"),
+            clap::Arg::new("before")
+                .long("before")
+                .global(true)
+                .display_order(101)
+                .value_name("STEP-ID")
+                .value_parser(clap::value_parser!(aweber::ids::RuleId))
+                .help("Place the new step just before that step"),
+            clap::Arg::new("after")
+                .long("after")
+                .global(true)
+                .display_order(102)
+                .value_name("STEP-ID")
+                .value_parser(clap::value_parser!(aweber::ids::RuleId))
+                .help("Place the new step just after that step"),
+            clap::Arg::new("branch")
+                .long("branch")
+                .global(true)
+                .display_order(103)
+                .num_args(2)
+                .value_names(["SPLIT-STEP-ID", "yes|no"])
+                .value_parser(clap::value_parser!(crate::workflows::request::BranchArg))
+                .help("Append to that branch of that split"),
+            clap::Arg::new("inside")
+                .long("inside")
+                .global(true)
+                .display_order(103)
+                .value_name("STEP-ID")
+                .value_parser(clap::value_parser!(aweber::ids::RuleId))
+                .help("Place the step inside that feed step's loop"),
+        ]
+    }
+
+    fn add_step_message_command() -> clap::Command {
+        clap::Command::new("message")
+            .arg(
+                clap::Arg::new("message-id")
+                    .required(true)
+                    .value_name("MESSAGE-ID")
+                    .value_parser(clap::value_parser!(aweber::ids::MessageId))
+                    .help("The message this step sends"),
+            )
+            .arg(
+                clap::Arg::new("when-opened-apply-tag")
+                    .long("when-opened-apply-tag")
+                    .action(clap::ArgAction::Append)
+                    .value_name("TAG")
+                    .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                    .help("On open, apply this tag"),
+            )
+            .arg(
+                clap::Arg::new("when-opened-remove-tag")
+                    .long("when-opened-remove-tag")
+                    .action(clap::ArgAction::Append)
+                    .value_name("TAG")
+                    .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                    .help("On open, remove this tag"),
+            )
+            .arg(
+                clap::Arg::new("when-opened-exit")
+                    .long("when-opened-exit")
+                    .action(clap::ArgAction::SetTrue)
+                    .help("On open, exit the workflow"),
+            )
+            .arg(
+                clap::Arg::new("no-open-automation")
+                    .long("no-open-automation")
+                    .action(clap::ArgAction::SetTrue)
+                    .help("Remove the open automation"),
+            )
+            .arg(
+                clap::Arg::new("when-clicked-apply-tag")
+                    .long("when-clicked-apply-tag")
+                    .action(clap::ArgAction::Append)
+                    .value_name("TAG")
+                    .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                    .help("On click, apply this tag"),
+            )
+            .arg(
+                clap::Arg::new("when-clicked-remove-tag")
+                    .long("when-clicked-remove-tag")
+                    .action(clap::ArgAction::Append)
+                    .value_name("TAG")
+                    .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                    .help("On click, remove this tag"),
+            )
+            .arg(
+                clap::Arg::new("when-clicked-exit")
+                    .long("when-clicked-exit")
+                    .action(clap::ArgAction::SetTrue)
+                    .help("On click, exit the workflow"),
+            )
+            .arg(
+                clap::Arg::new("link")
+                    .long("link")
+                    .action(clap::ArgAction::Append)
+                    .value_name("URL")
+                    .value_parser(clap::value_parser!(aweber::workflows::LinkUrl))
+                    .help("Limit the click rule to these links (repeatable) [default: every link]"),
+            )
+            .arg(
+                clap::Arg::new("remove-click-rule")
+                    .long("remove-click-rule")
+                    .action(clap::ArgAction::Append)
+                    .value_name("N")
+                    .value_parser(clap::value_parser!(u64).range(1..))
+                    .help("Delete click rule n"),
+            )
+            .about("Add a message step")
+    }
+
+    fn add_step_wait_command() -> clap::Command {
+        clap::Command::new("wait")
+            .arg(
+                clap::Arg::new("for")
+                    .long("for")
+                    .value_name("DURATION")
+                    .value_parser(clap::value_parser!(aweber::workflows::Delay))
+                    .help("Wait this long, e.g. 45m, 4h, 2d, 1w, 6mo"),
+            )
+            .arg(
+                clap::Arg::new("send-on")
+                    .long("send-on")
+                    .value_name("DAYS")
+                    .value_parser(clap::value_parser!(aweber::workflows::SendDays))
+                    .help(
+                        "The days a subscriber may move on: comma-separated sun, mon, tue, wed, \
+                         thu, fri, sat, or weekdays, or every-day",
+                    ),
+            )
+            .arg(
+                clap::Arg::new("send-at")
+                    .long("send-at")
+                    .value_name("HH:MM")
+                    .value_parser(clap::value_parser!(aweber::workflows::SendTime))
+                    .help("The time of day on those days: 24-hour, minutes 00 or 30"),
+            )
+            .arg(
+                clap::Arg::new("subscriber-timezone")
+                    .long("subscriber-timezone")
+                    .value_name("yes|no")
+                    .value_parser(clap::value_parser!(aweber::workflows::TimezoneSource))
+                    .help(
+                        "Resolve this step's time in the subscriber's own timezone instead of the \
+                         workflow's",
+                    ),
+            )
+            .about("Add a wait step")
+    }
+
+    fn add_step_tag_command() -> clap::Command {
+        clap::Command::new("tag")
+            .arg(
+                clap::Arg::new("apply")
+                    .long("apply")
+                    .action(clap::ArgAction::Append)
+                    .value_name("TAG")
+                    .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                    .help("Apply this tag (repeatable)"),
+            )
+            .arg(
+                clap::Arg::new("remove")
+                    .long("remove")
+                    .action(clap::ArgAction::Append)
+                    .value_name("TAG")
+                    .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                    .help("Remove this tag (repeatable)"),
+            )
+            .about("Add a tag step")
+    }
+
+    fn add_step_feed_command() -> clap::Command {
+        clap::Command::new("feed")
+            .arg(
+                clap::Arg::new("message-id")
+                    .required(true)
+                    .value_name("MESSAGE-ID")
+                    .value_parser(clap::value_parser!(aweber::ids::MessageId))
+                    .help("The message this step sends"),
+            )
+            .arg(
+                clap::Arg::new("url")
+                    .long("url")
+                    .required(true)
+                    .value_name("RSS-URL")
+                    .value_parser(clap::value_parser!(aweber::workflows::FeedUrl))
+                    .help("The feed's url"),
+            )
+            .arg(
+                clap::Arg::new("check-every")
+                    .long("check-every")
+                    .required(true)
+                    .value_name("INTERVAL")
+                    .value_parser(clap::value_parser!(aweber::workflows::Recurrence))
+                    .help("How often to check the feed"),
+            )
+            .arg(
+                clap::Arg::new("check-times")
+                    .long("check-times")
+                    .value_name("N")
+                    .value_parser(clap::value_parser!(u32).range(1..))
+                    .help("Stop checking after this many checks; steps may then follow the feed"),
+            )
+            .about("Add a feed step")
+    }
+
+    fn add_step_split_command() -> clap::Command {
+        clap::Command::new("split")
+            .arg(
+                clap::Arg::new("when-tagged")
+                    .long("when-tagged")
+                    .value_name("TAG")
+                    .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                    .conflicts_with_all(["when-opened", "when-clicked"])
+                    .help("The tag the subscriber is tested for"),
+            )
+            .arg(
+                clap::Arg::new("when-opened")
+                    .long("when-opened")
+                    .action(clap::ArgAction::SetTrue)
+                    .conflicts_with("when-clicked")
+                    .help("Test whether any message the workflow sent was opened"),
+            )
+            .arg(
+                clap::Arg::new("when-clicked")
+                    .long("when-clicked")
+                    .action(clap::ArgAction::SetTrue)
+                    .help("Test whether any message the workflow sent was clicked"),
+            )
+            .arg(
+                clap::Arg::new("link")
+                    .long("link")
+                    .value_name("URL")
+                    .value_parser(clap::value_parser!(aweber::workflows::LinkUrl))
+                    .help("Limit the click test to this link [default: every link]"),
+            )
+            .arg(
+                clap::Arg::new("link-contains")
+                    .long("link-contains")
+                    .value_name("TEXT")
+                    .value_parser(clap::value_parser!(aweber::workflows::LinkFragment))
+                    .conflicts_with("link")
+                    .help("Limit the click test to links containing this text"),
+            )
+            .about("Add a split step")
+    }
+
+    pub(crate) fn cli_add_workflow_step() -> clap::Command {
+        clap::Command::new("")
+            .arg(Self::add_step_workflow_positional())
+            .args(Self::add_step_shared_args())
+            .subcommand_required(true)
+            .subcommand_value_name("KIND")
+            .subcommand_help_heading("KIND")
+            .disable_help_subcommand(true)
+            .subcommand(Self::add_step_message_command())
+            .subcommand(Self::add_step_wait_command())
+            .subcommand(Self::add_step_tag_command())
+            .subcommand(Self::add_step_feed_command())
+            .subcommand(Self::add_step_split_command())
+            .about("Add a step to a workflow")
+    }
+
+    pub(crate) fn cli_update_workflow_step() -> clap::Command {
+        clap::Command::new("")
+            .arg(Self::workflow_positional())
+            .arg(
+                clap::Arg::new("step-id")
+                    .required(true)
+                    .value_parser(clap::value_parser!(aweber::ids::RuleId))
+                    .help("The step's id, as `show` reports it"),
+            )
+            .arg(Self::workflow_list_arg(false))
+            .arg(
+                clap::Arg::new("message")
+                    .long("message")
+                    .value_parser(clap::value_parser!(aweber::ids::MessageId))
+                    .help("Swap the step's message"),
+            )
+            .args(Self::workflow_wait_args())
+            .arg(
+                clap::Arg::new("apply")
+                    .long("apply")
+                    .action(clap::ArgAction::Append)
+                    .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                    .help("A tag the step applies"),
+            )
+            .arg(
+                clap::Arg::new("remove")
+                    .long("remove")
+                    .num_args(0..=1)
+                    .action(clap::ArgAction::Append)
+                    .value_parser(clap::value_parser!(aweber::workflows::Tag))
+                    .help("A tag the step removes, or, with no value, delete the step"),
+            )
+            .args(Self::workflow_feed_args())
+            .args(Self::workflow_split_args())
+            .args(Self::workflow_automation_args())
+            .args(Self::workflow_placement_args())
+            .group(
+                clap::ArgGroup::new("change")
+                    .args([
+                        "message",
+                        "for",
+                        "send-on",
+                        "send-at",
+                        "subscriber-timezone",
+                        "apply",
+                        "remove",
+                        "url",
+                        "check-every",
+                        "check-times",
+                        "when-tagged",
+                        "when-opened",
+                        "when-clicked",
+                        "when-opened-apply-tag",
+                        "when-opened-remove-tag",
+                        "when-opened-exit",
+                        "no-open-automation",
+                        "when-clicked-apply-tag",
+                        "when-clicked-remove-tag",
+                        "when-clicked-exit",
+                        "link",
+                        "remove-click-rule",
+                        "before",
+                        "after",
+                        "branch",
+                        "inside",
+                    ])
+                    .required(true)
+                    .multiple(true),
+            )
+            .about("Change, move or delete a workflow step")
+    }
+
+    pub(crate) fn cli_publish_workflow() -> clap::Command {
+        clap::Command::new("")
+            .arg(Self::workflow_positional())
+            .arg(Self::workflow_list_arg(false))
+            .arg(
+                clap::Arg::new("discard")
+                    .long("discard")
+                    .action(clap::ArgAction::SetTrue)
+                    .help("Throw away the unpublished changes instead of publishing"),
+            )
+            .about("Publish a workflow's working copy")
+    }
+
+    pub(crate) fn cli_delete_workflow() -> clap::Command {
+        clap::Command::new("")
+            .arg(Self::workflow_positional())
+            .arg(Self::workflow_list_arg(false))
+            .about("Delete a workflow and return its messages to Drafts")
+    }
+
+    pub(crate) fn cli_unsubscribe_subscriber() -> clap::Command {
+        clap::Command::new("")
+            .args(Self::list_id_args())
+            .group(Self::list_id_group())
+            .args(Self::subscriber_id_args())
+            .group(Self::subscriber_id_group())
+            .about("Unsubscribe a subscriber, keeping their history")
+    }
+
     pub(crate) fn cli_oauth_get_access_token() -> clap::Command {
         clap::Command::new("")
             .arg(
@@ -1273,6 +1948,15 @@ impl Cli {
             CliCommand::GetBroadcastLinkAnalytics => {
                 self.execute_get_broadcast_link_analytics(matches).await
             }
+            CliCommand::UnsubscribeSubscriber => self.execute_unsubscribe_subscriber(matches).await,
+            CliCommand::ListWorkflows => self.execute_list_workflows(matches).await,
+            CliCommand::ShowWorkflow => self.execute_show_workflow(matches).await,
+            CliCommand::CreateWorkflow => self.execute_create_workflow(matches).await,
+            CliCommand::UpdateWorkflow => self.execute_update_workflow(matches).await,
+            CliCommand::AddWorkflowStep => self.execute_add_workflow_step(matches).await,
+            CliCommand::UpdateWorkflowStep => self.execute_update_workflow_step(matches).await,
+            CliCommand::PublishWorkflow => self.execute_publish_workflow(matches).await,
+            CliCommand::DeleteWorkflow => self.execute_delete_workflow(matches).await,
             CliCommand::OauthGetAccessToken => self.execute_oauth_get_access_token(matches).await,
             CliCommand::OauthGetRequestToken => self.execute_oauth_get_request_token(matches).await,
             CliCommand::OauthRevoke => self.execute_oauth_revoke(matches).await,
@@ -1284,10 +1968,14 @@ impl Cli {
     // -----------------------------------------------------------------------
 
     async fn resolve_list_id(&self, matches: &clap::ArgMatches) -> anyhow::Result<i32> {
-        if let Some(&id) = matches.get_one::<i32>("list-id") {
+        if let Some(&id) = matches.try_get_one::<i32>("list-id").ok().flatten() {
             return Ok(id);
         }
-        let name = matches.get_one::<String>("list").unwrap();
+        let name = matches
+            .try_get_one::<String>("list")
+            .ok()
+            .flatten()
+            .context("a list is required: pass --list-id or --list")?;
         let result = aweber::endpoints::find_lists(
             &self.client,
             self.account_id,
@@ -1298,19 +1986,43 @@ impl Cli {
         )
         .await
         .context("failed to look up list by name")?;
-        let mut matches_iter = result
-            .entries
-            .iter()
-            .filter(|l| l.name.as_deref() == Some(name));
+        let wanted = name.to_lowercase();
+        let mut matches_iter = result.entries.iter().filter(|l| {
+            [l.name.as_deref(), l.unique_list_id.as_deref()]
+                .into_iter()
+                .flatten()
+                .any(|candidate| candidate.to_lowercase() == wanted)
+        });
         let list = matches_iter
             .next()
-            .ok_or_else(|| anyhow::anyhow!("no list found with name '{name}'"))?;
+            .ok_or_else(|| anyhow::anyhow!("no list is named or identified by '{name}'"))?;
         if matches_iter.next().is_some() {
-            anyhow::bail!("multiple lists found with name '{name}', use --list-id instead");
+            anyhow::bail!("multiple lists match '{name}', use --list-id instead");
         }
         list.id
             .map(|id| id as i32)
             .ok_or_else(|| anyhow::anyhow!("list '{name}' found but has no ID"))
+    }
+
+    pub(crate) async fn resolve_list_uid(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<aweber::ids::ListUid> {
+        let list_id = self.resolve_list_id(matches).await?;
+        let document: serde_json::Value = aweber::client::ApiRequest::new(
+            &self.client,
+            reqwest::Method::GET,
+            format!("/1.0/accounts/{}/lists/{list_id}", self.account_id),
+        )
+        .send()
+        .await
+        .map_err(|e| anyhow::anyhow!("{e}"))
+        .context("failed to look up the list uid")?;
+        document
+            .get("uuid")
+            .and_then(serde_json::Value::as_str)
+            .and_then(|member| member.parse().ok())
+            .with_context(|| format!("list {list_id} has no uid"))
     }
 
     async fn resolve_subscriber_id(
@@ -1422,7 +2134,8 @@ impl Cli {
         let ws_size = matches.get_one::<std::num::NonZeroU32>("ws-size").copied();
         let ws_start = matches.get_one::<i32>("ws-start").copied();
         let result = aweber::endpoints::get_accounts(&self.client, ws_size, ws_start).await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_get_account(
@@ -1517,7 +2230,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_list_account_webform_split_tests(
@@ -1531,7 +2245,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_list_account_webforms(
@@ -1545,7 +2260,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_list_integrations(
@@ -1559,7 +2275,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_get_integration(
@@ -1583,7 +2300,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_find_lists(
@@ -1601,7 +2319,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_result(result)
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_get_list(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
@@ -1622,7 +2341,11 @@ impl Cli {
             Some(&status) => vec![status],
             None => vec![Draft, Scheduled, Sent],
         };
+        let mut limit = Limit::from_matches(matches);
         for status in &statuses {
+            if limit.is_exhausted() {
+                break;
+            }
             let result = aweber::endpoints::list_broadcasts(
                 &self.client,
                 self.account_id,
@@ -1632,7 +2355,7 @@ impl Cli {
                 ws_start,
             )
             .await;
-            self.print_paginated_ndjson(result, matches).await?;
+            self.print_paginated_ndjson(result, &mut limit).await?;
         }
         Ok(())
     }
@@ -1831,7 +2554,8 @@ impl Cli {
                 .copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_get_broadcast_opens(
@@ -1852,7 +2576,8 @@ impl Cli {
                 .copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_schedule_broadcast(
@@ -1939,7 +2664,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_list_campaign_stats(
@@ -1957,7 +2683,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_get_campaign_stat(
@@ -1969,36 +2696,13 @@ impl Cli {
         let stats_id = matches
             .get_one::<types::GetAccountsListsCampaignsBcampaignidStats2StatsId>("stats-id")
             .unwrap();
-        // The endpoint takes i32 for the path segment; the enum Display gives
-        // the string form which goes in the URL.  We pass it as-is and let the
-        // endpoint use it.  However our endpoints::get_campaign_stat takes i32.
-        // The stats_id is really a string label, so we pass its Display repr
-        // through the URL path directly.  For now we need to match the endpoint
-        // signature which takes i32 -- this is a design mismatch.  We'll pass
-        // the string form via the endpoint.
-        // Actually, looking at the endpoint, stats_id is i32 but that seems
-        // incorrect for string stats IDs. Let's convert to string and use
-        // a direct API request instead.  But per the user's instructions we
-        // should call endpoints directly.  Let's just use to_string() and
-        // note the endpoint needs adjustment.
-        // For now, pass 0 as placeholder - the endpoint signature needs fixing.
-        // Actually, re-reading endpoints.rs: it takes i32 for stats_id and
-        // embeds in the path. This is wrong for string stats IDs. But we
-        // must follow the existing code. The caller likely needs to fix this.
-        // We'll print the stats_id.to_string() directly.
-        let _ = (list_id, campaign_id, stats_id);
-        // Use a workaround: call the endpoint via the client directly
-        use aweber::client::ApiRequest;
-        use reqwest::Method;
-        let result: Result<types::Stat, _> = ApiRequest::new(
+        let result = aweber::endpoints::get_campaign_stat(
             &self.client,
-            Method::GET,
-            format!(
-                "/1.0/accounts/{}/lists/{}/campaigns/b{}/stats/{}",
-                self.account_id, list_id, campaign_id, stats_id
-            ),
+            self.account_id,
+            list_id,
+            campaign_id,
+            stats_id,
         )
-        .send()
         .await;
         self.print_result(result)
     }
@@ -2020,7 +2724,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_get_campaign(
@@ -2058,7 +2763,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_create_custom_field(
@@ -2174,7 +2880,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_get_landing_page(
@@ -2261,7 +2968,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_get_segment(
@@ -2290,7 +2998,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_create_subscriber(
@@ -2534,7 +3243,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_get_subscriber(
@@ -2677,6 +3387,23 @@ impl Cli {
         .await;
         self.print_result(result)
     }
+    pub(crate) async fn execute_unsubscribe_subscriber(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
+        let list_id = self.resolve_list_id(matches).await?;
+        let subscriber_id = self.resolve_subscriber_id(matches, list_id).await?;
+        let result = aweber::endpoints::update_subscriber(
+            &self.client,
+            self.account_id,
+            list_id,
+            subscriber_id,
+            &serde_json::json!({ "status": "unsubscribed" }),
+        )
+        .await;
+        self.print_result(result)
+    }
+
     pub(crate) async fn execute_get_subscriber_activity(
         &self,
         matches: &clap::ArgMatches,
@@ -2692,7 +3419,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_list_tags(&self, matches: &clap::ArgMatches) -> anyhow::Result<()> {
@@ -2714,7 +3442,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_get_web_form_split_test(
@@ -2748,7 +3477,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_get_web_form_split_test_component(
@@ -2786,7 +3516,8 @@ impl Cli {
             matches.get_one::<i32>("ws-start").copied(),
         )
         .await;
-        self.print_paginated_ndjson(result, matches).await
+        self.print_paginated_ndjson(result, &mut Limit::from_matches(matches))
+            .await
     }
 
     pub(crate) async fn execute_get_web_form(
@@ -2805,43 +3536,58 @@ impl Cli {
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
-        // Convert from the rich wrapper types to the simpler endpoint types.
-        let account_id = self.account_id;
-        let after = matches.get_one::<String>("after").map(|s| s.as_str());
-        let before_str = matches.get_one::<i64>("before").map(|v| v.to_string());
-        let broadcast_id = matches
+        let account = self.account_uid().await?;
+        let broadcast_uuid: uuid::Uuid = matches
             .get_one::<types::GetBroadcastLinksAnalyticsBroadcastId>("broadcast-id")
-            .and_then(|v| v.parse::<i32>().ok())
-            .expect("--broadcast-id is required");
+            .expect("--broadcast-id is required")
+            .as_str()
+            .parse()
+            .context("--broadcast-id must be a UUID")?;
         let filter = matches
             .get_one::<types::GetBroadcastLinksAnalyticsFilter>("filter")
-            .unwrap()
-            .to_string();
-        let max_count = matches.get_one::<u64>("max-count").map(|v| *v as i32);
-        let min_count = matches.get_one::<u64>("min-count").map(|v| *v as i32);
+            .unwrap();
+        let before = matches.get_one::<i64>("before").copied();
+        let max_count = matches.get_one::<u64>("max-count").copied();
+        let min_count = matches.get_one::<u64>("min-count").copied();
         let page_size = matches
             .get_one::<std::num::NonZeroU64>("page-size")
             .copied();
         let sort_asc = matches.get_one::<bool>("sort-asc").copied();
-        let sort_by = matches
-            .get_one::<types::GetBroadcastLinksAnalyticsSortBy>("sort-by")
-            .map(|v| v.to_string());
-        let result = aweber::endpoints::get_broadcast_link_analytics(
-            &self.client,
-            account_id,
-            after,
-            before_str.as_deref(),
-            broadcast_id,
-            &filter,
-            max_count,
-            min_count,
-            page_size,
-            sort_asc,
-            sort_by.as_deref(),
-        )
-        .await;
-        self.print_result(result)
+        let sort_by = matches.get_one::<types::GetBroadcastLinksAnalyticsSortBy>("sort-by");
+        let mut limit = Limit::from_matches(matches);
+        let mut after = matches.get_one::<String>("after").cloned();
+        loop {
+            let page = aweber::endpoints::get_broadcast_link_analytics(
+                &self.client,
+                &account,
+                broadcast_uuid,
+                filter,
+                after.as_deref(),
+                before,
+                max_count,
+                min_count,
+                page_size,
+                sort_asc,
+                sort_by,
+            )
+            .await
+            .map_err(|e| anyhow::anyhow!("{e}"))?;
+            let budget = limit.remaining();
+            self.print_ndjson(&page.entries, &mut limit)?;
+            let already_warned = budget.is_some_and(|budget| budget < page.entries.len());
+            match page.next_cursor {
+                Some(_) if limit.is_exhausted() => {
+                    if !already_warned {
+                        limit.warn_truncated(true);
+                    }
+                    return Ok(());
+                }
+                Some(cursor) => after = Some(cursor.to_string()),
+                None => return Ok(()),
+            }
+        }
     }
+
     pub(crate) async fn execute_oauth_get_access_token(
         &self,
         matches: &clap::ArgMatches,
@@ -2999,10 +3745,38 @@ impl Cli {
         }
     }
 
+    pub(crate) fn print_ndjson<T: serde::Serialize>(
+        &self,
+        items: &[T],
+        limit: &mut Limit,
+    ) -> anyhow::Result<()> {
+        use std::io::{IsTerminal, Write};
+        let pretty = std::io::stdout().is_terminal();
+        let stdout = std::io::stdout();
+        let mut out = std::io::BufWriter::new(stdout.lock());
+        let mut written = 0usize;
+        for item in items {
+            if !limit.consume() {
+                break;
+            }
+            if pretty {
+                let json = serde_json::to_value(item)?;
+                writeln!(out, "{}", colored_json::to_colored_json_auto(&json)?)?;
+            } else {
+                serde_json::to_writer(&mut out, item)?;
+                writeln!(out)?;
+            }
+            written += 1;
+        }
+        out.flush()?;
+        limit.warn_truncated(written < items.len());
+        Ok(())
+    }
+
     async fn print_paginated_ndjson<C>(
         &self,
         first_page: Result<C, aweber::client::ApiError>,
-        matches: &clap::ArgMatches,
+        limit: &mut Limit,
     ) -> anyhow::Result<()>
     where
         C: types::PaginatedCollection + serde::de::DeserializeOwned,
@@ -3016,30 +3790,31 @@ impl Cli {
         };
         let stdout = std::io::stdout();
         let mut out = std::io::BufWriter::new(stdout.lock());
-        let mut remaining = matches.get_one::<usize>("limit").copied();
         loop {
-            for item in page.take_entries() {
-                if remaining == Some(0) {
-                    out.flush()?;
-                    eprintln!("Warning: results truncated by --limit; more results available");
-                    return Ok(());
+            let entries = page.take_entries();
+            let total = entries.len();
+            let mut written = 0usize;
+            for item in entries {
+                if !limit.consume() {
+                    break;
                 }
                 if pretty {
                     let json = serde_json::to_value(&item)?;
-                    let colored = colored_json::to_colored_json_auto(&json)?;
-                    writeln!(out, "{colored}")?;
+                    writeln!(out, "{}", colored_json::to_colored_json_auto(&json)?)?;
                 } else {
                     serde_json::to_writer(&mut out, &item)?;
                     writeln!(out)?;
                 }
-                if let Some(r) = &mut remaining {
-                    *r -= 1;
-                }
+                written += 1;
             }
             out.flush()?;
+            if written < total {
+                limit.warn_truncated(true);
+                return Ok(());
+            }
             match page.next_collection_link() {
-                Some(_) if remaining == Some(0) => {
-                    eprintln!("Warning: results truncated by --limit; more results available");
+                Some(_) if limit.is_exhausted() => {
+                    limit.warn_truncated(true);
                     break;
                 }
                 Some(url) => {
@@ -3060,6 +3835,50 @@ impl Cli {
         match result {
             Ok(()) => Ok(()),
             Err(e) => Err(anyhow::anyhow!("{e}")),
+        }
+    }
+}
+
+pub(crate) struct Limit {
+    remaining: Option<usize>,
+    suppress_warning: bool,
+}
+
+impl Limit {
+    pub(crate) fn from_matches(matches: &clap::ArgMatches) -> Limit {
+        let remaining = matches
+            .try_get_one::<usize>("limit")
+            .ok()
+            .flatten()
+            .copied();
+        Limit {
+            suppress_warning: remaining == Some(0),
+            remaining,
+        }
+    }
+
+    pub(crate) fn remaining(&self) -> Option<usize> {
+        self.remaining
+    }
+
+    pub(crate) fn is_exhausted(&self) -> bool {
+        self.remaining == Some(0)
+    }
+
+    pub(crate) fn consume(&mut self) -> bool {
+        match &mut self.remaining {
+            Some(0) => false,
+            Some(remaining) => {
+                *remaining -= 1;
+                true
+            }
+            None => true,
+        }
+    }
+
+    pub(crate) fn warn_truncated(&self, more_available: bool) {
+        if more_available && !self.suppress_warning && self.is_exhausted() {
+            eprintln!("Warning: results truncated by --limit; more results available");
         }
     }
 }
@@ -3121,6 +3940,15 @@ pub(crate) enum CliCommand {
     ListWebForms,
     GetWebForm,
     GetBroadcastLinkAnalytics,
+    UnsubscribeSubscriber,
+    ListWorkflows,
+    ShowWorkflow,
+    CreateWorkflow,
+    UpdateWorkflow,
+    AddWorkflowStep,
+    UpdateWorkflowStep,
+    PublishWorkflow,
+    DeleteWorkflow,
     OauthGetAccessToken,
     OauthGetRequestToken,
     OauthRevoke,
@@ -3184,6 +4012,15 @@ impl CliCommand {
             CliCommand::ListWebForms,
             CliCommand::GetWebForm,
             CliCommand::GetBroadcastLinkAnalytics,
+            CliCommand::UnsubscribeSubscriber,
+            CliCommand::ListWorkflows,
+            CliCommand::ShowWorkflow,
+            CliCommand::CreateWorkflow,
+            CliCommand::UpdateWorkflow,
+            CliCommand::AddWorkflowStep,
+            CliCommand::UpdateWorkflowStep,
+            CliCommand::PublishWorkflow,
+            CliCommand::DeleteWorkflow,
             CliCommand::OauthGetAccessToken,
             CliCommand::OauthGetRequestToken,
             CliCommand::OauthRevoke,

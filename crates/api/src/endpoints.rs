@@ -24,6 +24,12 @@ pub async fn get_account(client: &Client, account_id: i32) -> Result<types::Acco
         .await
 }
 
+pub fn account_uid(account: &types::Account) -> Option<crate::ids::AccountUid> {
+    account
+        .uuid
+        .and_then(|member| member.to_string().parse().ok())
+}
+
 // ---------------------------------------------------------------------------
 // Account-level find subscribers
 // ---------------------------------------------------------------------------
@@ -455,12 +461,14 @@ pub async fn get_campaign_stat(
     account_id: i32,
     list_id: i32,
     campaign_id: i32,
-    stats_id: i32,
+    stats_id: &types::GetAccountsListsCampaignsBcampaignidStats2StatsId,
 ) -> Result<types::Stat, ApiError> {
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/campaigns/b{campaign_id}/stats/{stats_id}"),
+        format!(
+            "/1.0/accounts/{account_id}/lists/{list_id}/campaigns/b{campaign_id}/stats/{stats_id}"
+        ),
     )
     .send()
     .await
@@ -500,7 +508,9 @@ pub async fn get_campaign(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/campaigns/{campaign_type}{campaign_id}"),
+        format!(
+            "/1.0/accounts/{account_id}/lists/{list_id}/campaigns/{campaign_type}{campaign_id}"
+        ),
     )
     .send()
     .await
@@ -932,7 +942,7 @@ pub async fn get_subscriber_activity(
     ApiRequest::new(
         client,
         Method::GET,
-        format!("/accounts/{account_id}/lists/{list_id}/subscribers/{subscriber_id}"),
+        format!("/1.0/accounts/{account_id}/lists/{list_id}/subscribers/{subscriber_id}"),
     )
     .query("ws.op", "getActivity")
     .query_opt("ws.size", ws_size)
@@ -1008,7 +1018,7 @@ pub async fn list_web_form_split_test_components(
         client,
         Method::GET,
         format!(
-            "/accounts/{account_id}/lists/{list_id}/web_form_split_tests/{split_test_id}/components"
+            "/1.0/accounts/{account_id}/lists/{list_id}/web_form_split_tests/{split_test_id}/components"
         ),
     )
     .query_opt("ws.size", ws_size)
@@ -1028,7 +1038,7 @@ pub async fn get_web_form_split_test_component(
         client,
         Method::GET,
         format!(
-            "/accounts/{account_id}/lists/{list_id}/web_form_split_tests/{split_test_id}/components/{split_test_component_id}"
+            "/1.0/accounts/{account_id}/lists/{list_id}/web_form_split_tests/{split_test_id}/components/{split_test_component_id}"
         ),
     )
     .send()
@@ -1079,34 +1089,39 @@ pub async fn get_web_form(
 #[allow(clippy::too_many_arguments)]
 pub async fn get_broadcast_link_analytics(
     client: &Client,
-    account_id: i32,
+    account: &crate::ids::AccountUid,
+    broadcast_uuid: uuid::Uuid,
+    filter: &types::GetBroadcastLinksAnalyticsFilter,
     after: Option<&str>,
-    before: Option<&str>,
-    broadcast_id: i32,
-    filter: &str,
-    max_count: Option<i32>,
-    min_count: Option<i32>,
+    before: Option<i64>,
+    max_count: Option<u64>,
+    min_count: Option<u64>,
     page_size: Option<std::num::NonZeroU64>,
     sort_asc: Option<bool>,
-    sort_by: Option<&str>,
-) -> Result<Vec<types::GetBroadcastLinksAnalyticsResponseItem>, ApiError> {
-    ApiRequest::new(
+    sort_by: Option<&types::GetBroadcastLinksAnalyticsSortBy>,
+) -> Result<crate::pagination::Page<types::GetBroadcastLinksAnalyticsResponseItem>, ApiError> {
+    let response = ApiRequest::new(
         client,
         Method::GET,
-        "/analytics/reports/broadcasts-links".into(),
+        "/2.0-beta/analytics/reports/broadcasts-links".into(),
     )
-    .query("account_id", account_id)
+    .query("account_id", account)
+    .query("broadcast_id", broadcast_uuid)
+    .query("filter", filter)
     .query_opt("after", after)
     .query_opt("before", before)
-    .query("broadcast_id", broadcast_id)
-    .query("filter", filter)
     .query_opt("max_count", max_count)
     .query_opt("min_count", min_count)
     .query_opt("page_size", page_size)
     .query_opt("sort_asc", sort_asc)
     .query_opt("sort_by", sort_by)
-    .send()
-    .await
+    .send_with_headers::<Vec<types::GetBroadcastLinksAnalyticsResponseItem>>()
+    .await?;
+    Ok(crate::pagination::Page {
+        entries: response.body,
+        next_cursor: crate::pagination::next_cursor(&response.headers, "after")
+            .and_then(crate::pagination::within_offset_cap),
+    })
 }
 
 // ---------------------------------------------------------------------------

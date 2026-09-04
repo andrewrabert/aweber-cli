@@ -7,30 +7,17 @@ use crate::credentials::{self, Credentials};
 
 pub(crate) const DEFAULT_CLIENT_ID: &str = "lZ68iB3i3ZKdCI4q9Uwkqx1c4ykiFe3c";
 
-/// Resolve the account id of the token backing this client.
-pub(crate) async fn fetch_account_id(client: &aweber::client::Client) -> Result<i32> {
+pub(crate) async fn fetch_account(
+    client: &aweber::client::Client,
+) -> Result<aweber::types::Account> {
     let accounts = aweber::endpoints::get_accounts(client, None, None)
         .await
         .context("failed to fetch accounts")?;
-    let account = accounts
+    accounts
         .entries
-        .first()
-        .context("no accounts found for this token")?;
-    Ok(account.id.context("account missing id field")? as i32)
-}
-
-fn bearer_client(baseurl: &str, access_token: &str) -> Result<aweber::client::Client> {
-    let mut headers = reqwest::header::HeaderMap::new();
-    headers.insert(
-        reqwest::header::AUTHORIZATION,
-        format!("Bearer {access_token}").parse().unwrap(),
-    );
-    Ok(aweber::client::Client::new_with_client(
-        baseurl,
-        reqwest::Client::builder()
-            .default_headers(headers)
-            .build()?,
-    ))
+        .into_iter()
+        .next()
+        .context("no accounts found for this token")
 }
 
 pub(crate) async fn login(
@@ -70,13 +57,19 @@ pub(crate) async fn login(
         .await
         .context("token exchange failed")?;
 
-    let account_id = fetch_account_id(&bearer_client(api_url, &tokens.access_token)?).await?;
+    let account = fetch_account(&aweber::client::Client::with_bearer_token(
+        api_url,
+        &tokens.access_token,
+    )?)
+    .await?;
+    let account_id = account.id.context("account missing id field")?;
 
     let creds = Credentials {
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,
         expires_at: credentials::now_secs() + tokens.expires_in,
         account_id: account_id.to_string(),
+        account: aweber::endpoints::account_uid(&account),
         client_id: (client_id != DEFAULT_CLIENT_ID).then(|| client_id.to_string()),
         api_url: (api_url != aweber::oauth::DEFAULT_API_URL).then(|| api_url.to_string()),
         auth_url: (auth_url != aweber::oauth::DEFAULT_AUTH_URL).then(|| auth_url.to_string()),

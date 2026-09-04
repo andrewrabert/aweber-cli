@@ -948,6 +948,9 @@ pub struct FindLists {
     #[doc = "The list of list entries"]
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub entries: Vec<List>,
+    #[doc = "A link to the next page of entries if more entries exist. This attribute is omitted from the collection if there are no more entries."]
+    #[serde(default, skip_serializing)]
+    pub next_collection_link: Option<String>,
     #[doc = "The starting offset for the page of entries to retrieve"]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub start: Option<u64>,
@@ -2600,6 +2603,7 @@ impl_paginated_collection!(BroadcastOpens, BroadcastOpensEntriesItem);
 impl_paginated_collection!(Broadcasts, BroadcastsEntriesItem);
 impl_paginated_collection!(CustomFields, CustomField);
 impl_paginated_collection!(FindCampaigns, Campaign);
+impl_paginated_collection!(FindLists, List);
 impl_paginated_collection!(FindSubscribers, SubscriberFind);
 impl_paginated_collection!(FindSubscribersAccount, SubscriberFind);
 impl_paginated_collection!(Integrations, Integration);

@@ -1,0 +1,97 @@
+{
+  "events": [
+    {
+      "id": "e0000000-0000-4000-8000-000000000001",
+      "parents": [],
+      "type": "subscribe.v1",
+      "filter": null,
+      "title": null,
+      "metadata": "subscribe.v1"
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000007",
+      "parents": ["a0000000-0000-4000-8000-000000000002"],
+      "type": "message_not_opened.v1",
+      "filter": {
+        "type": "all",
+        "criteria": [
+          {
+            "function": "rulesengine.filter.event_value",
+            "operator": "==",
+            "expect": "<message:new message=aaaaaaaaaaaaaaaaaaaaaaaa>",
+            "kwargs": { "key": "message" }
+          }
+        ]
+      },
+      "title": null,
+      "metadata": "message_not_opened.v1",
+      "recurring": false
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000008",
+      "parents": ["a0000000-0000-4000-8000-000000000002"],
+      "type": "link_not_clicked.v1",
+      "filter": {
+        "type": "all",
+        "criteria": [
+          {
+            "function": "rulesengine.filter.event_value",
+            "operator": "==",
+            "expect": "<message:new message=aaaaaaaaaaaaaaaaaaaaaaaa>",
+            "kwargs": { "key": "message" }
+          }
+        ]
+      },
+      "title": null,
+      "metadata": "link_not_clicked.v1",
+      "recurring": false
+    }
+  ],
+  "actions": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000002",
+      "parents": ["e0000000-0000-4000-8000-000000000001"],
+      "definition": {
+        "function": "ruleset.email.action.compose_v1",
+        "kwargs": {
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "meapi_id": "aaaaaaaaaaaaaaaaaaaaaaaa",
+          "message": "<message:new message=aaaaaaaaaaaaaaaaaaaaaaaa>",
+          "recipient": "<event:recipient>"
+        }
+      },
+      "title": null,
+      "metadata": "send-message",
+      "recurring": false
+    },
+    {
+      "id": "a0000000-0000-4000-8000-00000000000d",
+      "parents": ["e0000000-0000-4000-8000-000000000007"],
+      "definition": {
+        "function": "ruleset.tag.action.modify_tags_v1",
+        "kwargs": {
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "recipient": "<subscriber>",
+          "add_labels": ["ignored"],
+          "remove_labels": []
+        }
+      },
+      "title": null,
+      "metadata": "tag",
+      "recurring": false
+    },
+    {
+      "id": "a0000000-0000-4000-8000-00000000000e",
+      "parents": ["e0000000-0000-4000-8000-000000000008"],
+      "definition": {
+        "function": "rulesengine.action.stop",
+        "kwargs": { "ruleset": "<ruleset>", "subscriber": "<subscriber>" }
+      },
+      "title": null,
+      "metadata": "stop",
+      "recurring": false
+    }
+  ]
+}

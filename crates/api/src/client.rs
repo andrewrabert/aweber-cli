@@ -17,6 +17,21 @@ impl Client {
         Self::new_with_client(baseurl, client)
     }
 
+    pub fn with_bearer_token(baseurl: &str, access_token: &str) -> Result<Client, reqwest::Error> {
+        let mut headers = reqwest::header::HeaderMap::new();
+        let mut value: reqwest::header::HeaderValue = format!("Bearer {access_token}")
+            .parse()
+            .expect("bearer token is not a valid header value");
+        value.set_sensitive(true);
+        headers.insert(reqwest::header::AUTHORIZATION, value);
+        let client = reqwest::ClientBuilder::new()
+            .connect_timeout(std::time::Duration::from_secs(15))
+            .timeout(std::time::Duration::from_secs(15))
+            .default_headers(headers)
+            .build()?;
+        Ok(Self::new_with_client(baseurl, client))
+    }
+
     pub fn new_with_client(baseurl: &str, client: reqwest::Client) -> Self {
         Self {
             baseurl: baseurl.to_string(),
@@ -195,12 +210,29 @@ impl<'a> ApiRequest<'a> {
         serde_json::from_str(&body).map_err(|e| ApiError::Deserialize { source: e, body })
     }
 
+    pub async fn send_with_headers<T: serde::de::DeserializeOwned>(
+        self,
+    ) -> Result<ApiResponse<T>, ApiError> {
+        let (req, verbose) = self.build_request();
+        let response = req.send().await?;
+        let headers = response.headers().clone();
+        let body = handle_response(response, verbose).await?;
+        let body =
+            serde_json::from_str(&body).map_err(|e| ApiError::Deserialize { source: e, body })?;
+        Ok(ApiResponse { body, headers })
+    }
+
     /// Send the request, ignoring the response body (for DELETE, etc.).
     pub async fn send_no_body(self) -> Result<(), ApiError> {
         let (req, verbose) = self.build_request();
         handle_response(req.send().await?, verbose).await?;
         Ok(())
     }
+}
+
+pub struct ApiResponse<T> {
+    pub body: T,
+    pub headers: reqwest::header::HeaderMap,
 }
 
 /// Response from a raw API request.
