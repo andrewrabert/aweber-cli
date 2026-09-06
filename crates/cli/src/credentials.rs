@@ -12,6 +12,8 @@ pub(crate) struct Credentials {
     pub refresh_token: String,
     pub expires_at: u64,
     pub account_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub account: Option<aweber::ids::AccountUid>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub client_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -35,6 +37,7 @@ impl Credentials {
 pub(crate) struct Session {
     pub access_token: String,
     pub account_id: String,
+    pub account: Option<aweber::ids::AccountUid>,
     pub api_url: Option<String>,
     #[allow(dead_code)]
     pub auth_url: Option<String>,
@@ -90,6 +93,7 @@ pub(crate) async fn load_session(override_path: Option<&Path>) -> Result<Session
         return Ok(Session {
             access_token: creds.access_token,
             account_id: creds.account_id,
+            account: creds.account,
             api_url: creds.api_url,
             auth_url: creds.auth_url,
         });
@@ -104,6 +108,7 @@ pub(crate) async fn load_session(override_path: Option<&Path>) -> Result<Session
         refresh_token: tokens.refresh_token,
         expires_at: now_secs() + tokens.expires_in,
         account_id: creds.account_id,
+        account: creds.account,
         client_id: creds.client_id,
         api_url: creds.api_url,
         auth_url: creds.auth_url,
@@ -112,6 +117,7 @@ pub(crate) async fn load_session(override_path: Option<&Path>) -> Result<Session
     Ok(Session {
         access_token: new_creds.access_token,
         account_id: new_creds.account_id,
+        account: new_creds.account,
         api_url: new_creds.api_url,
         auth_url: new_creds.auth_url,
     })

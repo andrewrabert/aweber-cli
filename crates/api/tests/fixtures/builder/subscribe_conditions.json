@@ -1,0 +1,62 @@
+{
+  "events": [
+    {
+      "id": "e0000000-0000-4000-8000-000000000001",
+      "parents": [],
+      "type": "subscribe.v1",
+      "filter": {
+        "type": "all",
+        "criteria": [
+          {
+            "function": "rulesengine.filter.event_value",
+            "operator": "==",
+            "expect": "webform",
+            "kwargs": { "key": "source" }
+          },
+          {
+            "function": "ruleset.geoip.filter.geoip_country_v1",
+            "operator": "==",
+            "expect": "US",
+            "kwargs": {
+              "account": "<event:account>",
+              "list": "<event:list>",
+              "remote_ip": "<event:remote_ip>"
+            }
+          },
+          {
+            "function": "ruleset.recipient.filter.custom_field_v1",
+            "operator": "!=",
+            "expect": "trial",
+            "kwargs": {
+              "account": "<event:account>",
+              "list": "<event:list>",
+              "recipient": "<event:recipient>",
+              "field": "plan"
+            }
+          }
+        ]
+      },
+      "title": null,
+      "metadata": "subscribe.v1"
+    }
+  ],
+  "actions": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "parents": ["e0000000-0000-4000-8000-000000000001"],
+      "definition": {
+        "function": "ruleset.email.action.compose_v1",
+        "kwargs": {
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "meapi_id": "aaaaaaaaaaaaaaaaaaaaaaaa",
+          "message": "<message:new message=aaaaaaaaaaaaaaaaaaaaaaaa>",
+          "recipient": "<event:recipient>"
+        }
+      },
+      "title": null,
+      "metadata": "send-message",
+      "recurring": false
+    }
+  ]
+}

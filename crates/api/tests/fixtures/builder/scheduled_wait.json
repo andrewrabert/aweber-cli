@@ -1,0 +1,58 @@
+{
+  "events": [
+    {
+      "id": "e0000000-0000-4000-8000-000000000001",
+      "parents": [],
+      "type": "subscribe.v1",
+      "filter": null,
+      "title": null,
+      "metadata": "subscribe.v1"
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000002",
+      "parents": ["a0000000-0000-4000-8000-000000000001"],
+      "type": "wait_complete.v1",
+      "filter": {
+        "type": "any",
+        "criteria": [
+          {
+            "function": "rulesengine.filter.event_value",
+            "operator": "==",
+            "expect": "c0000000-0000-4000-8000-000000000001",
+            "kwargs": { "key": "id" }
+          }
+        ]
+      },
+      "title": null,
+      "metadata": "wait_complete.v1",
+      "recurring": false
+    }
+  ],
+  "actions": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "parents": ["e0000000-0000-4000-8000-000000000001"],
+      "definition": {
+        "function": "ruleset.schedule.action.wait_v1",
+        "kwargs": {
+          "id": "c0000000-0000-4000-8000-000000000001",
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "recipient": "<event:recipient>",
+          "ruleset": "<ruleset>",
+          "delay": "P3D",
+          "rrules": [
+            "FREQ=DAILY;BYDAY=MO,WE;BYHOUR=9;BYMINUTE=30",
+            "FREQ=DAILY;BYDAY=SA;BYHOUR=12;BYMINUTE=0"
+          ],
+          "timezone": "America/New_York",
+          "action": "<action>",
+          "use_subscriber_timezone": true
+        }
+      },
+      "title": null,
+      "metadata": "wait",
+      "recurring": false
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "events": [
+    {
+      "id": "e0000000-0000-4000-8000-000000000001",
+      "parents": [],
+      "type": "subscribe.v1",
+      "filter": null,
+      "title": null,
+      "metadata": "subscribe.v1"
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000002",
+      "parents": ["a0000000-0000-4000-8000-000000000001"],
+      "type": "wait_complete.v1",
+      "filter": {
+        "type": "any",
+        "criteria": [
+          {
+            "function": "rulesengine.filter.event_value",
+            "operator": "==",
+            "expect": "c0000000-0000-4000-8000-000000000001",
+            "kwargs": { "key": "id" }
+          }
+        ]
+      },
+      "title": null,
+      "metadata": "wait_complete.v1",
+      "recurring": false
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000003",
+      "parents": ["a0000000-0000-4000-8000-000000000005"],
+      "type": "wait_complete.v1",
+      "filter": {
+        "type": "all",
+        "criteria": [
+          {
+            "function": "rulesengine.filter.event_value",
+            "operator": "==",
+            "expect": "c0000000-0000-4000-8000-000000000002",
+            "kwargs": { "key": "id" }
+          },
+          {
+            "function": "ruleset.rss.filter.state_changed_v1",
+            "operator": "==",
+            "expect": true,
+            "kwargs": {
+              "account": "<event:account>",
+              "list": "<event:list>",
+              "subscriber": "<event:subscriber>",
+              "ruleset": "<ruleset>",
+              "url": "https://example.com/feed.xml",
+              "categories": [],
+              "min_new_items": 1
+            }
+          }
+        ]
+      },
+      "title": null,
+      "metadata": "check-feed-complete",
+      "recurring": true
+    }
+  ],
+  "actions": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "parents": ["e0000000-0000-4000-8000-000000000001"],
+      "definition": {
+        "function": "ruleset.schedule.action.wait_v1",
+        "kwargs": {
+          "id": "c0000000-0000-4000-8000-000000000001",
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "recipient": "<event:recipient>",
+          "ruleset": "<ruleset>",
+          "delay": "PT1H30M",
+          "rrules": ["FREQ=MONTHLY;BYMONTHDAY=-1;BYHOUR=8;BYMINUTE=15"],
+          "timezone": "America/New_York",
+          "action": "<action>",
+          "use_subscriber_timezone": false
+        }
+      },
+      "title": null,
+      "metadata": "wait",
+      "recurring": false
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000005",
+      "parents": ["e0000000-0000-4000-8000-000000000002"],
+      "definition": {
+        "function": "ruleset.schedule.action.wait_v1",
+        "kwargs": {
+          "id": "c0000000-0000-4000-8000-000000000002",
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "recipient": "<event:recipient>",
+          "ruleset": "<ruleset>",
+          "delay": "PT0S",
+          "rrules": ["FREQ=WEEKLY;BYDAY=TU;BYHOUR=6;BYMINUTE=0;UNTIL=20261231T000000Z"],
+          "timezone": "America/New_York",
+          "action": "<action>",
+          "use_subscriber_timezone": false
+        }
+      },
+      "title": null,
+      "metadata": "check-feed"
+    }
+  ]
+}

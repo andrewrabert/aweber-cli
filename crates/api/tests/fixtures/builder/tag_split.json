@@ -1,0 +1,104 @@
+{
+  "events": [
+    {
+      "id": "e0000000-0000-4000-8000-000000000001",
+      "parents": [],
+      "type": "subscribe.v1",
+      "filter": null,
+      "title": null,
+      "metadata": "subscribe.v1"
+    }
+  ],
+  "actions": [
+    {
+      "id": "a0000000-0000-4000-8000-00000000000a",
+      "parents": ["e0000000-0000-4000-8000-000000000001"],
+      "definition": {
+        "function": "rulesengine.action.set_branch",
+        "kwargs": {
+          "ruleset": "<ruleset>",
+          "branches": [
+            {
+              "type": "all",
+              "id": "b0000000-0000-4000-8000-000000000001",
+              "title": null,
+              "metadata": null,
+              "criteria": [
+                {
+                  "function": "ruleset.tag.filter.any_tags_v1",
+                  "operator": "==",
+                  "expect": true,
+                  "kwargs": {
+                    "account": "<event:account>",
+                    "list": "<event:list>",
+                    "recipient": "<event:recipient>",
+                    "labels": ["vip", "gold"]
+                  },
+                  "memoize_id": "d0000000-0000-4000-8000-000000000001"
+                }
+              ]
+            },
+            {
+              "type": "all",
+              "id": "b0000000-0000-4000-8000-000000000002",
+              "title": null,
+              "metadata": null,
+              "criteria": [
+                {
+                  "function": "ruleset.tag.filter.any_tags_v1",
+                  "operator": "==",
+                  "expect": false,
+                  "kwargs": {
+                    "account": "<event:account>",
+                    "list": "<event:list>",
+                    "recipient": "<event:recipient>",
+                    "labels": ["vip", "gold"]
+                  },
+                  "memoize_id": "d0000000-0000-4000-8000-000000000001"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "title": null,
+      "metadata": "set-branch"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000002",
+      "parents": ["e0000000-0000-4000-8000-000000000001"],
+      "branch": "b0000000-0000-4000-8000-000000000001",
+      "definition": {
+        "function": "ruleset.email.action.compose_v1",
+        "kwargs": {
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "meapi_id": "aaaaaaaaaaaaaaaaaaaaaaaa",
+          "message": "<message:new message=aaaaaaaaaaaaaaaaaaaaaaaa>",
+          "recipient": "<event:recipient>"
+        }
+      },
+      "title": null,
+      "metadata": "send-message",
+      "recurring": false
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000003",
+      "parents": ["e0000000-0000-4000-8000-000000000001"],
+      "branch": "b0000000-0000-4000-8000-000000000002",
+      "definition": {
+        "function": "ruleset.tag.action.modify_tags_v1",
+        "kwargs": {
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "recipient": "<subscriber>",
+          "add_labels": ["nurture"],
+          "remove_labels": []
+        }
+      },
+      "title": null,
+      "metadata": "tag",
+      "recurring": false
+    }
+  ]
+}

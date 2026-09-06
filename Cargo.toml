@@ -12,6 +12,7 @@ homepage = "https://github.com/andrewrabert/aweber-cli"
 [workspace.dependencies]
 aweber = { version = "0.5.1", path = "crates/api" }
 anyhow = "1"
+assert_cmd = "2"
 base64 = "0.22"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive", "string", "env"] }
@@ -19,10 +20,22 @@ colored_json = "5.0.0"
 dirs = "6"
 indexmap = "2"
 open = "5"
+predicates = "3"
 reqwest = { version = "0.13", default-features = false, features = ["json", "query", "form", "rustls-no-provider"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "logging", "std", "tls12"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["preserve_order"] }
 sha2 = "0.10"
+tempfile = "3"
 tokio = { version = "1", features = ["full"] }
 uuid = { version = "1.0", features = ["serde", "v4"] }
+wiremock = "0.6"
+
+[workspace.lints.rust]
+dead_code = "deny"
+
+[workspace.lints.clippy]
+from_over_into = "deny"
+inherent_to_string = "deny"
+should_implement_trait = "deny"
+wrong_self_convention = "deny"

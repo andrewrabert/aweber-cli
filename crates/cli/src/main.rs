@@ -7,6 +7,7 @@ mod auth;
 mod cli;
 mod commands;
 mod credentials;
+mod workflows;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -45,8 +46,8 @@ async fn main() -> anyhow::Result<()> {
     }
 
     // Resolve token and session fallbacks
-    let (token, account_id, api_url) = match matches.get_one::<String>("token").cloned() {
-        Some(t) => (t, None, api_url.clone()),
+    let (token, account_id, account, api_url) = match matches.get_one::<String>("token").cloned() {
+        Some(t) => (t, None, None, api_url.clone()),
         None => {
             let session = credentials::load_session(creds_file).await?;
             let parsed: i32 = session
@@ -55,23 +56,11 @@ async fn main() -> anyhow::Result<()> {
                 .context("invalid account_id in stored credentials")?;
             // Stored URLs from credentials take effect when CLI arg is the default
             let api_url = session.api_url.unwrap_or_else(|| api_url.clone());
-            (session.access_token, Some(parsed), api_url)
+            (session.access_token, Some(parsed), session.account, api_url)
         }
     };
 
-    let client = aweber::client::Client::new_with_client(
-        &api_url,
-        reqwest::Client::builder()
-            .default_headers({
-                let mut headers = reqwest::header::HeaderMap::new();
-                headers.insert(
-                    reqwest::header::AUTHORIZATION,
-                    format!("Bearer {token}").parse().unwrap(),
-                );
-                headers
-            })
-            .build()?,
-    );
+    let client = aweber::client::Client::with_bearer_token(&api_url, &token)?;
 
     let verbose = matches.get_flag("verbose");
     let client = client.with_verbose(verbose);
@@ -81,12 +70,18 @@ async fn main() -> anyhow::Result<()> {
         return api::run(&client, api_matches).await;
     }
 
-    let account_id = match account_id {
-        Some(id) => id,
-        None => auth::fetch_account_id(&client).await?,
+    let (account_id, account) = match account_id {
+        Some(id) => (id, account),
+        None => {
+            let document = auth::fetch_account(&client).await?;
+            (
+                document.id.context("account missing id field")? as i32,
+                aweber::endpoints::account_uid(&document),
+            )
+        }
     };
 
-    let cli = cli::Cli::new(client, account_id);
+    let cli = cli::Cli::new(client, account_id, account);
 
     let (group_name, group_matches) = matches.subcommand().expect("subcommand is required");
     let (action_name, action_matches) = group_matches
@@ -98,9 +93,15 @@ async fn main() -> anyhow::Result<()> {
 
     match cli.execute(cli_cmd, action_matches).await {
         Ok(()) => Ok(()),
-        Err(e) => {
-            eprintln!("Error: {e}");
-            std::process::exit(1);
-        }
+        Err(e) => match e.downcast::<workflows::Failure>() {
+            Ok(failure) => failure.report(),
+            Err(e) => {
+                eprintln!("Error: {e}");
+                for cause in e.chain().skip(1) {
+                    eprintln!("  caused by: {cause}");
+                }
+                std::process::exit(1);
+            }
+        },
     }
 }

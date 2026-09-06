@@ -1,0 +1,154 @@
+{
+  "events": [
+    {
+      "id": "e0000000-0000-4000-8000-000000000001",
+      "parents": [],
+      "type": "subscribe.v1",
+      "filter": null,
+      "title": null,
+      "metadata": "subscribe.v1"
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000003",
+      "parents": ["a0000000-0000-4000-8000-000000000005"],
+      "type": "wait_complete.v1",
+      "filter": {
+        "type": "all",
+        "criteria": [
+          {
+            "function": "rulesengine.filter.event_value",
+            "operator": "==",
+            "expect": "c0000000-0000-4000-8000-000000000001",
+            "kwargs": { "key": "id" }
+          },
+          {
+            "function": "ruleset.rss.filter.state_changed_v1",
+            "operator": "==",
+            "expect": true,
+            "kwargs": {
+              "account": "<event:account>",
+              "list": "<event:list>",
+              "subscriber": "<event:subscriber>",
+              "ruleset": "<ruleset>",
+              "url": "https://example.com/feed.xml",
+              "categories": [],
+              "min_new_items": 1
+            }
+          }
+        ]
+      },
+      "title": null,
+      "metadata": "check-feed-complete",
+      "recurring": true
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000004",
+      "parents": ["a0000000-0000-4000-8000-00000000000a"],
+      "type": "open.v2",
+      "filter": {
+        "type": "all",
+        "criteria": [
+          {
+            "function": "ruleset.messagemap.filter.messageapi_id_v1",
+            "operator": "==",
+            "expect": "bbbbbbbbbbbbbbbbbbbbbbbb",
+            "kwargs": { "message": "<event:message>" }
+          }
+        ]
+      },
+      "title": null,
+      "metadata": "open.v2",
+      "recurring": true
+    }
+  ],
+  "actions": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000005",
+      "parents": ["e0000000-0000-4000-8000-000000000001"],
+      "definition": {
+        "function": "ruleset.schedule.action.wait_v1",
+        "kwargs": {
+          "id": "c0000000-0000-4000-8000-000000000001",
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "recipient": "<event:recipient>",
+          "ruleset": "<ruleset>",
+          "delay": "PT0S",
+          "rrules": ["FREQ=HOURLY;COUNT=10"],
+          "timezone": "America/New_York",
+          "action": "<action>",
+          "use_subscriber_timezone": false
+        }
+      },
+      "title": null,
+      "metadata": "check-feed"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000009",
+      "parents": ["e0000000-0000-4000-8000-000000000003"],
+      "definition": {
+        "function": "ruleset.email.action.compose_v1",
+        "kwargs": {
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "meapi_id": "aaaaaaaaaaaaaaaaaaaaaaaa",
+          "message": "<message:new message=aaaaaaaaaaaaaaaaaaaaaaaa>",
+          "recipient": "<event:recipient>"
+        }
+      },
+      "title": null,
+      "metadata": "send-message",
+      "recurring": true
+    },
+    {
+      "id": "a0000000-0000-4000-8000-00000000000a",
+      "parents": ["e0000000-0000-4000-8000-000000000003"],
+      "definition": {
+        "function": "ruleset.email.action.compose_v1",
+        "kwargs": {
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "meapi_id": "bbbbbbbbbbbbbbbbbbbbbbbb",
+          "message": "<message:new message=bbbbbbbbbbbbbbbbbbbbbbbb>",
+          "recipient": "<event:recipient>"
+        }
+      },
+      "title": null,
+      "metadata": "send-message",
+      "recurring": true
+    },
+    {
+      "id": "a0000000-0000-4000-8000-00000000000b",
+      "parents": ["e0000000-0000-4000-8000-000000000004"],
+      "definition": {
+        "function": "ruleset.tag.action.modify_tags_v1",
+        "kwargs": {
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "recipient": "<subscriber>",
+          "add_labels": ["opened"],
+          "remove_labels": []
+        }
+      },
+      "title": null,
+      "metadata": "tag",
+      "recurring": true
+    },
+    {
+      "id": "a0000000-0000-4000-8000-00000000000c",
+      "parents": ["e0000000-0000-4000-8000-000000000003"],
+      "definition": {
+        "function": "ruleset.tag.action.modify_tags_v1",
+        "kwargs": {
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "recipient": "<subscriber>",
+          "add_labels": ["feed-done"],
+          "remove_labels": []
+        }
+      },
+      "title": null,
+      "metadata": "tag"
+    }
+  ]
+}

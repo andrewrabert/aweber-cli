@@ -31,7 +31,8 @@ Commands:
   lists                Manage subscriber lists
   subscribers          Manage subscribers
   broadcasts           Manage broadcasts (email campaigns)
-  campaigns            Manage campaigns
+  campaigns            Manage a single follow-up or broadcast message on a list
+  workflows            Manage automation workflows
   account              Manage your AWeber account
   custom-fields        Manage custom fields
   tags                 Manage tags
@@ -73,6 +74,12 @@ Check auth status:
 ```sh
 aweber auth status
 ```
+
+### Workflows
+
+The endpoints behind `aweber workflows` are undocumented, unversioned and
+unsupported. They can change or disappear without notice or a deprecation
+window.
 
 ### Examples
 

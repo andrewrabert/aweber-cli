@@ -1,0 +1,59 @@
+{
+  "events": [
+    {
+      "id": "e0000000-0000-4000-8000-000000000001",
+      "parents": [],
+      "type": "subscribe.v1",
+      "filter": null,
+      "title": null,
+      "metadata": "subscribe.v1"
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000006",
+      "parents": [],
+      "type": "tag.v1",
+      "filter": {
+        "type": "all",
+        "criteria": [
+          {
+            "function": "rulesengine.filter.event_value_in",
+            "operator": "==",
+            "expect": true,
+            "kwargs": { "key": "label", "values": ["gone", "bounced"] }
+          }
+        ]
+      },
+      "title": null,
+      "metadata": "tag.v1"
+    }
+  ],
+  "actions": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "parents": ["e0000000-0000-4000-8000-000000000001"],
+      "definition": {
+        "function": "ruleset.email.action.compose_v1",
+        "kwargs": {
+          "account": "<event:account>",
+          "list": "<event:list>",
+          "meapi_id": "aaaaaaaaaaaaaaaaaaaaaaaa",
+          "message": "<message:new message=aaaaaaaaaaaaaaaaaaaaaaaa>",
+          "recipient": "<event:recipient>"
+        }
+      },
+      "title": null,
+      "metadata": "send-message",
+      "recurring": false
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000008",
+      "parents": ["e0000000-0000-4000-8000-000000000006"],
+      "definition": {
+        "function": "rulesengine.action.stop",
+        "kwargs": { "ruleset": "<ruleset>", "subscriber": "<subscriber>" }
+      },
+      "title": null,
+      "metadata": "stop"
+    }
+  ]
+}
