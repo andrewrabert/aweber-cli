@@ -38,7 +38,7 @@ pub async fn get_message_subjects(
             })
             .send()
             .await?;
-    Ok(subjects(&document))
+    Ok(subjects_of(&document))
 }
 
 pub async fn unbind_messages(
@@ -69,7 +69,8 @@ pub async fn delete_messages(
         .await
 }
 
-fn subjects(document: &serde_json::Value) -> BTreeMap<MessageId, String> {
+/// A message the service cannot find is absent from the map.
+pub fn subjects_of(document: &serde_json::Value) -> BTreeMap<MessageId, String> {
     let entries = document
         .get("messages")
         .or_else(|| document.get("entries"))

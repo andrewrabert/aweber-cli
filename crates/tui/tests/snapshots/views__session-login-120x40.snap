@@ -1,0 +1,44 @@
+---
+source: crates/tui/tests/views.rs
+expression: harness.screen()
+---
+home › session   account Acme (1)   list Weekly
+session  account 1, expired
+
+Enter opens the authorization page in a browser.
+Paste the code it gives back, then press Enter again.
+
+authorize  https://auth.aweber.com/oauth2/authorize?response_type=code
+code       abc123
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+q quit  Enter log in  Esc back  Ctrl-p palette

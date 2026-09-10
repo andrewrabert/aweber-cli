@@ -2432,20 +2432,24 @@ async fn publish_and_delete_work_on_a_draft_message_workflow() {
         .accept("DELETE", &workflow_route(), serde_json::json!({}))
         .await;
 
-    assert!(harness
-        .command()
-        .args(["workflows", "publish", WORKFLOW])
-        .output()
-        .expect("the binary runs")
-        .status
-        .success());
-    assert!(harness
-        .command()
-        .args(["workflows", "delete", WORKFLOW])
-        .output()
-        .expect("the binary runs")
-        .status
-        .success());
+    assert!(
+        harness
+            .command()
+            .args(["workflows", "publish", WORKFLOW])
+            .output()
+            .expect("the binary runs")
+            .status
+            .success()
+    );
+    assert!(
+        harness
+            .command()
+            .args(["workflows", "delete", WORKFLOW])
+            .output()
+            .expect("the binary runs")
+            .status
+            .success()
+    );
 }
 
 #[tokio::test]

@@ -1,0 +1,28 @@
+---
+source: crates/tui/tests/views.rs
+expression: harness.screen()
+---
+home › subscribers list   account Acme (1)   list Weekly
+Email                       Status                    Subscribed
+ada@example.com             subscribed                2026-01-01T00:00:00+00:00
+grace@exam┌ keys ────────────────────────────────────────────────────┐
+          │Ctrl-p          palette                                   │
+          │Ctrl-l          event log                                 │
+          │Ctrl-b          breadcrumb                                │
+          │Ctrl-w          watches                                   │
+          │?               help                                      │
+          │q               quit                                      │
+          │Enter / Right   open                                      │
+          │/               filter loaded                             │
+          │j / Down        down                                      │
+          │k / Up          up                                        │
+          │g               top                                       │
+          │G               bottom                                    │
+          │Ctrl-d / PgDn   page down                                 │
+          │Ctrl-u / PgUp   page up                                   │
+          │r               refresh                                   │
+          └──────────────────────────────────────────────────────────┘
+
+loaded 2
+
+q quit  Esc close  Ctrl-p palette

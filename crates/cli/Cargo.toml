@@ -12,7 +12,8 @@ name = "aweber"
 path = "src/main.rs"
 
 [dependencies]
-aweber = { workspace = true, features = ["workflows"] }
+aweber = { workspace = true, features = ["catalog"] }
+aweber-tui.workspace = true
 anyhow.workspace = true
 base64.workspace = true
 chrono.workspace = true
@@ -25,14 +26,14 @@ reqwest.workspace = true
 rustls.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "sync", "time"] }
 uuid.workspace = true
 
 [dev-dependencies]
-assert_cmd = "2"
-predicates = "3"
+assert_cmd.workspace = true
+predicates.workspace = true
 serde_json.workspace = true
-tempfile = "3"
+tempfile.workspace = true
 tokio.workspace = true
 wiremock.workspace = true
 

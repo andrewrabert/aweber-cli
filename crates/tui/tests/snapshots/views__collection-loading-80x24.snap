@@ -1,0 +1,28 @@
+---
+source: crates/tui/tests/views.rs
+expression: harness.screen()
+---
+home › subscribers list   account Acme (1)   list Weekly
+Email                       Status                    Subscribed
+loading…
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+loaded 0  fetching…
+
+q quit  Enter open  / filter loaded  Esc back  Ctrl-p palette

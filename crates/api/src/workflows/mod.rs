@@ -12,16 +12,18 @@ pub use analytics::{
     get_recurring_event_history, get_recurring_events, get_recurring_message_stats,
 };
 pub use campaign::{
-    copy_workflow, create_workflow, delete_workflow, get_workflow, list_workflows,
-    publish_workflow, revert_workflow, update_workflow, CopyWorkflow, CreateWorkflow,
-    PreconditionVersion, RulesetError, Workflow,
+    CopyWorkflow, CreateWorkflow, PreconditionVersion, RulesetError, Workflow, copy_workflow,
+    create_workflow, delete_workflow, get_workflow, list_workflows, publish_workflow,
+    revert_workflow, update_workflow,
 };
 pub use graph::{
     Automations, Branch, ClickRule, Condition, ConditionField, ConditionTest, Graph, GraphError,
     MessageCadence, OpenRule, Placement, Starter, Step, StepEdit, StepKind, StepName,
     StepNameError, TagAdded, TagRemoved, Tested, UnknownBranch, WaitEdit,
 };
-pub use message::{delete_messages, get_message_subjects, unbind_messages, BatchOutcome};
+pub use message::{
+    BatchOutcome, delete_messages, get_message_subjects, subjects_of, unbind_messages,
+};
 pub use patch::{PatchOperation, WorkflowEdit, WorkflowPatch};
 pub use ruleset::Ruleset;
 pub use values::{
