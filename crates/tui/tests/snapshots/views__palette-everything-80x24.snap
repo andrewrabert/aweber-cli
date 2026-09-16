@@ -1,0 +1,28 @@
+---
+source: crates/tui/tests/views.rs
+expression: harness.screen()
+---
+home   account Acme (1)   list Weekly
+lists               Manage subscriber lists
+subscrib┌ every operation ─────────────────────────────────────────────┐
+broadcas│> list                                                        │
+campaign│lists list                                                    │list
+workflow│lists get                                                     │mpaigns`
+account │lists find                                                    │
+custom-f│subscribers list                                              │
+tags    │broadcasts list                                               │
+segments│campaigns list                                                │
+integrat│workflows list                                                │
+landing-│account list                                                  │
+purchase│custom-fields list                                            │
+webforms│tags list                                                     │
+webform-│segments list                                                 │
+        │integrations list                                             │
+        │landing-pages list                                            │
+        │webforms list                                                 │
+        │webform-split-tests list                                      │
+        │account webform-split-tests                                   │
+        └──────────────────────────────────────────────────────────────┘
+
+
+q quit  Enter run  Esc close  Ctrl-p palette

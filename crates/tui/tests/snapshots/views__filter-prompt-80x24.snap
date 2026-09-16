@@ -1,0 +1,28 @@
+---
+source: crates/tui/tests/views.rs
+expression: harness.screen()
+---
+home › subscribers list   account Acme (1)   list Weekly
+Email                       Status                    Subscribed
+ada@example.com             subscribed                2026-01-01T00:00:00+00:00
+grace@example.com           unconfirmed               null
+
+
+
+
+
+
+               ┌ filter loaded rows ────────────────────────────┐
+               │ada                                             │
+               └────────────────────────────────────────────────┘
+
+
+
+
+
+
+
+
+loaded 2
+
+q quit  Enter filter  Esc close  Ctrl-p palette

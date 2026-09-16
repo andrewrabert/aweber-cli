@@ -8,17 +8,26 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}
       - run: cargo fmt --check
+        if: runner.os == 'Linux'
       - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+        if: runner.os == 'Linux'
       - run: cargo test --workspace --all-features
       - run: cargo check -p aweber
+        if: runner.os == 'Linux'
 
   build:
     needs: check
@@ -64,10 +73,10 @@ jobs:
         run: cargo install cross --git https://github.com/cross-rs/cross
       - name: Build with cross
         if: matrix.target == 'aarch64-unknown-linux-musl'
-        run: cross build --release -p aweber-cli --target ${{ matrix.target }}
+        run: cross build --release --workspace --target ${{ matrix.target }}
       - name: Build with cargo
         if: matrix.target != 'aarch64-unknown-linux-musl'
-        run: cargo build --release -p aweber-cli --target ${{ matrix.target }}
+        run: cargo build --release --workspace --target ${{ matrix.target }}
       - uses: actions/upload-artifact@v4
         with:
           name: aweber-${{ matrix.target }}

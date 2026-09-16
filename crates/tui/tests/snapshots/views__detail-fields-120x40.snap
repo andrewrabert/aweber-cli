@@ -1,0 +1,44 @@
+---
+source: crates/tui/tests/views.rs
+expression: harness.screen()
+---
+home › subscribers get   account Acme (1)   list Weekly
+  id  1
+  email  ada@example.com
+  status  subscribed
+  subscribed at  2026-01-01 00:00:00 +00:00  (2026-01-01T00:00:00+00:00)
+  unsubscribed at  null
+▶ custom fields  {1 fields}
+▶ tags  [2 entries]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+q quit  Enter expand  J raw JSON  Esc back  Ctrl-p palette

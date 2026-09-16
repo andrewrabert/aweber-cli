@@ -9,19 +9,24 @@ homepage.workspace = true
 
 [features]
 workflows = []
+catalog = ["dep:clap", "workflows"]
 
 [dependencies]
 base64.workspace = true
 chrono.workspace = true
+clap = { workspace = true, optional = true }
 reqwest.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+serde_urlencoded.workspace = true
 sha2.workspace = true
+tokio = { workspace = true, features = ["sync", "time"] }
 uuid.workspace = true
 
 [dev-dependencies]
 rustls.workspace = true
-tokio.workspace = true
+serde_urlencoded.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 wiremock.workspace = true
 
 [lints]

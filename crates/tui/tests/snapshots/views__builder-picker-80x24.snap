@@ -1,0 +1,28 @@
+---
+source: crates/tui/tests/views.rs
+expression: harness.screen()
+---
+home › broadcasts list   account Acme (1)   list Weekly
+list-id                     7
+        ┌ add an argument ─────────────────────────────────────────────┐
+        │>                                                             │
+        │list                                                          │
+        │status                                                        │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+        │                                                              │
+sends GE└──────────────────────────────────────────────────────────────┘
+
+
+q quit  Enter send  Tab next row  Esc back  Ctrl-p palette

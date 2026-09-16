@@ -1,0 +1,28 @@
+---
+source: crates/tui/tests/views.rs
+expression: harness.screen()
+---
+home › session   account Acme (1)   list Weekly
+session  account 1, good for 3600s
+
+press Enter to begin a login
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+q quit  Enter log in  Esc back  Ctrl-p palette

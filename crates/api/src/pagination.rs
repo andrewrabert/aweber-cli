@@ -103,13 +103,16 @@ pub fn next_cursor(headers: &reqwest::header::HeaderMap, parameter: &str) -> Opt
         .and_then(|text| text.parse().ok())
 }
 
+/// The offset of a `<first-key>,<offset>` cursor, when it carries one.
+pub fn cursor_offset(cursor: &Cursor) -> Option<u64> {
+    cursor.0.rsplit_once(',')?.1.trim().parse::<u64>().ok()
+}
+
+/// `<first-key>,<offset>` cursors resolve to `None` past [`MAX_OFFSET_CURSOR`].
 pub fn within_offset_cap(cursor: Cursor) -> Option<Cursor> {
-    match cursor.0.rsplit_once(',') {
-        Some((_, offset)) => match offset.trim().parse::<u64>() {
-            Ok(offset) if offset > MAX_OFFSET_CURSOR => None,
-            _ => Some(cursor),
-        },
-        None => Some(cursor),
+    match cursor_offset(&cursor) {
+        Some(offset) if offset > MAX_OFFSET_CURSOR => None,
+        _ => Some(cursor),
     }
 }
 
@@ -152,6 +155,16 @@ fn query_parameter(target: &str, parameter: &str) -> Option<String> {
         .map(|(_, value)| percent_decode(value))
 }
 
+/// The value of one hexadecimal digit, for a byte that is one.
+fn hex_digit(byte: u8) -> Option<u8> {
+    match byte {
+        b'0'..=b'9' => Some(byte - b'0'),
+        b'a'..=b'f' => Some(byte - b'a' + 10),
+        b'A'..=b'F' => Some(byte - b'A' + 10),
+        _ => None,
+    }
+}
+
 fn percent_decode(value: &str) -> String {
     let bytes = value.as_bytes();
     let mut out = Vec::with_capacity(bytes.len());
@@ -163,12 +176,12 @@ fn percent_decode(value: &str) -> String {
                 index += 1;
             }
             b'%' if index + 2 < bytes.len() => {
-                match u8::from_str_radix(&value[index + 1..index + 3], 16) {
-                    Ok(byte) => {
-                        out.push(byte);
+                match (hex_digit(bytes[index + 1]), hex_digit(bytes[index + 2])) {
+                    (Some(high), Some(low)) => {
+                        out.push((high << 4) | low);
                         index += 3;
                     }
-                    Err(_) => {
+                    _ => {
                         out.push(b'%');
                         index += 1;
                     }

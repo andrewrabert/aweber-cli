@@ -12,6 +12,7 @@ A command-line interface and Rust client library for the [AWeber API](https://ap
 
 - `crates/api` — the `aweber` API client library ([crates.io](https://crates.io/crates/aweber))
 - `crates/cli` — the `aweber-cli` package, which builds the `aweber` binary
+- `crates/tui` — the `aweber-tui` library behind `aweber tui`
 
 ## Download
 
@@ -28,6 +29,7 @@ Usage: aweber [OPTIONS] <COMMAND>
 Commands:
   auth                 Manage authentication
   api                  Make an authenticated API request
+  tui                  Browse the API in a full-screen terminal UI
   lists                Manage subscriber lists
   subscribers          Manage subscribers
   broadcasts           Manage broadcasts (email campaigns)
