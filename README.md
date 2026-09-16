@@ -6,8 +6,6 @@
 
 A command-line interface and Rust client library for the [AWeber API](https://api.aweber.com/).
 
-⚠️ Under active development
-
 ## Crates
 
 - `crates/api` — the `aweber` API client library ([crates.io](https://crates.io/crates/aweber))
@@ -74,12 +72,6 @@ Check auth status:
 ```sh
 aweber auth status
 ```
-
-### Workflows
-
-The endpoints behind `aweber workflows` are undocumented, unversioned and
-unsupported. They can change or disappear without notice or a deprecation
-window.
 
 ### Examples
 
