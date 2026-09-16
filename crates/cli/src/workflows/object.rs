@@ -4,6 +4,8 @@ use aweber::ids::MessageId;
 use aweber::workflows as domain;
 use serde::Serialize;
 
+use crate::workflows::Failure;
+
 pub(crate) struct WorkflowView<'a> {
     pub(crate) workflow: &'a domain::Workflow,
     pub(crate) starter: Option<&'a domain::Starter>,
@@ -211,41 +213,42 @@ struct Stats {
     bounces: u64,
 }
 
-pub(crate) fn list_document(views: &[WorkflowView<'_>]) -> ListDocument {
+pub(crate) fn list_document(views: &[WorkflowView<'_>]) -> Result<ListDocument, Failure> {
     let mut rows: Vec<&WorkflowView<'_>> = views.iter().collect();
     rows.sort_by_key(|row| std::cmp::Reverse(row.workflow.updated()));
-    ListDocument {
-        workflows: rows
-            .into_iter()
-            .map(|view| ListedWorkflow {
-                id: text(view.workflow.id()),
-                name: text(view.workflow.name()),
-                status: status(view),
+    let workflows = rows
+        .into_iter()
+        .map(|view| {
+            Ok(ListedWorkflow {
+                id: field(view.workflow.id())?,
+                name: field(view.workflow.name())?,
+                status: status(view)?,
                 unpublished_changes: view.changes,
                 starter: view.starter.map(Starter::from),
                 updated: moment(view.workflow.updated()),
             })
-            .collect(),
-    }
+        })
+        .collect::<Result<Vec<ListedWorkflow>, Failure>>()?;
+    Ok(ListDocument { workflows })
 }
 
-pub(crate) fn workflow_document(view: &WorkflowView<'_>) -> WorkflowDocument {
-    WorkflowDocument {
-        id: text(view.workflow.id()),
-        name: text(view.workflow.name()),
-        list: text(view.workflow.list()),
-        status: status(view),
+pub(crate) fn workflow_document(view: &WorkflowView<'_>) -> Result<WorkflowDocument, Failure> {
+    Ok(WorkflowDocument {
+        id: field(view.workflow.id())?,
+        name: field(view.workflow.name())?,
+        list: field(view.workflow.list())?,
+        status: status(view)?,
         unpublished_changes: view.changes,
         starter: view.starter.map(Starter::from),
-        timezone: text(view.workflow.timezone()),
+        timezone: field(view.workflow.timezone())?,
         sharing: Sharing {
             enabled: view.workflow.sharing_enabled(),
-            code: text(view.workflow.id()),
+            code: field(view.workflow.id())?,
         },
         last_published: moment(view.workflow.last_published()),
         updated: moment(view.workflow.updated()),
         errors: None,
-    }
+    })
 }
 
 pub(crate) fn show_document(
@@ -254,34 +257,34 @@ pub(crate) fn show_document(
     exit_tags: &[domain::Tag],
     subjects: &BTreeMap<MessageId, String>,
     stats: Option<&BTreeMap<MessageId, domain::MessageTotals>>,
-) -> ShowDocument {
-    let mut about = workflow_document(view);
+) -> Result<ShowDocument, Failure> {
+    let mut about = workflow_document(view)?;
     about.errors = Some(view.workflow.errors());
     let enrichment = Enrichment {
         subjects,
         stats: stats.filter(|totals| !totals.is_empty()),
     };
-    ShowDocument {
+    Ok(ShowDocument {
         about,
         steps: enrichment.enrich_all(steps),
         exit_tags: words(exit_tags),
-    }
+    })
 }
 
-pub(crate) fn publish_document(view: &WorkflowView<'_>) -> WorkflowDocument {
-    let mut document = workflow_document(view);
+pub(crate) fn publish_document(view: &WorkflowView<'_>) -> Result<WorkflowDocument, Failure> {
+    let mut document = workflow_document(view)?;
     document.errors = Some(view.workflow.errors());
-    document
+    Ok(document)
 }
 
 pub(crate) fn delete_document(
     view: &WorkflowView<'_>,
     unbound: &domain::BatchOutcome,
-) -> DeleteDocument {
-    DeleteDocument {
-        workflow: workflow_document(view),
+) -> Result<DeleteDocument, Failure> {
+    Ok(DeleteDocument {
+        workflow: workflow_document(view)?,
         messages_returned: unbound.processed.len() as u64,
-    }
+    })
 }
 
 pub(crate) fn print(document: &impl Serialize) -> anyhow::Result<()> {
@@ -479,8 +482,11 @@ fn sent_message(kind: &domain::StepKind) -> Option<&MessageId> {
     }
 }
 
-fn status(view: &WorkflowView<'_>) -> Option<String> {
-    view.workflow.status().ok().map(|status| status.to_string())
+fn status(view: &WorkflowView<'_>) -> Result<Option<String>, Failure> {
+    view.workflow
+        .status()
+        .map(|status| Some(status.to_string()))
+        .map_err(Failure::api)
 }
 
 fn words<T: std::fmt::Display>(values: &[T]) -> Vec<String> {
@@ -492,6 +498,12 @@ fn words<T: std::fmt::Display>(values: &[T]) -> Vec<String> {
 
 fn text<T: std::fmt::Display>(value: Option<T>) -> Option<String> {
     value.map(|value| value.to_string())
+}
+
+fn field<T: std::fmt::Display>(
+    read: Result<Option<T>, aweber::client::ApiError>,
+) -> Result<Option<String>, Failure> {
+    read.map(text).map_err(Failure::api)
 }
 
 fn moment(at: Option<chrono::DateTime<chrono::Utc>>) -> Option<String> {
