@@ -327,21 +327,25 @@ async fn show_reads_a_branch_scoped_step_off_its_branch_field() {
 }
 
 #[tokio::test]
-async fn show_of_an_unknown_server_status_emits_a_null_status() {
+async fn show_of_an_unknown_server_status_exits_1() {
     let harness = Harness::start().await;
     let mut document = fixtures::document(fixtures::lane_ruleset());
     document["state"] = serde_json::json!("hibernating");
     harness.with_workflow(document).await;
     harness.with_subjects(serde_json::json!({})).await;
 
-    let emitted = Harness::json(
-        &harness
-            .command()
-            .args(["workflows", "show", WORKFLOW, "--no-stats"])
-            .output()
-            .expect("the binary runs"),
+    let output = harness
+        .command()
+        .args(["workflows", "show", WORKFLOW, "--no-stats"])
+        .output()
+        .expect("the binary runs");
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty(), "{output:?}");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(
+        stderr.trim(),
+        "error: 'hibernating' is not a workflow status"
     );
-    assert_eq!(emitted["about"]["status"], serde_json::Value::Null);
 }
 
 #[tokio::test]

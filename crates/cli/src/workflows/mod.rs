@@ -74,7 +74,10 @@ struct Reading {
 
 impl Reading {
     fn of(workflow: Workflow) -> Result<Reading, Failure> {
-        let zone = workflow.timezone().unwrap_or_else(Timezone::utc);
+        let zone = workflow
+            .timezone()
+            .map_err(Failure::api)?
+            .unwrap_or_else(Timezone::utc);
         let ruleset = workflow.ruleset().map_err(Failure::api)?;
         Ok(Reading {
             working: ruleset.working(zone.clone()),
@@ -178,13 +181,16 @@ impl Cli {
         let entries = workflows::list_workflows(&self.client, owner, list)
             .await
             .map_err(Failure::api)?;
-        let found: Vec<WorkflowId> = entries
-            .iter()
-            .filter(|entry| {
-                entry.name().as_ref().map(ToString::to_string) == Some(name.to_string())
-            })
-            .filter_map(Workflow::id)
-            .collect();
+        let mut found: Vec<WorkflowId> = Vec::new();
+        for entry in &entries {
+            let named = entry.name().map_err(Failure::api)?;
+            if named.as_ref().map(ToString::to_string) != Some(name.to_string()) {
+                continue;
+            }
+            if let Some(id) = entry.id().map_err(Failure::api)? {
+                found.push(id);
+            }
+        }
         match found.len() {
             0 => Err(Failure::api(format!("no workflow named '{name}' on list {list}")).into()),
             1 => Ok(found[0]),
@@ -215,14 +221,14 @@ impl Cli {
         Ok(Reading::of(updated)?)
     }
 
-    async fn subjects(&self, steps: &[Step]) -> BTreeMap<MessageId, String> {
+    async fn subjects(&self, steps: &[Step]) -> anyhow::Result<BTreeMap<MessageId, String>> {
         let messages = sent_messages(steps);
         if messages.is_empty() {
-            return BTreeMap::new();
+            return Ok(BTreeMap::new());
         }
-        workflows::get_message_subjects(&self.client, &messages)
+        Ok(workflows::get_message_subjects(&self.client, &messages)
             .await
-            .unwrap_or_default()
+            .map_err(Failure::api)?)
     }
 
     async fn message_stats(
@@ -237,12 +243,11 @@ impl Cli {
             let Some(cadence) = cadences.get(&message).copied().and_then(cadence_of) else {
                 continue;
             };
-            if let Ok(read) =
+            let read =
                 workflows::get_campaign_message_stats(&self.client, &message, account, cadence)
                     .await
-            {
-                totals.insert(message, read);
-            }
+                    .map_err(Failure::api)?;
+            totals.insert(message, read);
         }
         Ok(totals)
     }
@@ -261,13 +266,13 @@ impl Cli {
         for entry in entries {
             readings.push(Reading::of(entry)?);
         }
-        let views: Vec<WorkflowView<'_>> = readings
-            .iter()
-            .filter(|reading| keeps_status(reading, &request.statuses))
-            .filter(|reading| keeps_starter_tag(reading, &request))
-            .map(Reading::view)
-            .collect();
-        object::print(&object::list_document(&views))?;
+        let mut views: Vec<WorkflowView<'_>> = Vec::new();
+        for reading in &readings {
+            if keeps_status(reading, &request.statuses)? && keeps_starter_tag(reading, &request) {
+                views.push(reading.view());
+            }
+        }
+        object::print(&object::list_document(&views)?)?;
         Ok(())
     }
 
@@ -294,7 +299,7 @@ impl Cli {
             }
             _ => graph.steps(),
         };
-        let subjects = self.subjects(&steps).await;
+        let subjects = self.subjects(&steps).await?;
         let stats = if request.stats {
             Some(self.message_stats(graph, &steps).await?)
         } else {
@@ -306,7 +311,7 @@ impl Cli {
             graph.exit_tags(),
             &subjects,
             stats.as_ref(),
-        );
+        )?;
         object::print(&document)?;
         Ok(())
     }
@@ -349,6 +354,7 @@ impl Cli {
         };
         let id = created
             .id()
+            .map_err(Failure::api)?
             .ok_or_else(|| Failure::api("the created workflow carries no id"))?;
         let reading = Reading::of(created)?;
         let reading = match properties_patch(&reading, &request.properties, WorkflowEdit::default())
@@ -356,7 +362,7 @@ impl Cli {
             Some(patch) => self.write(id, &reading, &patch).await?,
             None => reading,
         };
-        object::print(&object::workflow_document(&reading.view()))?;
+        object::print(&object::workflow_document(&reading.view())?)?;
         Ok(())
     }
 
@@ -367,21 +373,19 @@ impl Cli {
         let request = UpdateRequest::try_from(matches)?;
         let workflow = self.resolve_workflow(matches).await?;
         let reading = self.read(workflow).await?;
-        let current = reading.workflow.status().ok();
+        let current = reading.workflow.status().map_err(Failure::api)?;
         let mut edit = WorkflowEdit {
             name: request.name.clone(),
             ..WorkflowEdit::default()
         };
         if let Some(status) = request.status {
             if status == StatusChange::Active
-                && current == Some(WorkflowStatus::Draft)
+                && current == WorkflowStatus::Draft
                 && reading.workflow.last_published().is_none()
             {
                 return Err(Failure::api(format!("{workflow} has never been published")).into());
             }
-            let asserted = current
-                .and_then(|current| StatusChange::try_from(current).ok())
-                .is_some_and(|current| current == status);
+            let asserted = StatusChange::try_from(current).is_ok_and(|current| current == status);
             if !asserted {
                 edit.status = Some(status);
             }
@@ -390,7 +394,7 @@ impl Cli {
             Some(patch) => self.write(workflow, &reading, &patch).await?,
             None => reading,
         };
-        object::print(&object::workflow_document(&reading.view()))?;
+        object::print(&object::workflow_document(&reading.view())?)?;
         Ok(())
     }
 
@@ -428,7 +432,7 @@ impl Cli {
         let patch = WorkflowPatch::edits(&WorkflowEdit::default())
             .with_ruleset(reading.workflow.ruleset_write_op(), &graph);
         let written = self.write(workflow, &reading, &patch).await?;
-        object::print(&object::workflow_document(&written.view()))?;
+        object::print(&object::workflow_document(&written.view())?)?;
         Ok(())
     }
 
@@ -469,7 +473,7 @@ impl Cli {
         let patch = WorkflowPatch::edits(&WorkflowEdit::default())
             .with_ruleset(reading.workflow.ruleset_write_op(), &graph);
         let written = self.write(workflow, &reading, &patch).await?;
-        object::print(&object::workflow_document(&written.view()))?;
+        object::print(&object::workflow_document(&written.view())?)?;
         Ok(())
     }
 
@@ -491,7 +495,7 @@ impl Cli {
         }
         .map_err(Failure::api)?;
         let written = Reading::of(result)?;
-        object::print(&object::publish_document(&written.view()))?;
+        object::print(&object::publish_document(&written.view())?)?;
         Ok(())
     }
 
@@ -522,7 +526,7 @@ impl Cli {
         workflows::delete_workflow(&self.client, workflow, precondition)
             .await
             .map_err(Failure::api)?;
-        object::print(&object::delete_document(&reading.view(), &unbound))?;
+        object::print(&object::delete_document(&reading.view(), &unbound)?)?;
         Ok(())
     }
 }
@@ -536,14 +540,12 @@ fn warn_untouched(messages: &[MessageId]) {
     eprintln!("Warning: these messages were left in the workflow: {named}");
 }
 
-fn keeps_status(reading: &Reading, statuses: &[WorkflowStatus]) -> bool {
+fn keeps_status(reading: &Reading, statuses: &[WorkflowStatus]) -> Result<bool, Failure> {
     if statuses.is_empty() {
-        return true;
+        return Ok(true);
     }
-    reading
-        .workflow
-        .status()
-        .is_ok_and(|status| statuses.contains(&status))
+    let status = reading.workflow.status().map_err(Failure::api)?;
+    Ok(statuses.contains(&status))
 }
 
 fn keeps_starter_tag(reading: &Reading, request: &ListRequest) -> bool {

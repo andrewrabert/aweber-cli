@@ -32,7 +32,10 @@ async fn get_workflow_sends_include_ruleset() {
             .await
             .expect("the mocked workflow is returned");
     assert_eq!(
-        workflow.name().map(|name| name.to_string()),
+        workflow
+            .name()
+            .expect("the name reads")
+            .map(|name| name.to_string()),
         Some("Welcome".to_string())
     );
     assert_eq!(

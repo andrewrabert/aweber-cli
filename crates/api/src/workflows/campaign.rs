@@ -13,24 +13,24 @@ const CAMPAIGNS: &str = "/internal/campaign/campaigns";
 pub struct Workflow(serde_json::Value);
 
 impl Workflow {
-    pub fn id(&self) -> Option<WorkflowId> {
-        self.text("id")?.parse().ok()
+    pub fn id(&self) -> Result<Option<WorkflowId>, ApiError> {
+        self.parsed("id")
     }
 
-    pub fn name(&self) -> Option<WorkflowName> {
-        self.text("name")?.parse().ok()
+    pub fn name(&self) -> Result<Option<WorkflowName>, ApiError> {
+        self.parsed("name")
     }
 
     pub fn status(&self) -> Result<WorkflowStatus, UnknownStatus> {
         self.text("state").unwrap_or_default().parse()
     }
 
-    pub fn list(&self) -> Option<ListUid> {
-        self.text("parent")?.parse().ok()
+    pub fn list(&self) -> Result<Option<ListUid>, ApiError> {
+        self.parsed("parent")
     }
 
-    pub fn timezone(&self) -> Option<Timezone> {
-        self.text("timezone")?.parse().ok()
+    pub fn timezone(&self) -> Result<Option<Timezone>, ApiError> {
+        self.parsed("timezone")
     }
 
     pub fn sharing_enabled(&self) -> bool {
@@ -109,6 +109,14 @@ impl Workflow {
 
     fn text(&self, member: &str) -> Option<&str> {
         self.0.get(member).and_then(serde_json::Value::as_str)
+    }
+
+    fn parsed<T: serde::de::DeserializeOwned>(&self, member: &str) -> Result<Option<T>, ApiError> {
+        let carried = self.0.get(member).unwrap_or(&serde_json::Value::Null);
+        serde::Deserialize::deserialize(carried).map_err(|source| ApiError::Deserialize {
+            source,
+            body: self.0.to_string(),
+        })
     }
 
     fn stamped(&self, member: &str) -> Option<chrono::DateTime<chrono::Utc>> {
