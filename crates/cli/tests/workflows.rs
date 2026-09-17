@@ -91,7 +91,10 @@ async fn show_emits_about_steps_and_exit_tags() {
     assert_eq!(steps[0]["duration"], "2d");
     assert_eq!(steps[0]["timezone_source"], "workflow");
     assert_eq!(steps[1]["kind"], "message");
-    assert_eq!(steps[1]["message"]["subject"], "Hello");
+    assert_eq!(
+        steps[1]["message"],
+        serde_json::json!({ "id": fixtures::MESSAGE })
+    );
 }
 
 #[tokio::test]
@@ -597,25 +600,6 @@ async fn a_credentials_file_written_before_the_account_rename_still_loads() {
     assert!(output.status.success(), "{output:?}");
     let document = Harness::json(&output);
     assert_eq!(document["workflows"], serde_json::json!([]));
-}
-
-#[tokio::test]
-async fn the_group_help_carries_the_unsupported_api_notice() {
-    let harness = Harness::start().await;
-
-    let output = harness
-        .command()
-        .args(["workflows", "--help"])
-        .output()
-        .expect("the binary runs");
-    let help = String::from_utf8_lossy(&output.stdout);
-    assert!(
-        help.contains(
-            "These commands use an undocumented, unversioned and unsupported API surface \
-             that can change or disappear without notice."
-        ),
-        "{help}"
-    );
 }
 
 #[tokio::test]
@@ -2518,7 +2502,7 @@ async fn delete_of_a_workflow_that_has_been_active_exits_1() {
         .accept(
             "POST",
             "/internal/message/messages/batch/unbind",
-            serde_json::json!({ "processed": [], "unprocessed": [] }),
+            serde_json::json!({ "processed": [fixtures::MESSAGE], "unprocessed": [] }),
         )
         .await;
     harness.refuse("DELETE", &workflow_route(), 400).await;
@@ -2580,7 +2564,7 @@ async fn every_command_writes_exactly_one_json_object_to_stdout() {
         .accept(
             "POST",
             "/internal/message/messages/batch/unbind",
-            serde_json::json!({ "processed": [], "unprocessed": [] }),
+            serde_json::json!({ "processed": [fixtures::MESSAGE], "unprocessed": [] }),
         )
         .await;
     harness

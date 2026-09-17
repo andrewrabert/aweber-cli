@@ -5,9 +5,9 @@ use std::collections::BTreeMap;
 
 use aweber::ids::{ListUid, MessageId, WorkflowId};
 use aweber::workflows::{
-    self, Automations, BatchOutcome, Graph, GraphError, MessageCadence, MessageTotals,
-    PreconditionVersion, SendCadence, StatusChange, Step, Timezone, Workflow, WorkflowEdit,
-    WorkflowPatch, WorkflowStatus,
+    self, Automations, Graph, GraphError, MessageCadence, MessageTotals, PreconditionVersion,
+    SendCadence, StatusChange, Step, Timezone, Workflow, WorkflowEdit, WorkflowPatch,
+    WorkflowStatus,
 };
 
 use crate::cli::Cli;
@@ -221,16 +221,6 @@ impl Cli {
         Ok(Reading::of(updated)?)
     }
 
-    async fn subjects(&self, steps: &[Step]) -> anyhow::Result<BTreeMap<MessageId, String>> {
-        let messages = sent_messages(steps);
-        if messages.is_empty() {
-            return Ok(BTreeMap::new());
-        }
-        Ok(workflows::get_message_subjects(&self.client, &messages)
-            .await
-            .map_err(Failure::api)?)
-    }
-
     async fn message_stats(
         &self,
         graph: &Graph,
@@ -299,19 +289,13 @@ impl Cli {
             }
             _ => graph.steps(),
         };
-        let subjects = self.subjects(&steps).await?;
         let stats = if request.stats {
             Some(self.message_stats(graph, &steps).await?)
         } else {
             None
         };
-        let document = object::show_document(
-            &reading.view(),
-            &steps,
-            graph.exit_tags(),
-            &subjects,
-            stats.as_ref(),
-        )?;
+        let document =
+            object::show_document(&reading.view(), &steps, graph.exit_tags(), stats.as_ref())?;
         object::print(&document)?;
         Ok(())
     }
@@ -507,37 +491,18 @@ impl Cli {
         let reading = self.read(workflow).await?;
         let precondition = reading.precondition()?;
         let messages = sent_messages(&reading.working.steps());
-        let mut unbound = BatchOutcome {
-            processed: Vec::new(),
-            unprocessed: Vec::new(),
-        };
         if !messages.is_empty() {
             let account = self.account_uid().await?;
-            match workflows::unbind_messages(&self.client, account, &messages).await {
-                Ok(outcome) => {
-                    if !outcome.unprocessed.is_empty() {
-                        warn_untouched(&outcome.unprocessed);
-                    }
-                    unbound = outcome;
-                }
-                Err(_) => warn_untouched(&messages),
-            }
+            aweber::message::unbind_messages(&self.client, account, &messages)
+                .await
+                .map_err(Failure::api)?;
         }
         workflows::delete_workflow(&self.client, workflow, precondition)
             .await
             .map_err(Failure::api)?;
-        object::print(&object::delete_document(&reading.view(), &unbound)?)?;
+        object::print(&object::delete_document(&reading.view(), &messages)?)?;
         Ok(())
     }
-}
-
-fn warn_untouched(messages: &[MessageId]) {
-    let named = messages
-        .iter()
-        .map(std::string::ToString::to_string)
-        .collect::<Vec<_>>()
-        .join(", ");
-    eprintln!("Warning: these messages were left in the workflow: {named}");
 }
 
 fn keeps_status(reading: &Reading, statuses: &[WorkflowStatus]) -> Result<bool, Failure> {

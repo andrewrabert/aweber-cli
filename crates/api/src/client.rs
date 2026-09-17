@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::ids::MessageId;
+
 #[derive(Clone, Debug)]
 pub struct Client {
     pub(crate) baseurl: String,
@@ -50,7 +52,10 @@ impl Client {
 #[derive(Debug)]
 pub enum ApiError {
     /// HTTP error response with status code and body.
-    Http { status: u16, body: String },
+    Http {
+        status: u16,
+        body: String,
+    },
     /// Transport or connection error.
     Request(reqwest::Error),
     /// Failed to deserialize the response body.
@@ -58,6 +63,9 @@ pub enum ApiError {
         source: serde_json::Error,
         body: String,
     },
+    MessagesNotFound(Vec<MessageId>),
+    MessagesNotUnbound(Vec<MessageId>),
+    MessagesNotDeleted(Vec<MessageId>),
 }
 
 impl fmt::Display for ApiError {
@@ -68,6 +76,12 @@ impl fmt::Display for ApiError {
             ApiError::Deserialize { source, body } => {
                 write!(f, "deserialize error: {source}\nbody: {body}")
             }
+            ApiError::MessagesNotFound(ids) => {
+                let ids: Vec<String> = ids.iter().map(ToString::to_string).collect();
+                write!(f, "message {} was not found", ids.join(", "))
+            }
+            ApiError::MessagesNotUnbound(ids) => write!(f, "messages not unbound: {ids:?}"),
+            ApiError::MessagesNotDeleted(ids) => write!(f, "messages not deleted: {ids:?}"),
         }
     }
 }

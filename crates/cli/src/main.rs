@@ -7,6 +7,7 @@ mod auth;
 mod cli;
 mod commands;
 mod credentials;
+mod messages;
 mod workflows;
 
 #[tokio::main]

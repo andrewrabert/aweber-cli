@@ -1,6 +1,7 @@
 pub mod client;
 pub mod endpoints;
 pub mod ids;
+pub mod message;
 pub mod oauth;
 pub mod pagination;
 pub mod serde_helpers;

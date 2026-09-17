@@ -148,18 +148,14 @@ impl Harness {
     }
 
     pub async fn bodies(&self, verb: &str, route: &str) -> Vec<serde_json::Value> {
-        self.server
-            .received_requests()
+        self.server_requests(verb, route)
             .await
-            .unwrap_or_default()
             .into_iter()
-            .filter(|request| request.method.as_str().eq_ignore_ascii_case(verb))
-            .filter(|request| request.url.path() == route)
             .filter_map(|request| serde_json::from_slice(&request.body).ok())
             .collect()
     }
 
-    pub async fn calls(&self, verb: &str, route: &str) -> usize {
+    pub async fn server_requests(&self, verb: &str, route: &str) -> Vec<wiremock::Request> {
         self.server
             .received_requests()
             .await
@@ -167,7 +163,11 @@ impl Harness {
             .into_iter()
             .filter(|request| request.method.as_str().eq_ignore_ascii_case(verb))
             .filter(|request| request.url.path() == route)
-            .count()
+            .collect()
+    }
+
+    pub async fn calls(&self, verb: &str, route: &str) -> usize {
+        self.server_requests(verb, route).await.len()
     }
 
     pub fn command(&self) -> assert_cmd::Command {

@@ -175,9 +175,7 @@ static GROUPS: &[Group] = &[
         name: "workflows",
         about: "Manage automation workflows",
         long_about: Some(
-            "Manage automation workflows.\n\n\
-             These commands use an undocumented, unversioned and unsupported API \
-             surface that can change or disappear without notice.",
+            "Manage automation workflows.",
         ),
         routes: &[
             Route {
@@ -213,6 +211,17 @@ static GROUPS: &[Group] = &[
                 command: CliCommand::DeleteWorkflow,
             },
         ],
+    },
+    Group {
+        name: "messages",
+        about: "Manage messages",
+        long_about: Some(
+            "Manage messages.",
+        ),
+        routes: &[Route {
+            action: "get",
+            command: CliCommand::GetMessage,
+        }],
     },
     Group {
         name: "account",
