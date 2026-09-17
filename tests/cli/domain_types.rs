@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-const SCANNED: [&str; 2] = ["../api/src/workflows", "src/workflows"];
+const SCANNED: [&str; 2] = ["src/workflows", "src/cli/workflows"];
 
 const EDGES: [&str; 5] = [
     "ruleset.rs",
@@ -107,7 +107,7 @@ fn declarations(source: &str) -> Vec<&str> {
 }
 
 fn debt() -> Vec<String> {
-    let text = read(&root().join("tests/domain_types_debt.txt"));
+    let text = read(&root().join("tests/cli/domain_types_debt.txt"));
     text.lines()
         .map(|line| {
             line.split('#')
@@ -229,7 +229,7 @@ fn no_interior_module_names_the_wire() {
 
 #[test]
 fn no_id_type_offers_a_public_fresh_id_constructor() {
-    let source = read(&root().join("../api/src/ids.rs"));
+    let source = read(&root().join("src/ids.rs"));
     assert_eq!(source.matches("pub(crate) fn new()").count(), 2, "{source}");
     assert!(!source.contains("pub fn new("), "{source}");
     assert_eq!(
@@ -242,7 +242,7 @@ fn no_id_type_offers_a_public_fresh_id_constructor() {
 #[test]
 fn no_id_type_or_its_constructor_names_a_representation() {
     let mut found = Vec::new();
-    for tree in ["../api/src", "src"] {
+    for tree in ["src"] {
         let mut files = Vec::new();
         collect(&root().join(tree), &mut files);
         for path in files {
@@ -288,9 +288,7 @@ fn the_debt_file_holds_no_stale_entry() {
         let (claimed, name) =
             entry_parts(&entry).unwrap_or_else(|| panic!("'{entry}' is <path>::<name>"));
         let name = name.rsplit("::").next().unwrap_or(name);
-        let path = root()
-            .join("..")
-            .join(format!("{claimed}.rs").trim_start_matches("crates/"));
+        let path = root().join(format!("{claimed}.rs").trim_start_matches("crates/"));
         let source = read(&path);
         assert!(
             source.contains(name),
