@@ -109,6 +109,7 @@ enum ConditionTest {
 }
 
 struct Enrichment<'a> {
+    messages: &'a BTreeMap<MessageId, aweber::message::Message>,
     stats: Option<&'a BTreeMap<MessageId, domain::MessageTotals>>,
 }
 
@@ -126,7 +127,7 @@ struct Step {
 #[serde(tag = "kind", rename_all = "lowercase")]
 enum StepKind {
     Message {
-        message: Option<Message>,
+        message: Option<aweber::message::Message>,
     },
     Wait {
         duration: Option<String>,
@@ -148,11 +149,6 @@ enum StepKind {
         yes: Vec<Step>,
         no: Vec<Step>,
     },
-}
-
-#[derive(Serialize)]
-struct Message {
-    id: String,
 }
 
 #[derive(Serialize)]
@@ -253,11 +249,13 @@ pub(crate) fn show_document(
     view: &WorkflowView<'_>,
     steps: &[domain::Step],
     exit_tags: &[domain::Tag],
+    messages: &BTreeMap<MessageId, aweber::message::Message>,
     stats: Option<&BTreeMap<MessageId, domain::MessageTotals>>,
 ) -> Result<ShowDocument, Failure> {
     let mut about = workflow_document(view)?;
     about.errors = Some(view.workflow.errors());
     let enrichment = Enrichment {
+        messages,
         stats: stats.filter(|totals| !totals.is_empty()),
     };
     Ok(ShowDocument {
@@ -299,9 +297,9 @@ impl Enrichment<'_> {
     fn enrich(&self, step: &domain::Step) -> Step {
         let kind = match &step.kind {
             domain::StepKind::Message { message } => StepKind::Message {
-                message: message.as_ref().map(|message| Message {
-                    id: message.to_string(),
-                }),
+                message: message
+                    .as_ref()
+                    .and_then(|message| self.messages.get(message).cloned()),
             },
             domain::StepKind::Wait {
                 timing,

@@ -3,7 +3,7 @@ pub mod fixtures;
 use std::io::Write as _;
 
 use wiremock::matchers::{body_json, method, path};
-use wiremock::{Mock, MockServer, ResponseTemplate};
+use wiremock::{Mock, MockServer, Request, Respond, ResponseTemplate};
 
 pub const ACCOUNT_ID: &str = "1";
 pub const ACCOUNT: &str = "11111111-1111-4111-8111-111111111111";
@@ -99,10 +99,11 @@ impl Harness {
         self
     }
 
-    pub async fn with_subjects(&self, subjects: serde_json::Value) -> &Harness {
+    /// Answers the message batch read with a full message for every requested id.
+    pub async fn with_messages(&self) -> &Harness {
         Mock::given(method("POST"))
             .and(path("/internal/message/messages/batch/get"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(subjects))
+            .respond_with(EchoMessages)
             .mount(&self.server)
             .await;
         self
@@ -189,5 +190,36 @@ impl Harness {
                 String::from_utf8_lossy(&output.stdout)
             )
         })
+    }
+}
+
+struct EchoMessages;
+
+impl Respond for EchoMessages {
+    fn respond(&self, request: &Request) -> ResponseTemplate {
+        let body: serde_json::Value =
+            serde_json::from_slice(&request.body).expect("a JSON batch body");
+        let messages: Vec<serde_json::Value> = body["message_ids"]
+            .as_array()
+            .expect("message_ids")
+            .iter()
+            .map(|id| {
+                serde_json::json!({
+                    "id": id,
+                    "account_id": 1,
+                    "list_id": 2,
+                    "subject": "Hello",
+                    "body_text": "Hi",
+                    "body_html": "<p>Hi</p>",
+                    "body_json": {},
+                    "has_customized_body_text": false,
+                    "attachment_ids": [],
+                    "binding": "campaign",
+                    "bound_resource_id": null,
+                    "copied_from": null,
+                })
+            })
+            .collect();
+        ResponseTemplate::new(200).set_body_json(serde_json::json!({ "messages": messages }))
     }
 }
