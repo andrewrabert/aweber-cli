@@ -6,11 +6,6 @@
 
 A command-line interface and Rust client library for the [AWeber API](https://api.aweber.com/).
 
-## Crates
-
-- `crates/api` — the `aweber` API client library ([crates.io](https://crates.io/crates/aweber))
-- `crates/cli` — the `aweber-cli` package, which builds the `aweber` binary
-
 ## Download
 
 Pre-built binaries for Linux (glibc & musl), macOS, and Windows are available on the [latest release](https://github.com/andrewrabert/aweber-cli/releases/latest) page.
