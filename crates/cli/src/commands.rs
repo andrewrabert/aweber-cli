@@ -15,7 +15,6 @@ struct Group {
     routes: &'static [Route],
 }
 
-/// The complete route table. Groups are ordered by usage frequency (most-used first).
 /// Every non-OAuth CliCommand variant must appear exactly once.
 static GROUPS: &[Group] = &[
     Group {
@@ -174,9 +173,7 @@ static GROUPS: &[Group] = &[
     Group {
         name: "workflows",
         about: "Manage automation workflows",
-        long_about: Some(
-            "Manage automation workflows.",
-        ),
+        long_about: Some("Manage automation workflows."),
         routes: &[
             Route {
                 action: "list",
@@ -215,9 +212,7 @@ static GROUPS: &[Group] = &[
     Group {
         name: "messages",
         about: "Manage messages",
-        long_about: Some(
-            "Manage messages.",
-        ),
+        long_about: Some("Manage messages."),
         routes: &[Route {
             action: "get",
             command: CliCommand::GetMessage,
@@ -472,10 +467,9 @@ pub fn build_command_tree() -> clap::Command {
                 .global(true)
                 .help("Print request and response details to stderr"),
         )
-        .subcommand_required(true)
-        .subcommand(auth_cmd)
-        .subcommand(api_cmd);
+        .subcommand_required(true);
 
+    let mut top_level = vec![auth_cmd, api_cmd];
     for group in GROUPS {
         let mut group_cmd = clap::Command::new(group.name)
             .about(group.about)
@@ -484,12 +478,19 @@ pub fn build_command_tree() -> clap::Command {
             group_cmd = group_cmd.long_about(long_about);
         }
 
-        for route in group.routes {
+        let mut routes: Vec<&Route> = group.routes.iter().collect();
+        routes.sort_by_key(|route| route.action);
+        for route in routes {
             let subcmd = Cli::get_command(route.command).name(route.action.to_string());
             group_cmd = group_cmd.subcommand(subcmd);
         }
 
-        app = app.subcommand(group_cmd);
+        top_level.push(group_cmd);
+    }
+
+    top_level.sort_by(|a, b| a.get_name().cmp(b.get_name()));
+    for cmd in top_level {
+        app = app.subcommand(cmd);
     }
 
     app
