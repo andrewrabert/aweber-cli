@@ -24,23 +24,23 @@ AWeber API CLI
 Usage: aweber [OPTIONS] <COMMAND>
 
 Commands:
-  auth                 Manage authentication
+  account              Manage your AWeber account
   api                  Make an authenticated API request
-  lists                Manage subscriber lists
-  subscribers          Manage subscribers
+  auth                 Manage authentication
   broadcasts           Manage broadcasts (email campaigns)
   campaigns            Manage a single follow-up or broadcast message on a list
-  workflows            Manage automation workflows
-  messages             Manage messages
-  account              Manage your AWeber account
   custom-fields        Manage custom fields
-  tags                 Manage tags
-  segments             Manage segments
   integrations         Manage integrations
   landing-pages        Manage landing pages
+  lists                Manage subscriber lists
+  messages             Manage messages
   purchases            Record purchases
-  webforms             Manage webforms
+  segments             Manage segments
+  subscribers          Manage subscribers
+  tags                 Manage tags
   webform-split-tests  Manage webform split tests
+  webforms             Manage webforms
+  workflows            Manage automation workflows
   help                 Print this message or the help of the given subcommand(s)
 
 Options:
