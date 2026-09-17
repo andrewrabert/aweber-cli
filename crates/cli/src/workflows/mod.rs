@@ -221,6 +221,19 @@ impl Cli {
         Ok(Reading::of(updated)?)
     }
 
+    async fn messages(
+        &self,
+        steps: &[Step],
+    ) -> Result<BTreeMap<MessageId, aweber::message::Message>, Failure> {
+        let ids = sent_messages(steps);
+        if ids.is_empty() {
+            return Ok(BTreeMap::new());
+        }
+        aweber::message::get_messages(&self.client, &ids)
+            .await
+            .map_err(Failure::api)
+    }
+
     async fn message_stats(
         &self,
         graph: &Graph,
@@ -289,13 +302,19 @@ impl Cli {
             }
             _ => graph.steps(),
         };
+        let messages = self.messages(&steps).await?;
         let stats = if request.stats {
             Some(self.message_stats(graph, &steps).await?)
         } else {
             None
         };
-        let document =
-            object::show_document(&reading.view(), &steps, graph.exit_tags(), stats.as_ref())?;
+        let document = object::show_document(
+            &reading.view(),
+            &steps,
+            graph.exit_tags(),
+            &messages,
+            stats.as_ref(),
+        )?;
         object::print(&document)?;
         Ok(())
     }

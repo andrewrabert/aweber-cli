@@ -50,11 +50,7 @@ async fn show_emits_about_steps_and_exit_tags() {
     harness
         .with_workflow(fixtures::document(fixtures::lane_ruleset()))
         .await;
-    harness
-        .with_subjects(serde_json::json!({
-            "messages": [{ "id": fixtures::MESSAGE, "subject": "Hello" }],
-        }))
-        .await;
+    harness.with_messages().await;
     harness
         .accept(
             "GET",
@@ -91,10 +87,9 @@ async fn show_emits_about_steps_and_exit_tags() {
     assert_eq!(steps[0]["duration"], "2d");
     assert_eq!(steps[0]["timezone_source"], "workflow");
     assert_eq!(steps[1]["kind"], "message");
-    assert_eq!(
-        steps[1]["message"],
-        serde_json::json!({ "id": fixtures::MESSAGE })
-    );
+    assert_eq!(steps[1]["message"]["id"], fixtures::MESSAGE);
+    assert_eq!(steps[1]["message"]["subject"], "Hello");
+    assert_eq!(steps[1]["message"]["body_html"], "<p>Hi</p>");
 }
 
 #[tokio::test]
@@ -103,7 +98,7 @@ async fn show_reports_sends_opens_open_rate_clicks_click_rate_and_bounces() {
     harness
         .with_workflow(fixtures::document(fixtures::lane_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
     harness
         .accept(
             "GET",
@@ -144,7 +139,7 @@ async fn show_of_a_never_sent_message_emits_a_null_stats_member() {
     harness
         .with_workflow(fixtures::document(fixtures::lane_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
     harness
         .accept(
             "GET",
@@ -171,7 +166,7 @@ async fn show_no_stats_omits_every_stats_field() {
     harness
         .with_workflow(fixtures::document(fixtures::lane_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
 
     let output = harness
         .command()
@@ -205,7 +200,7 @@ async fn show_published_reads_the_published_version() {
         serde_json::json!([]),
     );
     harness.with_workflow(fixtures::document(ruleset)).await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
     harness
         .accept(
             "GET",
@@ -242,7 +237,7 @@ async fn show_draft_without_unpublished_changes_exits_1() {
     harness
         .with_workflow(fixtures::document(fixtures::lane_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
 
     let output = harness
         .command()
@@ -284,7 +279,7 @@ async fn show_reads_a_boolean_expect_split_and_a_tagged_starter() {
     harness
         .with_workflow(fixtures::document(fixtures::branching_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
 
     let output = harness
         .command()
@@ -308,7 +303,7 @@ async fn show_reads_a_branch_scoped_step_off_its_branch_field() {
     harness
         .with_workflow(fixtures::document(fixtures::branching_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
 
     let document = Harness::json(
         &harness
@@ -335,7 +330,7 @@ async fn show_of_an_unknown_server_status_exits_1() {
     let mut document = fixtures::document(fixtures::lane_ruleset());
     document["state"] = serde_json::json!("hibernating");
     harness.with_workflow(document).await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
 
     let output = harness
         .command()
@@ -357,7 +352,7 @@ async fn show_of_a_duration_wait_emits_duration_and_timezone_source() {
     harness
         .with_workflow(fixtures::document(fixtures::lane_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
 
     let document = Harness::json(
         &harness
@@ -379,7 +374,7 @@ async fn show_of_a_scheduled_wait_emits_send_days_send_at_and_timezone_source() 
     harness
         .with_workflow(fixtures::document(fixtures::scheduled_wait_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
 
     let document = Harness::json(
         &harness
@@ -405,7 +400,7 @@ async fn show_of_a_wait_with_two_schedules_emits_both_schedules() {
     harness
         .with_workflow(fixtures::document(fixtures::multi_schedule_wait_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
 
     let document = Harness::json(
         &harness
@@ -429,7 +424,7 @@ async fn show_of_a_feed_step_emits_its_url_and_interval() {
     harness
         .with_workflow(fixtures::document(fixtures::feed_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
 
     let document = Harness::json(
         &harness
@@ -452,7 +447,7 @@ async fn show_of_a_message_step_reports_its_automations() {
     harness
         .with_workflow(fixtures::document(fixtures::automations_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
 
     let document = Harness::json(
         &harness
@@ -479,7 +474,7 @@ async fn show_of_a_tagged_workflow_reports_its_starter_and_exit_tags() {
     harness
         .with_workflow(fixtures::document(fixtures::tagged_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
 
     let document = Harness::json(
         &harness
@@ -1852,7 +1847,7 @@ async fn show_of_a_mixed_cadence_message_omits_its_stats() {
     harness
         .with_workflow(fixtures::document(fixtures::mixed_cadence_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
     harness
         .accept(
             "GET",
@@ -2528,7 +2523,7 @@ async fn every_command_writes_exactly_one_json_object_to_stdout() {
     harness
         .with_workflow(fixtures::document(fixtures::lane_ruleset()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
     harness
         .accept(
             "GET",
@@ -2758,7 +2753,7 @@ async fn show_of_a_removed_published_wait_emits_deleted() {
         ]),
     );
     harness.with_workflow(fixtures::document(ruleset)).await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
 
     let document = Harness::json(
         &harness
@@ -2807,7 +2802,7 @@ async fn show_emits_a_reserved_events_workflow_and_update_step_preserves_it() {
     harness
         .with_workflow(fixtures::document(ruleset.clone()))
         .await;
-    harness.with_subjects(serde_json::json!({})).await;
+    harness.with_messages().await;
     harness
         .accept("PATCH", &workflow_route(), fixtures::document(ruleset))
         .await;
