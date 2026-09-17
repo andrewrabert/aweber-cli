@@ -1,7 +1,6 @@
 mod analytics;
 mod campaign;
 mod graph;
-mod message;
 mod patch;
 mod ruleset;
 mod values;
@@ -21,7 +20,6 @@ pub use graph::{
     MessageCadence, OpenRule, Placement, Starter, Step, StepEdit, StepKind, StepName,
     StepNameError, TagAdded, TagRemoved, Tested, UnknownBranch, WaitEdit,
 };
-pub use message::{delete_messages, get_message_subjects, unbind_messages, BatchOutcome};
 pub use patch::{PatchOperation, WorkflowEdit, WorkflowPatch};
 pub use ruleset::Ruleset;
 pub use values::{

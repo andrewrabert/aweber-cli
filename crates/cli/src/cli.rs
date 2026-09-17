@@ -108,6 +108,7 @@ impl Cli {
             CliCommand::UpdateWorkflowStep => Self::cli_update_workflow_step(),
             CliCommand::PublishWorkflow => Self::cli_publish_workflow(),
             CliCommand::DeleteWorkflow => Self::cli_delete_workflow(),
+            CliCommand::GetMessage => Self::cli_get_message(),
             CliCommand::OauthGetAccessToken => Self::cli_oauth_get_access_token(),
             CliCommand::OauthGetRequestToken => Self::cli_oauth_get_request_token(),
             CliCommand::OauthRevoke => Self::cli_oauth_revoke(),
@@ -1284,6 +1285,18 @@ impl Cli {
             .about("Show a workflow, its steps and its exit tags")
     }
 
+    pub(crate) fn cli_get_message() -> clap::Command {
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("message")
+                    .required(true)
+                    .num_args(1..)
+                    .value_parser(clap::value_parser!(aweber::ids::MessageId))
+                    .help("The message ID"),
+            )
+            .about("Get messages")
+    }
+
     pub(crate) fn cli_create_workflow() -> clap::Command {
         clap::Command::new("")
             .arg(
@@ -1957,6 +1970,7 @@ impl Cli {
             CliCommand::UpdateWorkflowStep => self.execute_update_workflow_step(matches).await,
             CliCommand::PublishWorkflow => self.execute_publish_workflow(matches).await,
             CliCommand::DeleteWorkflow => self.execute_delete_workflow(matches).await,
+            CliCommand::GetMessage => self.execute_get_message(matches).await,
             CliCommand::OauthGetAccessToken => self.execute_oauth_get_access_token(matches).await,
             CliCommand::OauthGetRequestToken => self.execute_oauth_get_request_token(matches).await,
             CliCommand::OauthRevoke => self.execute_oauth_revoke(matches).await,
@@ -3949,6 +3963,7 @@ pub(crate) enum CliCommand {
     UpdateWorkflowStep,
     PublishWorkflow,
     DeleteWorkflow,
+    GetMessage,
     OauthGetAccessToken,
     OauthGetRequestToken,
     OauthRevoke,
@@ -4021,6 +4036,7 @@ impl CliCommand {
             CliCommand::UpdateWorkflowStep,
             CliCommand::PublishWorkflow,
             CliCommand::DeleteWorkflow,
+            CliCommand::GetMessage,
             CliCommand::OauthGetAccessToken,
             CliCommand::OauthGetRequestToken,
             CliCommand::OauthRevoke,

@@ -109,7 +109,6 @@ enum ConditionTest {
 }
 
 struct Enrichment<'a> {
-    subjects: &'a BTreeMap<MessageId, String>,
     stats: Option<&'a BTreeMap<MessageId, domain::MessageTotals>>,
 }
 
@@ -154,7 +153,6 @@ enum StepKind {
 #[derive(Serialize)]
 struct Message {
     id: String,
-    subject: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -255,13 +253,11 @@ pub(crate) fn show_document(
     view: &WorkflowView<'_>,
     steps: &[domain::Step],
     exit_tags: &[domain::Tag],
-    subjects: &BTreeMap<MessageId, String>,
     stats: Option<&BTreeMap<MessageId, domain::MessageTotals>>,
 ) -> Result<ShowDocument, Failure> {
     let mut about = workflow_document(view)?;
     about.errors = Some(view.workflow.errors());
     let enrichment = Enrichment {
-        subjects,
         stats: stats.filter(|totals| !totals.is_empty()),
     };
     Ok(ShowDocument {
@@ -279,11 +275,11 @@ pub(crate) fn publish_document(view: &WorkflowView<'_>) -> Result<WorkflowDocume
 
 pub(crate) fn delete_document(
     view: &WorkflowView<'_>,
-    unbound: &domain::BatchOutcome,
+    unbound: &[MessageId],
 ) -> Result<DeleteDocument, Failure> {
     Ok(DeleteDocument {
         workflow: workflow_document(view)?,
-        messages_returned: unbound.processed.len() as u64,
+        messages_returned: unbound.len() as u64,
     })
 }
 
@@ -305,7 +301,6 @@ impl Enrichment<'_> {
             domain::StepKind::Message { message } => StepKind::Message {
                 message: message.as_ref().map(|message| Message {
                     id: message.to_string(),
-                    subject: self.subjects.get(message).cloned(),
                 }),
             },
             domain::StepKind::Wait {

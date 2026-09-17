@@ -31,6 +31,7 @@ Commands:
   broadcasts           Manage broadcasts (email campaigns)
   campaigns            Manage a single follow-up or broadcast message on a list
   workflows            Manage automation workflows
+  messages             Manage messages
   account              Manage your AWeber account
   custom-fields        Manage custom fields
   tags                 Manage tags
