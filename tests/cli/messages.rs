@@ -45,6 +45,8 @@ async fn get_emits_only_the_public_message_fields() {
             "body_text": "Hi",
             "body_html": "<p>Hi</p>",
             "attachment_ids": [],
+            "binding": "unbound",
+            "bound_resource_id": null,
         }])
     );
 }
