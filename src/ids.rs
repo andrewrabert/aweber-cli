@@ -162,3 +162,65 @@ impl std::fmt::Display for MessageIdError {
 }
 
 impl std::error::Error for MessageIdError {}
+
+uuid_id!(
+    BroadcastUid,
+    BroadcastUidError,
+    "a broadcast uid",
+    "A broadcast's uid.",
+    "Text that is not the id it was read as."
+);
+
+#[derive(serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[serde(transparent)]
+pub struct AttachmentId(String);
+
+impl std::str::FromStr for AttachmentId {
+    type Err = AttachmentIdError;
+
+    fn from_str(text: &str) -> Result<AttachmentId, AttachmentIdError> {
+        let shaped =
+            text.len() == MESSAGE_ID_DIGITS && text.bytes().all(|byte| byte.is_ascii_hexdigit());
+        if shaped {
+            Ok(AttachmentId(text.to_string()))
+        } else {
+            Err(AttachmentIdError {
+                rejected: text.to_string(),
+            })
+        }
+    }
+}
+
+impl std::convert::TryFrom<&str> for AttachmentId {
+    type Error = AttachmentIdError;
+
+    fn try_from(text: &str) -> Result<AttachmentId, AttachmentIdError> {
+        text.parse()
+    }
+}
+
+impl std::fmt::Display for AttachmentId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for AttachmentId {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<AttachmentId, D::Error> {
+        let text = <String as serde::Deserialize>::deserialize(deserializer)?;
+        text.parse().map_err(serde::de::Error::custom)
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct AttachmentIdError {
+    rejected: String,
+}
+
+impl std::fmt::Display for AttachmentIdError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "'{}' is not a 24 hex digit attachment id", self.rejected)
+    }
+}
+
+impl std::error::Error for AttachmentIdError {}
