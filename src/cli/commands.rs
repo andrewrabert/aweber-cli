@@ -213,10 +213,28 @@ static GROUPS: &[Group] = &[
         name: "messages",
         about: "Manage messages",
         long_about: Some("Manage messages."),
-        routes: &[Route {
-            action: "get",
-            command: CliCommand::GetMessage,
-        }],
+        routes: &[
+            Route {
+                action: "get",
+                command: CliCommand::GetMessage,
+            },
+            Route {
+                action: "update",
+                command: CliCommand::UpdateMessage,
+            },
+            Route {
+                action: "bind",
+                command: CliCommand::BindMessage,
+            },
+            Route {
+                action: "unbind",
+                command: CliCommand::UnbindMessage,
+            },
+            Route {
+                action: "delete",
+                command: CliCommand::DeleteMessage,
+            },
+        ],
     },
     Group {
         name: "account",

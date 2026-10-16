@@ -109,6 +109,10 @@ impl Cli {
             CliCommand::PublishWorkflow => Self::cli_publish_workflow(),
             CliCommand::DeleteWorkflow => Self::cli_delete_workflow(),
             CliCommand::GetMessage => Self::cli_get_message(),
+            CliCommand::UpdateMessage => Self::cli_update_message(),
+            CliCommand::BindMessage => Self::cli_bind_message(),
+            CliCommand::UnbindMessage => Self::cli_unbind_message(),
+            CliCommand::DeleteMessage => Self::cli_delete_message(),
             CliCommand::OauthGetAccessToken => Self::cli_oauth_get_access_token(),
             CliCommand::OauthGetRequestToken => Self::cli_oauth_get_request_token(),
             CliCommand::OauthRevoke => Self::cli_oauth_revoke(),
@@ -1297,6 +1301,106 @@ impl Cli {
             .about("Get messages")
     }
 
+    fn single_message_arg() -> clap::Arg {
+        clap::Arg::new("message")
+            .value_name("MESSAGE")
+            .required(true)
+            .value_parser(clap::value_parser!(aweber::ids::MessageId))
+            .help("The message ID")
+    }
+
+    pub(crate) fn cli_update_message() -> clap::Command {
+        clap::Command::new("")
+            .args(Self::list_id_args())
+            .group(Self::list_id_group())
+            .arg(
+                clap::Arg::new("subject")
+                    .long("subject")
+                    .value_parser(clap::value_parser!(String))
+                    .help("The subject line"),
+            )
+            .arg(
+                clap::Arg::new("body-text")
+                    .long("body-text")
+                    .value_parser(clap::value_parser!(String))
+                    .help("The content of the message in plain text"),
+            )
+            .arg(
+                clap::Arg::new("body-html")
+                    .long("body-html")
+                    .value_parser(clap::value_parser!(String))
+                    .help("The content of the message in HTML"),
+            )
+            .arg(
+                clap::Arg::new("body-json")
+                    .long("body-json")
+                    .value_name("FILE")
+                    .value_parser(clap::value_parser!(std::path::PathBuf))
+                    .help("Path to a JSON file holding the editor document"),
+            )
+            .arg(
+                clap::Arg::new("add-attachment")
+                    .long("add-attachment")
+                    .value_name("ATTACHMENT_ID")
+                    .action(clap::ArgAction::Append)
+                    .value_parser(clap::value_parser!(aweber::ids::AttachmentId))
+                    .help("Add an attachment to the message, keeping the others (repeatable)"),
+            )
+            .arg(
+                clap::Arg::new("remove-attachment")
+                    .long("remove-attachment")
+                    .value_name("ATTACHMENT_ID")
+                    .action(clap::ArgAction::Append)
+                    .value_parser(clap::value_parser!(aweber::ids::AttachmentId))
+                    .help("Remove an attachment from the message, keeping the others (repeatable)"),
+            )
+            .arg(Self::single_message_arg())
+            .about("Change a message's subject, bodies or attachments")
+    }
+
+    pub(crate) fn cli_bind_message() -> clap::Command {
+        clap::Command::new("")
+            .args(Self::list_id_args())
+            .group(Self::list_id_group())
+            .arg(
+                clap::Arg::new("broadcast")
+                    .long("broadcast")
+                    .value_name("BROADCAST_ID")
+                    .value_parser(clap::value_parser!(aweber::ids::BroadcastUid))
+                    .help("The broadcast to attach the message to"),
+            )
+            .arg(
+                clap::Arg::new("campaign")
+                    .long("campaign")
+                    .value_name("CAMPAIGN_ID")
+                    .value_parser(clap::value_parser!(aweber::ids::WorkflowId))
+                    .help("The campaign to attach the message to"),
+            )
+            .group(
+                clap::ArgGroup::new("bound-resource")
+                    .args(["broadcast", "campaign"])
+                    .required(true),
+            )
+            .arg(Self::single_message_arg())
+            .about("Attach an unbound message to a broadcast or a campaign")
+    }
+
+    pub(crate) fn cli_unbind_message() -> clap::Command {
+        clap::Command::new("")
+            .args(Self::list_id_args())
+            .group(Self::list_id_group())
+            .arg(Self::single_message_arg())
+            .about("Return a message to Drafts")
+    }
+
+    pub(crate) fn cli_delete_message() -> clap::Command {
+        clap::Command::new("")
+            .args(Self::list_id_args())
+            .group(Self::list_id_group())
+            .arg(Self::single_message_arg())
+            .about("Delete an unbound message and its drafts and attachments")
+    }
+
     pub(crate) fn cli_create_workflow() -> clap::Command {
         clap::Command::new("")
             .arg(
@@ -1971,6 +2075,10 @@ impl Cli {
             CliCommand::PublishWorkflow => self.execute_publish_workflow(matches).await,
             CliCommand::DeleteWorkflow => self.execute_delete_workflow(matches).await,
             CliCommand::GetMessage => self.execute_get_message(matches).await,
+            CliCommand::UpdateMessage => self.execute_update_message(matches).await,
+            CliCommand::BindMessage => self.execute_bind_message(matches).await,
+            CliCommand::UnbindMessage => self.execute_unbind_message(matches).await,
+            CliCommand::DeleteMessage => self.execute_delete_message(matches).await,
             CliCommand::OauthGetAccessToken => self.execute_oauth_get_access_token(matches).await,
             CliCommand::OauthGetRequestToken => self.execute_oauth_get_request_token(matches).await,
             CliCommand::OauthRevoke => self.execute_oauth_revoke(matches).await,
@@ -1981,7 +2089,7 @@ impl Cli {
     // execute_* methods - call aweber::endpoints::* directly
     // -----------------------------------------------------------------------
 
-    async fn resolve_list_id(&self, matches: &clap::ArgMatches) -> anyhow::Result<i32> {
+    pub(crate) async fn resolve_list_id(&self, matches: &clap::ArgMatches) -> anyhow::Result<i32> {
         if let Some(&id) = matches.try_get_one::<i32>("list-id").ok().flatten() {
             return Ok(id);
         }
@@ -3964,6 +4072,10 @@ pub(crate) enum CliCommand {
     PublishWorkflow,
     DeleteWorkflow,
     GetMessage,
+    UpdateMessage,
+    BindMessage,
+    UnbindMessage,
+    DeleteMessage,
     OauthGetAccessToken,
     OauthGetRequestToken,
     OauthRevoke,
@@ -4037,6 +4149,10 @@ impl CliCommand {
             CliCommand::PublishWorkflow,
             CliCommand::DeleteWorkflow,
             CliCommand::GetMessage,
+            CliCommand::UpdateMessage,
+            CliCommand::BindMessage,
+            CliCommand::UnbindMessage,
+            CliCommand::DeleteMessage,
             CliCommand::OauthGetAccessToken,
             CliCommand::OauthGetRequestToken,
             CliCommand::OauthRevoke,
