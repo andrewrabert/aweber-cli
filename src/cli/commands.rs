@@ -219,6 +219,18 @@ static GROUPS: &[Group] = &[
                 command: CliCommand::GetMessage,
             },
             Route {
+                action: "list",
+                command: CliCommand::ListMessages,
+            },
+            Route {
+                action: "find",
+                command: CliCommand::FindMessages,
+            },
+            Route {
+                action: "create",
+                command: CliCommand::CreateMessage,
+            },
+            Route {
                 action: "update",
                 command: CliCommand::UpdateMessage,
             },

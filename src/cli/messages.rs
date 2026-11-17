@@ -1,5 +1,8 @@
 use aweber::ids::{AttachmentId, BroadcastUid, MessageId, WorkflowId};
-use aweber::message::{BoundResource, MessageChanges};
+use aweber::message::{
+    Binding, BoundResource, MessageChanges, MessageField, MessageSearch, NewMessage,
+    LIST_MESSAGES_PAGE,
+};
 
 use crate::cli::Cli;
 use crate::workflows::object;
@@ -30,24 +33,135 @@ impl Cli {
             .clone()
     }
 
+    fn body_json(
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<Option<serde_json::Map<String, serde_json::Value>>> {
+        let Some(path) = matches.get_one::<std::path::PathBuf>("body-json") else {
+            return Ok(None);
+        };
+        let text = std::fs::read_to_string(path)
+            .map_err(|error| anyhow::anyhow!("could not read {}: {error}", path.display()))?;
+        match serde_json::from_str::<serde_json::Value>(&text)? {
+            serde_json::Value::Object(map) => Ok(Some(map)),
+            _ => anyhow::bail!("{} does not hold a JSON object", path.display()),
+        }
+    }
+
+    fn binding(name: &str) -> Binding {
+        match name {
+            "broadcast" => Binding::Broadcast,
+            "campaign" => Binding::Campaign,
+            "followup" => Binding::Followup,
+            _ => Binding::Unbound,
+        }
+    }
+
+    pub(crate) async fn execute_list_messages(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
+        let list_id = self.resolve_list_id(matches).await?;
+        let bindings: Vec<Binding> = matches
+            .get_many::<String>("binding")
+            .expect("binding has a default")
+            .map(|name| Self::binding(name))
+            .collect();
+        let subject = matches.get_one::<String>("subject").map(String::as_str);
+        let mut offset = matches.get_one::<usize>("offset").copied().unwrap_or(0);
+        let limit = matches.get_one::<usize>("limit").copied();
+        let mut messages = Vec::new();
+        loop {
+            let wanted = match limit {
+                Some(limit) => (limit - messages.len()).min(LIST_MESSAGES_PAGE),
+                None => LIST_MESSAGES_PAGE,
+            };
+            if wanted == 0 {
+                break;
+            }
+            let page = aweber::message::list_messages(
+                &self.client,
+                self.account_id,
+                list_id,
+                &bindings,
+                subject,
+                offset,
+                wanted,
+            )
+            .await
+            .map_err(Failure::api)?;
+            let received = page.len();
+            offset += received;
+            messages.extend(page);
+            if received < wanted {
+                break;
+            }
+        }
+        object::print(&messages)?;
+        Ok(())
+    }
+
+    pub(crate) async fn execute_find_messages(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
+        let search = MessageSearch {
+            binding: matches
+                .get_one::<String>("binding")
+                .map(|name| Self::binding(name)),
+            bound_resource_id: matches.get_one::<uuid::Uuid>("bound-resource-id").copied(),
+            subject: matches.get_one::<String>("subject").cloned(),
+        };
+        let fields: Vec<MessageField> = matches
+            .get_many::<String>("fields")
+            .map(|names| {
+                names
+                    .filter_map(|name| {
+                        MessageField::ALL
+                            .into_iter()
+                            .find(|field| field.as_str() == name)
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
+        let account = self.account_uid().await?;
+        let found = aweber::message::find_messages(&self.client, account, &search, &fields)
+            .await
+            .map_err(Failure::api)?;
+        object::print(&found)?;
+        Ok(())
+    }
+
+    pub(crate) async fn execute_create_message(
+        &self,
+        matches: &clap::ArgMatches,
+    ) -> anyhow::Result<()> {
+        let list_id = self.resolve_list_id(matches).await?;
+        let text = |name: &str| matches.get_one::<String>(name).cloned().unwrap_or_default();
+        let message = NewMessage {
+            subject: text("subject"),
+            body_text: text("body-text"),
+            body_html: text("body-html"),
+            body_json: Self::body_json(matches)?.unwrap_or_default(),
+            attachment_ids: matches
+                .get_many::<AttachmentId>("attachment")
+                .map(|values| values.cloned().collect())
+                .unwrap_or_default(),
+        };
+        let created =
+            aweber::message::create_message(&self.client, self.account_id, list_id, &message)
+                .await
+                .map_err(Failure::api)?;
+        object::print(&created)?;
+        Ok(())
+    }
+
     pub(crate) async fn execute_update_message(
         &self,
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let message = Self::single_message(matches);
-        let body_json = match matches.get_one::<std::path::PathBuf>("body-json") {
-            Some(path) => {
-                let text = std::fs::read_to_string(path).map_err(|error| {
-                    anyhow::anyhow!("could not read {}: {error}", path.display())
-                })?;
-                match serde_json::from_str::<serde_json::Value>(&text)? {
-                    serde_json::Value::Object(map) => Some(map),
-                    _ => anyhow::bail!("{} does not hold a JSON object", path.display()),
-                }
-            }
-            None => None,
-        };
+        let body_json = Self::body_json(matches)?;
         let mut changes = MessageChanges {
             subject: matches.get_one::<String>("subject").cloned(),
             body_text: matches.get_one::<String>("body-text").cloned(),
