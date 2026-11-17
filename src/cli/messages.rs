@@ -41,19 +41,10 @@ impl Cli {
         };
         let text = std::fs::read_to_string(path)
             .map_err(|error| anyhow::anyhow!("could not read {}: {error}", path.display()))?;
-        match serde_json::from_str::<serde_json::Value>(&text)? {
-            serde_json::Value::Object(map) => Ok(Some(map)),
-            _ => anyhow::bail!("{} does not hold a JSON object", path.display()),
-        }
-    }
-
-    fn binding(name: &str) -> Binding {
-        match name {
-            "broadcast" => Binding::Broadcast,
-            "campaign" => Binding::Campaign,
-            "followup" => Binding::Followup,
-            _ => Binding::Unbound,
-        }
+        let document = serde_json::from_str(&text).map_err(|error| {
+            anyhow::anyhow!("{} does not hold a JSON object: {error}", path.display())
+        })?;
+        Ok(Some(document))
     }
 
     pub(crate) async fn execute_list_messages(
@@ -62,9 +53,9 @@ impl Cli {
     ) -> anyhow::Result<()> {
         let list_id = self.resolve_list_id(matches).await?;
         let bindings: Vec<Binding> = matches
-            .get_many::<String>("binding")
+            .get_many::<Binding>("binding")
             .expect("binding has a default")
-            .map(|name| Self::binding(name))
+            .copied()
             .collect();
         let subject = matches.get_one::<String>("subject").map(String::as_str);
         let mut offset = matches.get_one::<usize>("offset").copied().unwrap_or(0);
@@ -105,23 +96,13 @@ impl Cli {
         matches: &clap::ArgMatches,
     ) -> anyhow::Result<()> {
         let search = MessageSearch {
-            binding: matches
-                .get_one::<String>("binding")
-                .map(|name| Self::binding(name)),
+            binding: matches.get_one::<Binding>("binding").copied(),
             bound_resource_id: matches.get_one::<uuid::Uuid>("bound-resource-id").copied(),
             subject: matches.get_one::<String>("subject").cloned(),
         };
         let fields: Vec<MessageField> = matches
-            .get_many::<String>("fields")
-            .map(|names| {
-                names
-                    .filter_map(|name| {
-                        MessageField::ALL
-                            .into_iter()
-                            .find(|field| field.as_str() == name)
-                    })
-                    .collect()
-            })
+            .get_many::<MessageField>("fields")
+            .map(|fields| fields.copied().collect())
             .unwrap_or_default();
         let account = self.account_uid().await?;
         let found = aweber::message::find_messages(&self.client, account, &search, &fields)
@@ -182,14 +163,10 @@ impl Cli {
                 aweber::message::get_messages(&self.client, std::slice::from_ref(&message))
                     .await
                     .map_err(Failure::api)?;
-            let existing = current
+            let mut merged: Vec<AttachmentId> = current
                 .get(&message)
                 .map(|found| found.attachment_ids.clone())
                 .unwrap_or_default();
-            let mut merged: Vec<AttachmentId> = existing
-                .iter()
-                .map(|id| id.parse::<AttachmentId>())
-                .collect::<Result<_, _>>()?;
             merged.retain(|id| !removed.contains(id));
             for id in added {
                 if !merged.contains(&id) {
