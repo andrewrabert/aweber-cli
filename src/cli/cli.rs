@@ -1312,7 +1312,24 @@ impl Cli {
             .help("The message ID")
     }
 
-    const BINDINGS: [&'static str; 4] = ["broadcast", "campaign", "followup", "unbound"];
+    fn binding_parser() -> impl clap::builder::TypedValueParser<Value = aweber::message::Binding> {
+        clap::builder::TypedValueParser::try_map(
+            clap::builder::PossibleValuesParser::new(
+                aweber::message::Binding::ALL.map(aweber::message::Binding::as_str),
+            ),
+            |name| name.parse::<aweber::message::Binding>(),
+        )
+    }
+
+    fn message_field_parser(
+    ) -> impl clap::builder::TypedValueParser<Value = aweber::message::MessageField> {
+        clap::builder::TypedValueParser::try_map(
+            clap::builder::PossibleValuesParser::new(
+                aweber::message::MessageField::ALL.map(aweber::message::MessageField::as_str),
+            ),
+            |name| name.parse::<aweber::message::MessageField>(),
+        )
+    }
 
     fn message_content_args() -> [clap::Arg; 4] {
         [
@@ -1345,7 +1362,7 @@ impl Cli {
                     .long("binding")
                     .value_name("BINDING")
                     .action(clap::ArgAction::Append)
-                    .value_parser(Self::BINDINGS)
+                    .value_parser(Self::binding_parser())
                     .default_value("unbound")
                     .help("Only messages with this binding (repeatable)"),
             )
@@ -1371,7 +1388,7 @@ impl Cli {
                 clap::Arg::new("binding")
                     .long("binding")
                     .value_name("BINDING")
-                    .value_parser(Self::BINDINGS)
+                    .value_parser(Self::binding_parser())
                     .help("Only messages with this binding"),
             )
             .arg(
@@ -1398,7 +1415,7 @@ impl Cli {
                     .long("fields")
                     .value_name("FIELD")
                     .action(clap::ArgAction::Append)
-                    .value_parser(aweber::message::MessageField::ALL.map(|field| field.as_str()))
+                    .value_parser(Self::message_field_parser())
                     .help("Include this field in each message (repeatable)"),
             )
             .about("Find messages across the account by binding, bound resource or subject")

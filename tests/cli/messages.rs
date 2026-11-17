@@ -248,13 +248,7 @@ async fn list_reads_unbound_messages_by_default() {
     assert!(output.status.success(), "{output:?}");
     assert_eq!(
         Harness::json(&output),
-        serde_json::json!([{
-            "id": MESSAGE,
-            "subject": "Hello",
-            "binding": "unbound",
-            "created_at": "2026-11-17T00:00:00",
-            "modified_at": "2026-11-17T00:00:00",
-        }])
+        serde_json::json!([summary("Hello")])
     );
     let requests = harness.server_requests("GET", LIST_ROUTE).await;
     assert_eq!(requests.len(), 1);

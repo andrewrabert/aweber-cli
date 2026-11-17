@@ -73,7 +73,9 @@ async fn batch_get_sends_no_fields_and_no_account_param() {
     );
     assert_eq!(
         first.attachment_ids,
-        ["cccccccccccccccccccccccc".to_string()]
+        ["cccccccccccccccccccccccc"
+            .parse::<aweber::ids::AttachmentId>()
+            .expect("an attachment id")]
     );
     assert_eq!(first.binding, aweber::message::Binding::Campaign);
     assert_eq!(first.bound_resource_id, Some(ACCOUNT.to_string()));

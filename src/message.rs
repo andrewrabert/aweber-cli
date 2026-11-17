@@ -31,7 +31,7 @@ pub struct Message {
     /// text from HTML (`true` = do not sync).
     #[serde(skip_serializing)]
     pub has_customized_body_text: bool,
-    pub attachment_ids: Vec<String>,
+    pub attachment_ids: Vec<AttachmentId>,
     pub binding: Binding,
     /// Id of the resource named by `binding`.
     pub bound_resource_id: Option<String>,
@@ -40,8 +40,7 @@ pub struct Message {
     pub copied_from: Option<serde_json::Map<String, serde_json::Value>>,
 }
 
-#[derive(serde::Serialize, Clone, Copy, Debug, PartialEq, Eq)]
-#[serde(rename_all = "lowercase")]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Binding {
     Unbound,
     Broadcast,
@@ -49,31 +48,71 @@ pub enum Binding {
     Campaign,
 }
 
-impl<'de> serde::Deserialize<'de> for Binding {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Binding, D::Error> {
-        let text = <Option<String> as serde::Deserialize>::deserialize(deserializer)?;
-        match text.as_deref() {
-            None | Some("") | Some("unbound") => Ok(Binding::Unbound),
-            Some("broadcast") => Ok(Binding::Broadcast),
-            Some("followup") => Ok(Binding::Followup),
-            Some("campaign") => Ok(Binding::Campaign),
-            Some(other) => Err(serde::de::Error::custom(format!(
-                "'{other}' is not a message binding"
-            ))),
+impl Binding {
+    pub const ALL: [Binding; 4] = [
+        Binding::Broadcast,
+        Binding::Campaign,
+        Binding::Followup,
+        Binding::Unbound,
+    ];
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Binding::Unbound => "unbound",
+            Binding::Broadcast => "broadcast",
+            Binding::Followup => "followup",
+            Binding::Campaign => "campaign",
         }
+    }
+}
+
+impl std::str::FromStr for Binding {
+    type Err = BindingError;
+
+    fn from_str(text: &str) -> Result<Binding, BindingError> {
+        Binding::ALL
+            .into_iter()
+            .find(|binding| binding.as_str() == text)
+            .ok_or_else(|| BindingError {
+                rejected: text.to_string(),
+            })
     }
 }
 
 impl std::fmt::Display for Binding {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(match self {
-            Binding::Unbound => "unbound",
-            Binding::Broadcast => "broadcast",
-            Binding::Followup => "followup",
-            Binding::Campaign => "campaign",
-        })
+        f.write_str(self.as_str())
     }
 }
+
+impl serde::Serialize for Binding {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.as_str())
+    }
+}
+
+/// The API sends `null` or `""` for an unbound message.
+impl<'de> serde::Deserialize<'de> for Binding {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Binding, D::Error> {
+        match <Option<String> as serde::Deserialize>::deserialize(deserializer)?.as_deref() {
+            None | Some("") => Ok(Binding::Unbound),
+            Some(text) => text.parse().map_err(serde::de::Error::custom),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct BindingError {
+    rejected: String,
+}
+
+impl std::fmt::Display for BindingError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "'{}' is not a message binding", self.rejected)
+    }
+}
+
+impl std::error::Error for BindingError {}
 
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, PartialEq, Eq)]
 pub struct LegacyMessage {
@@ -143,7 +182,7 @@ struct NewMessageBody<'a> {
 /// One entry of a list's message listing.
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, PartialEq, Eq)]
 pub struct MessageSummary {
-    #[serde(rename(deserialize = "_id"))]
+    #[serde(rename = "_id")]
     pub id: MessageId,
     pub subject: String,
     pub binding: Binding,
@@ -207,6 +246,32 @@ impl MessageField {
     }
 }
 
+impl std::str::FromStr for MessageField {
+    type Err = MessageFieldError;
+
+    fn from_str(text: &str) -> Result<MessageField, MessageFieldError> {
+        MessageField::ALL
+            .into_iter()
+            .find(|field| field.as_str() == text)
+            .ok_or_else(|| MessageFieldError {
+                rejected: text.to_string(),
+            })
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct MessageFieldError {
+    rejected: String,
+}
+
+impl std::fmt::Display for MessageFieldError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "'{}' is not a message field", self.rejected)
+    }
+}
+
+impl std::error::Error for MessageFieldError {}
+
 /// A search hit. Fields other than the ids are present only when requested.
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug, PartialEq, Eq)]
 pub struct FoundMessage {
@@ -220,17 +285,17 @@ pub struct FoundMessage {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub body_html: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub body_json: Option<serde_json::Value>,
+    pub body_json: Option<serde_json::Map<String, serde_json::Value>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub has_customized_body_text: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub attachment_ids: Option<Vec<String>>,
+    pub attachment_ids: Option<Vec<AttachmentId>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub binding: Option<Binding>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub bound_resource_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub copied_from: Option<serde_json::Value>,
+    pub copied_from: Option<serde_json::Map<String, serde_json::Value>>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
