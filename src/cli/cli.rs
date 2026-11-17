@@ -109,6 +109,9 @@ impl Cli {
             CliCommand::PublishWorkflow => Self::cli_publish_workflow(),
             CliCommand::DeleteWorkflow => Self::cli_delete_workflow(),
             CliCommand::GetMessage => Self::cli_get_message(),
+            CliCommand::ListMessages => Self::cli_list_messages(),
+            CliCommand::FindMessages => Self::cli_find_messages(),
+            CliCommand::CreateMessage => Self::cli_create_message(),
             CliCommand::UpdateMessage => Self::cli_update_message(),
             CliCommand::BindMessage => Self::cli_bind_message(),
             CliCommand::UnbindMessage => Self::cli_unbind_message(),
@@ -1309,35 +1312,120 @@ impl Cli {
             .help("The message ID")
     }
 
-    pub(crate) fn cli_update_message() -> clap::Command {
+    const BINDINGS: [&'static str; 4] = ["broadcast", "campaign", "followup", "unbound"];
+
+    fn message_content_args() -> [clap::Arg; 4] {
+        [
+            clap::Arg::new("subject")
+                .long("subject")
+                .value_parser(clap::value_parser!(String))
+                .help("The subject line"),
+            clap::Arg::new("body-text")
+                .long("body-text")
+                .value_parser(clap::value_parser!(String))
+                .help("The content of the message in plain text"),
+            clap::Arg::new("body-html")
+                .long("body-html")
+                .value_parser(clap::value_parser!(String))
+                .help("The content of the message in HTML"),
+            clap::Arg::new("body-json")
+                .long("body-json")
+                .value_name("FILE")
+                .value_parser(clap::value_parser!(std::path::PathBuf))
+                .help("Path to a JSON file holding the editor document"),
+        ]
+    }
+
+    pub(crate) fn cli_list_messages() -> clap::Command {
         clap::Command::new("")
             .args(Self::list_id_args())
             .group(Self::list_id_group())
             .arg(
+                clap::Arg::new("binding")
+                    .long("binding")
+                    .value_name("BINDING")
+                    .action(clap::ArgAction::Append)
+                    .value_parser(Self::BINDINGS)
+                    .default_value("unbound")
+                    .help("Only messages with this binding (repeatable)"),
+            )
+            .arg(
                 clap::Arg::new("subject")
                     .long("subject")
                     .value_parser(clap::value_parser!(String))
-                    .help("The subject line"),
+                    .help("Only messages whose subject matches"),
             )
             .arg(
-                clap::Arg::new("body-text")
-                    .long("body-text")
+                clap::Arg::new("offset")
+                    .long("offset")
+                    .value_parser(clap::value_parser!(usize))
+                    .help("The pagination starting offset"),
+            )
+            .arg(Self::limit_arg())
+            .about("List the messages on a list")
+    }
+
+    pub(crate) fn cli_find_messages() -> clap::Command {
+        clap::Command::new("")
+            .arg(
+                clap::Arg::new("binding")
+                    .long("binding")
+                    .value_name("BINDING")
+                    .value_parser(Self::BINDINGS)
+                    .help("Only messages with this binding"),
+            )
+            .arg(
+                clap::Arg::new("bound-resource-id")
+                    .long("bound-resource-id")
+                    .value_name("UUID")
+                    .value_parser(clap::value_parser!(uuid::Uuid))
+                    .help("Only messages bound to this broadcast or campaign"),
+            )
+            .arg(
+                clap::Arg::new("subject")
+                    .long("subject")
                     .value_parser(clap::value_parser!(String))
-                    .help("The content of the message in plain text"),
+                    .help("Only messages whose subject holds every word given"),
+            )
+            .group(
+                clap::ArgGroup::new("search")
+                    .args(["binding", "bound-resource-id", "subject"])
+                    .required(true)
+                    .multiple(true),
             )
             .arg(
-                clap::Arg::new("body-html")
-                    .long("body-html")
-                    .value_parser(clap::value_parser!(String))
-                    .help("The content of the message in HTML"),
+                clap::Arg::new("fields")
+                    .long("fields")
+                    .value_name("FIELD")
+                    .action(clap::ArgAction::Append)
+                    .value_parser(aweber::message::MessageField::ALL.map(|field| field.as_str()))
+                    .help("Include this field in each message (repeatable)"),
             )
+            .about("Find messages across the account by binding, bound resource or subject")
+    }
+
+    pub(crate) fn cli_create_message() -> clap::Command {
+        let [subject, body_text, body_html, body_json] = Self::message_content_args();
+        clap::Command::new("")
+            .args(Self::list_id_args())
+            .group(Self::list_id_group())
+            .args([subject.required(true), body_text, body_html, body_json])
             .arg(
-                clap::Arg::new("body-json")
-                    .long("body-json")
-                    .value_name("FILE")
-                    .value_parser(clap::value_parser!(std::path::PathBuf))
-                    .help("Path to a JSON file holding the editor document"),
+                clap::Arg::new("attachment")
+                    .long("attachment")
+                    .value_name("ATTACHMENT_ID")
+                    .action(clap::ArgAction::Append)
+                    .value_parser(clap::value_parser!(aweber::ids::AttachmentId))
+                    .help("Add an attachment to the message (repeatable)"),
             )
+            .about("Create an unbound message")
+    }
+
+    pub(crate) fn cli_update_message() -> clap::Command {
+        clap::Command::new("")
+            .args(Self::list_id_args())
+            .group(Self::list_id_group())
+            .args(Self::message_content_args())
             .arg(
                 clap::Arg::new("add-attachment")
                     .long("add-attachment")
@@ -2075,6 +2163,9 @@ impl Cli {
             CliCommand::PublishWorkflow => self.execute_publish_workflow(matches).await,
             CliCommand::DeleteWorkflow => self.execute_delete_workflow(matches).await,
             CliCommand::GetMessage => self.execute_get_message(matches).await,
+            CliCommand::ListMessages => self.execute_list_messages(matches).await,
+            CliCommand::FindMessages => self.execute_find_messages(matches).await,
+            CliCommand::CreateMessage => self.execute_create_message(matches).await,
             CliCommand::UpdateMessage => self.execute_update_message(matches).await,
             CliCommand::BindMessage => self.execute_bind_message(matches).await,
             CliCommand::UnbindMessage => self.execute_unbind_message(matches).await,
@@ -4072,6 +4163,9 @@ pub(crate) enum CliCommand {
     PublishWorkflow,
     DeleteWorkflow,
     GetMessage,
+    ListMessages,
+    FindMessages,
+    CreateMessage,
     UpdateMessage,
     BindMessage,
     UnbindMessage,
@@ -4149,6 +4243,9 @@ impl CliCommand {
             CliCommand::PublishWorkflow,
             CliCommand::DeleteWorkflow,
             CliCommand::GetMessage,
+            CliCommand::ListMessages,
+            CliCommand::FindMessages,
+            CliCommand::CreateMessage,
             CliCommand::UpdateMessage,
             CliCommand::BindMessage,
             CliCommand::UnbindMessage,
