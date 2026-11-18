@@ -12,6 +12,9 @@ Pre-built binaries for Linux (glibc & musl), macOS, and Windows are available on
 
 ## Usage
 
+Read the [user guide](GUIDE.md) online or run `aweber guide` offline. Use
+`aweber guide --list` to see sections or `aweber guide workflows` to read one.
+
 ```sh
 $ aweber --help
 AWeber API CLI
@@ -25,6 +28,7 @@ Commands:
   broadcasts           Manage broadcasts (email campaigns)
   campaigns            Manage a single follow-up or broadcast message on a list
   custom-fields        Manage custom fields
+  guide                Read the built-in usage guide
   integrations         Manage integrations
   landing-pages        Manage landing pages
   lists                Manage subscriber lists

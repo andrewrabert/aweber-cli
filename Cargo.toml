@@ -32,6 +32,11 @@ path = "tests/cli/messages.rs"
 required-features = ["cli"]
 
 [[test]]
+name = "cli_guide"
+path = "tests/cli/guide.rs"
+required-features = ["cli"]
+
+[[test]]
 name = "cli_workflows"
 path = "tests/cli/workflows.rs"
 required-features = ["cli"]
