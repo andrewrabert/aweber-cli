@@ -1,5 +1,6 @@
 use crate::auth;
 use crate::cli::{Cli, CliCommand};
+use crate::guide;
 
 /// A single route: an action name within a group, mapped to a CliCommand variant.
 struct Route {
@@ -499,7 +500,7 @@ pub fn build_command_tree() -> clap::Command {
         )
         .subcommand_required(true);
 
-    let mut top_level = vec![auth_cmd, api_cmd];
+    let mut top_level = vec![auth_cmd, api_cmd, guide::command()];
     for group in GROUPS {
         let mut group_cmd = clap::Command::new(group.name)
             .about(group.about)

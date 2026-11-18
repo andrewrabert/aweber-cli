@@ -7,6 +7,7 @@ mod auth;
 mod cli;
 mod commands;
 mod credentials;
+mod guide;
 mod messages;
 mod workflows;
 
@@ -18,6 +19,11 @@ async fn main() -> anyhow::Result<()> {
 
     let app = commands::build_command_tree();
     let matches = app.get_matches();
+
+    if let Some(("guide", guide_matches)) = matches.subcommand() {
+        guide::run(guide_matches);
+        return Ok(());
+    }
 
     let creds_file = matches
         .get_one::<String>("credentials-file")
